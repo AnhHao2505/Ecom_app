@@ -1,4 +1,5 @@
 import 'package:e_mart/consts/consts.dart';
+import 'package:e_mart/models/category_model.dart';
 
 const socialIconList = [icFacebookLogo, icGoogleLogo, icTwitterLogo];
 
@@ -12,28 +13,19 @@ const featuredImages2 = [imgS4, imgS5, imgS6];
 const featuredTitles1 = [womenDress, girlsDress, girlsWatches];
 const featuredTitles2 = [boysGlasses, mobilePhone, tShirts];
 
-const categoriesList = [
-  womenClothing,
-  menClothingFashion,
-  compAccess,
-  kidtoys,
-  automobile,
-  sports,
-  jewelery,
-  cellphone,
-  furniture,
+// Categories with images combined
+const categoriesData = [
+  Category(name: womenClothing, image: imgFc8),
+  Category(name: menClothingFashion, image: imgFc1),
+  Category(name: compAccess, image: imgFc2),
+  Category(name: kidtoys, image: imgFc4),
+  Category(name: automobile, image: imgFc3),
+  Category(name: sports, image: imgFc5),
+  Category(name: jewelery, image: imgFc7),
+  Category(name: cellphone, image: imgFc6),
+  Category(name: furniture, image: imgFc9),
 ];
-const categoryImages = [
-  imgFc1,
-  imgFc2,
-  imgFc3,
-  imgFc4,
-  imgFc5,
-  imgFc6,
-  imgFc7,
-  imgFc8,
-  imgFc9,
-];
+
 const itemDetailButtonList = [
   video,
   reviews,
@@ -44,4 +36,3 @@ const itemDetailButtonList = [
 
 const profileButtonsList = [orders, wishList, messages];
 const profileButtonImages = [icOrder, icOrder, icMessages];
-
