@@ -1,5 +1,4 @@
 import 'package:e_mart/consts/consts.dart';
-import 'package:e_mart/views/home_screen/components/featured_button.dart';
 
 import '../../consts/lists.dart';
 import '../../widget_common/home_button.dart';
@@ -88,62 +87,6 @@ class HomeScreen extends StatelessWidget {
                       },
                     ),
 
-                    // category buttons
-                    10.heightBox,
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: List.generate(
-                        3,
-                        (index) => homeButtons(
-                          height: context.screenHeight * 0.15,
-                          width: context.screenWidth / 3.5,
-                          icon: index == 0
-                              ? icTopCategories
-                              : index == 1
-                              ? icBrands
-                              : icTopSeller,
-                          title: index == 0
-                              ? topCategories
-                              : index == 1
-                              ? brand
-                              : topSellers,
-                        ),
-                      ),
-                    ),
-
-                    // Featured Categories
-                    20.heightBox,
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: featuredCategories.text
-                          .color(darkFontGrey)
-                          .size(18)
-                          .fontFamily(semibold)
-                          .make(),
-                    ),
-                    20.heightBox,
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        children: List.generate(
-                          3,
-                          (index) => Column(
-                            children: [
-                              featuredButton(
-                                icon: featuredImages1[index],
-                                title: featuredTitles1[index],
-                              ),
-                              10.heightBox,
-                              featuredButton(
-                                icon: featuredImages2[index],
-                                title: featuredTitles2[index],
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-
                     // featured products
                     20.heightBox,
                     Container(
@@ -198,25 +141,6 @@ class HomeScreen extends StatelessWidget {
                           ),
                         ],
                       ),
-                    ),
-
-                    // third swiper
-                    20.heightBox,
-                    VxSwiper.builder(
-                      aspectRatio: 16 / 9,
-                      autoPlay: true,
-                      height: 150,
-                      enlargeCenterPage: true,
-                      itemCount: secondSliderList.length,
-                      itemBuilder: (context, index) {
-                        return Image.asset(
-                              secondSliderList[index],
-                              fit: BoxFit.fill,
-                            ).box.rounded
-                            .clip(Clip.antiAlias)
-                            .margin(const EdgeInsets.symmetric(horizontal: 8))
-                            .make();
-                      },
                     ),
 
                     // all products section

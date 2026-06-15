@@ -33,17 +33,7 @@ const home = "Home",
 const searchAnything = "Search anything...",
     todayDeal = "Today's Deal",
     flashsale = "Flash Sale",
-    topSellers = "Top Sellers",
-    brand = "Brand",
-    topCategories = "Top Categories",
-    womenDress = "Woman Dress",
-    girlsWatches = "Girls Watchers",
-    mobilePhone = "Mobile Phone",
-    boysGlasses = "Boys Glasses",
-    tShirts = "T-Shirts",
-    girlsDress = "Girls Dress",
-    featuredProduct = "Featured Product",
-    featuredCategories = "Featured Categories";
+    featuredProduct = "Featured Product";
 
 // category strings
 const womenClothing = "Women Clothing",
