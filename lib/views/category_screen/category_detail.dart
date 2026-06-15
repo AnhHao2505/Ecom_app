@@ -1,5 +1,5 @@
 import 'package:e_mart/consts/consts.dart';
-import 'package:e_mart/views/category_screen/item_detail.dart';
+import 'package:e_mart/views/item_detail_screen/item_detail.dart';
 import 'package:e_mart/widget_common/bg_widget.dart';
 import 'package:get/get.dart';
 

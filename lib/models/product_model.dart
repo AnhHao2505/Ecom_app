@@ -1,0 +1,192 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+class Product {
+  final String id;
+  final String name;
+  final String description;
+  final String category;
+  final double price;
+  final double originalPrice;
+  final List<String> images; // Cloudinary URLs
+  final double rating;
+  final int reviewCount;
+  final int stock;
+  final bool isFeatured;
+  final bool isNew;
+  final List<String> sizes;
+  final List<String> colors;
+  final Map<String, dynamic> attributes; // For flexible product attributes
+  final DateTime createdAt;
+  final DateTime updatedAt;
+
+  Product({
+    required this.id,
+    required this.name,
+    required this.description,
+    required this.category,
+    required this.price,
+    required this.originalPrice,
+    required this.images,
+    this.rating = 0.0,
+    this.reviewCount = 0,
+    required this.stock,
+    this.isFeatured = false,
+    this.isNew = false,
+    this.sizes = const [],
+    this.colors = const [],
+    this.attributes = const {},
+    required this.createdAt,
+    required this.updatedAt,
+  });
+
+  // Discount percentage calculation
+  double get discountPercentage {
+    if (originalPrice == 0) return 0;
+    return ((originalPrice - price) / originalPrice * 100);
+  }
+
+  // Check if product is in stock
+  bool get isInStock => stock > 0;
+
+  // Convert Product to JSON for Firestore
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'name': name,
+      'description': description,
+      'category': category,
+      'price': price,
+      'originalPrice': originalPrice,
+      'images': images,
+      'rating': rating,
+      'reviewCount': reviewCount,
+      'stock': stock,
+      'isFeatured': isFeatured,
+      'isNew': isNew,
+      'sizes': sizes,
+      'colors': colors,
+      'attributes': attributes,
+      'createdAt': Timestamp.fromDate(createdAt),
+      'updatedAt': Timestamp.fromDate(updatedAt),
+    };
+  }
+
+  // Convert JSON from Firestore to Product
+  factory Product.fromMap(Map<String, dynamic> map, String docId) {
+    return Product(
+      id: docId,
+      name: map['name'] ?? '',
+      description: map['description'] ?? '',
+      category: map['category'] ?? '',
+      price: (map['price'] ?? 0.0).toDouble(),
+      originalPrice: (map['originalPrice'] ?? 0.0).toDouble(),
+      images: List<String>.from(map['images'] ?? []),
+      rating: (map['rating'] ?? 0.0).toDouble(),
+      reviewCount: map['reviewCount'] ?? 0,
+      stock: map['stock'] ?? 0,
+      isFeatured: map['isFeatured'] ?? false,
+      isNew: map['isNew'] ?? false,
+      sizes: List<String>.from(map['sizes'] ?? []),
+      colors: List<String>.from(map['colors'] ?? []),
+      attributes: map['attributes'] ?? {},
+      createdAt: (map['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      updatedAt: (map['updatedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+    );
+  }
+
+  // Convert Product to JSON for API calls or local storage
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'description': description,
+      'category': category,
+      'price': price,
+      'originalPrice': originalPrice,
+      'images': images,
+      'rating': rating,
+      'reviewCount': reviewCount,
+      'stock': stock,
+      'isFeatured': isFeatured,
+      'isNew': isNew,
+      'sizes': sizes,
+      'colors': colors,
+      'attributes': attributes,
+      'createdAt': createdAt.toIso8601String(),
+      'updatedAt': updatedAt.toIso8601String(),
+    };
+  }
+
+  // Convert JSON to Product
+  factory Product.fromJson(Map<String, dynamic> json) {
+    return Product(
+      id: json['id'] ?? '',
+      name: json['name'] ?? '',
+      description: json['description'] ?? '',
+      category: json['category'] ?? '',
+      price: (json['price'] ?? 0.0).toDouble(),
+      originalPrice: (json['originalPrice'] ?? 0.0).toDouble(),
+      images: List<String>.from(json['images'] ?? []),
+      rating: (json['rating'] ?? 0.0).toDouble(),
+      reviewCount: json['reviewCount'] ?? 0,
+      stock: json['stock'] ?? 0,
+      isFeatured: json['isFeatured'] ?? false,
+      isNew: json['isNew'] ?? false,
+      sizes: List<String>.from(json['sizes'] ?? []),
+      colors: List<String>.from(json['colors'] ?? []),
+      attributes: json['attributes'] ?? {},
+      createdAt: json['createdAt'] != null
+          ? DateTime.parse(json['createdAt'])
+          : DateTime.now(),
+      updatedAt: json['updatedAt'] != null
+          ? DateTime.parse(json['updatedAt'])
+          : DateTime.now(),
+    );
+  }
+
+  // Copy with method for creating modified instances
+  Product copyWith({
+    String? id,
+    String? name,
+    String? description,
+    String? category,
+    double? price,
+    double? originalPrice,
+    List<String>? images,
+    double? rating,
+    int? reviewCount,
+    int? stock,
+    bool? isFeatured,
+    bool? isNew,
+    List<String>? sizes,
+    List<String>? colors,
+    Map<String, dynamic>? attributes,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) {
+    return Product(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      description: description ?? this.description,
+      category: category ?? this.category,
+      price: price ?? this.price,
+      originalPrice: originalPrice ?? this.originalPrice,
+      images: images ?? this.images,
+      rating: rating ?? this.rating,
+      reviewCount: reviewCount ?? this.reviewCount,
+      stock: stock ?? this.stock,
+      isFeatured: isFeatured ?? this.isFeatured,
+      isNew: isNew ?? this.isNew,
+      sizes: sizes ?? this.sizes,
+      colors: colors ?? this.colors,
+      attributes: attributes ?? this.attributes,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return 'Product(id: $id, name: $name, price: $price, category: $category)';
+  }
+}
