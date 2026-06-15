@@ -105,37 +105,63 @@ class HomeScreen extends StatelessWidget {
                             scrollDirection: Axis.horizontal,
                             child: Row(
                               children: List.generate(
-                                6,
-                                (index) =>
-                                    Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Image.asset(
-                                              imgP1,
-                                              width: 150,
-                                              fit: BoxFit.cover,
-                                            ),
-                                            10.heightBox,
-                                            "Laptop 4GB/64GB".text
-                                                .fontFamily(semibold)
-                                                .color(darkFontGrey)
-                                                .make(),
-                                            10.heightBox,
-                                            "\$600".text
-                                                .color(redColor)
-                                                .fontFamily(bold)
-                                                .size(16)
-                                                .make(),
-                                          ],
-                                        ).box.white.roundedSM
-                                        .margin(
-                                          const EdgeInsets.symmetric(
-                                            horizontal: 4,
+                                dummyProducts.where((p) => p.isFeatured).length,
+                                (index) {
+                                  final product = dummyProducts
+                                      .where((p) => p.isFeatured)
+                                      .toList()[index];
+                                  return Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Image.asset(
+                                            product.images.isNotEmpty
+                                                ? product.images[0]
+                                                : imgP1,
+                                            width: 150,
+                                            height: 150,
+                                            fit: BoxFit.cover,
                                           ),
-                                        )
-                                        .padding(const EdgeInsets.all(8))
-                                        .make(),
+                                          10.heightBox,
+                                          product.name.text
+                                              .fontFamily(semibold)
+                                              .color(darkFontGrey)
+                                              .size(12)
+                                              .maxLines(2)
+                                              .overflow(TextOverflow.ellipsis)
+                                              .make(),
+                                          5.heightBox,
+                                          Row(
+                                            children: [
+                                              Icon(
+                                                Icons.star,
+                                                color: Colors.yellow,
+                                                size: 16,
+                                              ),
+                                              5.widthBox,
+                                              "${product.rating}".text
+                                                  .size(12)
+                                                  .color(darkFontGrey)
+                                                  .make(),
+                                            ],
+                                          ),
+                                          10.heightBox,
+                                          "\$${product.price.toStringAsFixed(2)}"
+                                              .text
+                                              .color(redColor)
+                                              .fontFamily(bold)
+                                              .size(14)
+                                              .make(),
+                                        ],
+                                      ).box.white.roundedSM
+                                      .margin(
+                                        const EdgeInsets.symmetric(
+                                          horizontal: 4,
+                                        ),
+                                      )
+                                      .padding(const EdgeInsets.all(8))
+                                      .make();
+                                },
                               ),
                             ),
                           ),
@@ -148,7 +174,9 @@ class HomeScreen extends StatelessWidget {
                     GridView.builder(
                       physics: const NeverScrollableScrollPhysics(),
                       shrinkWrap: true,
-                      itemCount: 6,
+                      itemCount: dummyProducts
+                          .where((p) => !p.isFeatured)
+                          .length,
                       gridDelegate:
                           const SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: 2,
@@ -157,26 +185,91 @@ class HomeScreen extends StatelessWidget {
                             mainAxisExtent: 300,
                           ),
                       itemBuilder: (context, index) {
+                        final product = dummyProducts
+                            .where((p) => !p.isFeatured)
+                            .toList()[index];
                         return Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Image.asset(
-                                  imgP5,
+                                  product.images.isNotEmpty
+                                      ? product.images[0]
+                                      : imgP5,
                                   width: 200,
-                                  height: 200,
+                                  height: 150,
                                   fit: BoxFit.cover,
                                 ),
-                                const Spacer(),
-                                "Laptop 4GB/64GB".text
+                                10.heightBox,
+                                product.name.text
                                     .fontFamily(semibold)
                                     .color(darkFontGrey)
+                                    .size(12)
+                                    .maxLines(2)
+                                    .overflow(TextOverflow.ellipsis)
                                     .make(),
-                                10.heightBox,
-                                "\$600".text
-                                    .color(redColor)
-                                    .fontFamily(bold)
-                                    .size(16)
-                                    .make(),
+                                5.heightBox,
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.star,
+                                      color: Colors.yellow,
+                                      size: 14,
+                                    ),
+                                    5.widthBox,
+                                    "${product.rating}".text
+                                        .size(10)
+                                        .color(darkFontGrey)
+                                        .make(),
+                                    5.widthBox,
+                                    "(${product.reviewCount})".text
+                                        .size(10)
+                                        .color(darkFontGrey)
+                                        .make(),
+                                  ],
+                                ),
+                                5.heightBox,
+                                product.isInStock
+                                    ? "In Stock".text
+                                          .size(10)
+                                          .color(Colors.green)
+                                          .make()
+                                    : "Out of Stock".text
+                                          .size(10)
+                                          .color(redColor)
+                                          .make(),
+                                const Spacer(),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    if (product.originalPrice >
+                                        product.price) ...[
+                                      "\$${product.originalPrice.toStringAsFixed(2)}"
+                                          .text
+                                          .lineThrough
+                                          .size(10)
+                                          .color(darkFontGrey)
+                                          .make(),
+                                    ],
+                                    Row(
+                                      children: [
+                                        "\$${product.price.toStringAsFixed(2)}"
+                                            .text
+                                            .color(redColor)
+                                            .fontFamily(bold)
+                                            .size(14)
+                                            .make(),
+                                        5.widthBox,
+                                        if (product.discountPercentage > 0)
+                                          "${product.discountPercentage.toStringAsFixed(0)}% off"
+                                              .text
+                                              .fontFamily(bold)
+                                              .size(10)
+                                              .color(Colors.orange)
+                                              .make(),
+                                      ],
+                                    ),
+                                  ],
+                                ),
                               ],
                             ).box.white.roundedSM
                             .margin(const EdgeInsets.symmetric(horizontal: 4))
