@@ -1,4 +1,5 @@
 import 'package:e_mart/consts/consts.dart';
+import 'package:e_mart/consts/lists.dart';
 import 'package:e_mart/views/item_detail_screen/item_detail.dart';
 import 'package:e_mart/widget_common/bg_widget.dart';
 import 'package:get/get.dart';
@@ -77,7 +78,7 @@ class CategoryDetail extends StatelessWidget {
                         .outerShadowSm
                         .make()
                         .onTap(() {
-                          Get.to(() => const ItemDetail(title: "Dummy Item"));
+                          Get.to(() => ItemDetail(product: dummyProducts[1]));
                         });
                   },
                 ),
