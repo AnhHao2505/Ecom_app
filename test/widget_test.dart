@@ -1,30 +1,24 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
-import 'package:flutter/material.dart';
+import 'package:e_mart/models/product.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:e_mart/main.dart';
-
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  test('Product.fromMap parses Firestore values safely', () {
+    final product = Product.fromMap({
+      'name': 'Phone',
+      'price': 599,
+      'colors': ['black', '#ffffff'],
+      'description': 'A test phone',
+      'image': 'https://example.com/phone.jpg',
+      'quantity': 3.0,
+      'rating': '4.5',
+      'shop': 'Demo Shop',
+      'sub_category': 'Cellphone & Tab',
+    }, documentId: 'product-1');
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
-
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
-
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    expect(product.id, 'product-1');
+    expect(product.price, 599.0);
+    expect(product.quantity, 3);
+    expect(product.rating, 4.5);
+    expect(product.colors, ['black', '#ffffff']);
   });
 }

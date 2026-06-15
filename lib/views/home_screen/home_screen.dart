@@ -1,5 +1,8 @@
 import 'package:e_mart/consts/consts.dart';
+import 'package:e_mart/controllers/home_controller.dart';
 import 'package:e_mart/views/home_screen/components/featured_button.dart';
+import 'package:e_mart/widget_common/product_card.dart';
+import 'package:get/get.dart';
 
 import '../../consts/lists.dart';
 import '../../widget_common/home_button.dart';
@@ -9,6 +12,8 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final controller = Get.find<HomeController>();
+
     return Container(
       color: lightGrey,
       width: context.screenWidth,
@@ -22,6 +27,7 @@ class HomeScreen extends StatelessWidget {
               color: lightGrey,
               height: 60,
               child: TextFormField(
+                onChanged: (value) => controller.searchQuery.value = value,
                 decoration: const InputDecoration(
                   border: InputBorder.none,
                   suffixIcon: Icon(Icons.search),
@@ -158,44 +164,49 @@ class HomeScreen extends StatelessWidget {
                               .size(18)
                               .make(),
                           10.heightBox,
-                          SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            child: Row(
-                              children: List.generate(
-                                6,
-                                (index) =>
-                                    Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Image.asset(
-                                              imgP1,
-                                              width: 150,
-                                              fit: BoxFit.cover,
-                                            ),
-                                            10.heightBox,
-                                            "Laptop 4GB/64GB".text
-                                                .fontFamily(semibold)
-                                                .color(darkFontGrey)
-                                                .make(),
-                                            10.heightBox,
-                                            "\$600".text
-                                                .color(redColor)
-                                                .fontFamily(bold)
-                                                .size(16)
-                                                .make(),
-                                          ],
-                                        ).box.white.roundedSM
-                                        .margin(
-                                          const EdgeInsets.symmetric(
-                                            horizontal: 4,
-                                          ),
-                                        )
-                                        .padding(const EdgeInsets.all(8))
-                                        .make(),
+                          Obx(() {
+                            if (controller.isLoading.value) {
+                              return const SizedBox(
+                                height: 220,
+                                child: Center(
+                                  child: CircularProgressIndicator(
+                                    color: whiteColor,
+                                  ),
+                                ),
+                              );
+                            }
+
+                            final products = controller.productsList
+                                .take(6)
+                                .toList();
+                            if (products.isEmpty) {
+                              return const SizedBox(
+                                height: 80,
+                                child: Center(
+                                  child: Text(
+                                    'Chưa có sản phẩm nổi bật.',
+                                    style: TextStyle(color: whiteColor),
+                                  ),
+                                ),
+                              );
+                            }
+
+                            return SizedBox(
+                              height: 240,
+                              child: ListView.separated(
+                                scrollDirection: Axis.horizontal,
+                                itemCount: products.length,
+                                separatorBuilder: (_, _) => 8.widthBox,
+                                itemBuilder: (context, index) => SizedBox(
+                                  width: 165,
+                                  child: ProductCard(
+                                    product: products[index],
+                                    imageHeight: 145,
+                                  ),
+                                ),
                               ),
-                            ),
-                          ),
+                            );
+                          }),
                         ],
                       ),
                     ),
@@ -221,45 +232,43 @@ class HomeScreen extends StatelessWidget {
 
                     // all products section
                     20.heightBox,
-                    GridView.builder(
-                      physics: const NeverScrollableScrollPhysics(),
-                      shrinkWrap: true,
-                      itemCount: 6,
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            mainAxisSpacing: 8,
-                            crossAxisSpacing: 8,
-                            mainAxisExtent: 300,
-                          ),
-                      itemBuilder: (context, index) {
+                    Obx(() {
+                      if (controller.errorMessage.isNotEmpty) {
                         return Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Image.asset(
-                                  imgP5,
-                                  width: 200,
-                                  height: 200,
-                                  fit: BoxFit.cover,
-                                ),
-                                const Spacer(),
-                                "Laptop 4GB/64GB".text
-                                    .fontFamily(semibold)
-                                    .color(darkFontGrey)
-                                    .make(),
-                                10.heightBox,
-                                "\$600".text
-                                    .color(redColor)
-                                    .fontFamily(bold)
-                                    .size(16)
-                                    .make(),
-                              ],
-                            ).box.white.roundedSM
-                            .margin(const EdgeInsets.symmetric(horizontal: 4))
-                            .padding(const EdgeInsets.all(12))
-                            .make();
-                      },
-                    ),
+                          children: [
+                            Text(controller.errorMessage.value),
+                            TextButton(
+                              onPressed: controller.fetchProductsData,
+                              child: const Text('Thử lại'),
+                            ),
+                          ],
+                        );
+                      }
+
+                      final products = controller.filteredProducts;
+                      if (!controller.isLoading.value && products.isEmpty) {
+                        return const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 30),
+                          child: Text('Không tìm thấy sản phẩm.'),
+                        );
+                      }
+
+                      return GridView.builder(
+                        physics: const NeverScrollableScrollPhysics(),
+                        shrinkWrap: true,
+                        itemCount: products.length,
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              mainAxisSpacing: 10,
+                              crossAxisSpacing: 10,
+                              mainAxisExtent: 285,
+                            ),
+                        itemBuilder: (context, index) {
+                          return ProductCard(product: products[index]);
+                        },
+                      );
+                    }),
                   ],
                 ),
               ),
