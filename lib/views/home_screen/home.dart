@@ -1,3 +1,4 @@
+import 'package:e_mart/controllers/cart_controller.dart';
 import 'package:e_mart/controllers/home_controller.dart';
 import 'package:e_mart/views/cart_screen/cart_screen.dart';
 import 'package:e_mart/views/category_screen/category_screen.dart';
@@ -14,6 +15,7 @@ class Home extends StatelessWidget {
   Widget build(BuildContext context) {
     //init home controller
     var controller = Get.put(HomeController());
+    Get.put(CartController());
 
     var navbarItem = [
       BottomNavigationBarItem(

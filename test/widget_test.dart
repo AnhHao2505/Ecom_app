@@ -1,24 +1,29 @@
-import 'package:e_mart/models/product.dart';
+import 'package:e_mart/models/product_model.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  test('Product.fromMap parses Firestore values safely', () {
-    final product = Product.fromMap({
-      'name': 'Phone',
+  test('Product.fromJson parses common API value types safely', () {
+    final product = Product.fromJson({
+      'id': 'product-1',
+      'name': 'Test phone',
+      'description': 'Description',
+      'category': 'cellphone',
       'price': 599,
-      'colors': ['black', '#ffffff'],
-      'description': 'A test phone',
-      'image': 'https://example.com/phone.jpg',
-      'quantity': 3.0,
+      'originalPrice': '699.5',
+      'images': ['assets/images/p1.jpeg'],
       'rating': '4.5',
-      'shop': 'Demo Shop',
-      'sub_category': 'Cellphone & Tab',
-    }, documentId: 'product-1');
+      'reviewCount': 12.0,
+      'stock': '3',
+      'colors': ['Black', 'White'],
+      'createdAt': '2026-06-15T00:00:00.000',
+      'updatedAt': '2026-06-15T00:00:00.000',
+    });
 
-    expect(product.id, 'product-1');
     expect(product.price, 599.0);
-    expect(product.quantity, 3);
+    expect(product.originalPrice, 699.5);
     expect(product.rating, 4.5);
-    expect(product.colors, ['black', '#ffffff']);
+    expect(product.reviewCount, 12);
+    expect(product.stock, 3);
+    expect(product.isInStock, isTrue);
   });
 }

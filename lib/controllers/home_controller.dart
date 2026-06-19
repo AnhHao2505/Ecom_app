@@ -1,61 +1,30 @@
+import 'package:e_mart/consts/lists.dart';
+import 'package:e_mart/models/product_model.dart';
 import 'package:get/get.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-
-import '../consts/firebase_consts.dart';
-import '../models/product.dart';
 
 class HomeController extends GetxController {
-  var currentNavIndex = 0.obs;
-  final productsList = <Product>[].obs;
-  final isLoading = false.obs;
-  final errorMessage = ''.obs;
+  final currentNavIndex = 0.obs;
   final searchQuery = ''.obs;
-
-  @override
-  void onInit() {
-    super.onInit();
-    fetchProductsData();
-  }
-
-  Future<void> fetchProductsData() async {
-    try {
-      isLoading.value = true;
-      errorMessage.value = '';
-      final snapshot = await FirebaseFirestore.instance
-          .collection(productCollection)
-          .get();
-
-      productsList.assignAll(
-        snapshot.docs.map(
-          (doc) => Product.fromMap(doc.data(), documentId: doc.id),
-        ),
-      );
-    } catch (e) {
-      errorMessage.value = 'Không thể tải danh sách sản phẩm.';
-    } finally {
-      isLoading.value = false;
-    }
-  }
-
-  List<Product> productsForCategory(String? category) {
-    if (category == null || category.isEmpty) return productsList;
-
-    final normalizedCategory = category.toLowerCase();
-    return productsList.where((product) {
-      final subCategory = product.subCategory.toLowerCase();
-      return subCategory.contains(normalizedCategory) ||
-          normalizedCategory.contains(subCategory);
-    }).toList();
-  }
+  final products = <Product>[...dummyProducts].obs;
 
   List<Product> get filteredProducts {
     final query = searchQuery.value.trim().toLowerCase();
-    if (query.isEmpty) return productsList;
+    if (query.isEmpty) return products;
 
-    return productsList.where((product) {
-      return product.name.toLowerCase().contains(query) ||
-          product.subCategory.toLowerCase().contains(query) ||
-          product.shop.toLowerCase().contains(query);
+    return products.where((product) {
+      return product.name.toLowerCase().contains(query);
     }).toList();
+  }
+
+  List<Product> get featuredProducts =>
+      filteredProducts.where((product) => product.isFeatured).toList();
+
+  List<Product> productsByCategory(String categoryKey) {
+    return products
+        .where(
+          (product) =>
+              product.category.toLowerCase() == categoryKey.toLowerCase(),
+        )
+        .toList();
   }
 }
