@@ -1,6 +1,7 @@
 import 'package:e_mart/consts/consts.dart';
 import 'package:e_mart/consts/lists.dart';
 import 'package:e_mart/views/category_screen/category_detail.dart';
+import 'package:e_mart/controllers/home_controller.dart';
 import 'package:get/get.dart';
 
 class CategoryScreen extends StatelessWidget {
@@ -9,34 +10,54 @@ class CategoryScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: lightGrey,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: redColor,
-        elevation: 0,
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [primaryColor, primaryDark],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
+        elevation: 4,
+        shadowColor: primaryColor.withOpacity(0.4),
         title: categories.text.fontFamily(bold).white.size(20).make(),
         centerTitle: true,
+        iconTheme: const IconThemeData(color: whiteColor),
       ),
       body: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-        child: GridView.builder(
-          physics: const BouncingScrollPhysics(),
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 3,
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 16,
-            mainAxisExtent: 220,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: Theme.of(context).brightness == Brightness.dark
+                ? [darkBg, darkBgGradientEnd]
+                : [lightBg, lightBgGradientEnd],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
           ),
+        ),
+        child: ListView.separated(
+          physics: const BouncingScrollPhysics(),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           itemCount: categoriesData.length,
+          separatorBuilder: (context, index) => 12.heightBox,
           itemBuilder: (context, index) {
-            return _buildCategoryCard(context, index);
+            return _buildCategoryItem(context, index);
           },
         ),
       ),
     );
   }
 
-  Widget _buildCategoryCard(BuildContext context, int index) {
+  Widget _buildCategoryItem(BuildContext context, int index) {
     final category = categoriesData[index];
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    // Get product count
+    final homeController = Get.find<HomeController>();
+    final productCount = homeController.productsByCategory(category.key).length;
+
     return GestureDetector(
       onTap: () {
         Get.to(
@@ -46,86 +67,73 @@ class CategoryScreen extends StatelessWidget {
         );
       },
       child: Container(
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: whiteColor,
-          borderRadius: BorderRadius.circular(16),
+          color: Theme.of(context).cardColor,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isDark ? darkDivider : lightDivider.withOpacity(0.5),
+          ),
           boxShadow: [
             BoxShadow(
-              color: darkFontGrey.withValues(alpha: 0.08),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
-              spreadRadius: 0,
+              color: isDark ? Colors.transparent : Colors.black.withOpacity(0.03),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
             ),
           ],
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        child: Row(
           children: [
-            // Image Container
+            // Category Icon/Image
             Container(
-              width: double.infinity,
-              height: 130,
+              width: 60,
+              height: 60,
               decoration: BoxDecoration(
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(16),
-                  topRight: Radius.circular(16),
-                ),
-                color: lightGrey,
+                color: isDark ? darkSurface : lightSurface,
+                borderRadius: BorderRadius.circular(8),
               ),
-              child: Stack(
-                fit: StackFit.expand,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Image.asset(
+                  category.image,
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+            16.widthBox,
+            // Category Details
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Image.asset(category.image, fit: BoxFit.cover),
-                  // Overlay gradient
-                  Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          Colors.transparent,
-                          darkFontGrey.withValues(alpha: 0.1),
-                        ],
-                      ),
+                  Text(
+                    category.name,
+                    style: TextStyle(
+                      color: Theme.of(context).textTheme.bodyLarge?.color,
+                      fontFamily: bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                  4.heightBox,
+                  Text(
+                    '$productCount products',
+                    style: TextStyle(
+                      color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.6),
+                      fontSize: 12,
+                      fontFamily: semibold,
                     ),
                   ),
                 ],
               ),
             ),
-            // Text Container
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 12,
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    category.name.text
-                        .color(darkFontGrey)
-                        .fontFamily(semibold)
-                        .size(14)
-                        .center
-                        .maxLines(2)
-                        .overflow(TextOverflow.ellipsis)
-                        .make(),
-                    6.heightBox,
-                    Container(
-                      width: 40,
-                      height: 3,
-                      decoration: BoxDecoration(
-                        color: redColor,
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+            // Trailing arrow
+            Icon(
+              Icons.chevron_right,
+              color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.4),
             ),
           ],
         ),
-      ).box.border(color: lightGrey).make(),
+      ),
     );
   }
 }

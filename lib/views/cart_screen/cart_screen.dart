@@ -1,5 +1,6 @@
 import 'package:e_mart/consts/consts.dart';
 import 'package:e_mart/controllers/cart_controller.dart';
+import 'package:e_mart/controllers/home_controller.dart';
 import 'package:e_mart/models/cart_item_model.dart';
 import 'package:e_mart/widget_common/our_button.dart';
 import 'package:e_mart/widget_common/product_image.dart';
@@ -11,19 +12,41 @@ class CartScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = Get.find<CartController>();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: lightGrey,
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
-        backgroundColor: whiteColor,
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [primaryColor, primaryDark],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
         elevation: 0,
-        title: cart.text.color(darkFontGrey).fontFamily(bold).make(),
-        centerTitle: false,
+        title: cart.text.color(whiteColor).fontFamily(bold).size(20).make(),
+        centerTitle: true,
       ),
-      body: Obx(
-        () => controller.cartItems.isEmpty
-            ? _buildEmptyCart()
-            : _buildCartBody(context, controller),
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: isDark
+                ? [darkBg, darkBgGradientEnd]
+                : [lightBg, lightBgGradientEnd],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: Obx(
+          () => controller.cartItems.isEmpty
+              ? _buildEmptyCart(context)
+              : _buildCartBody(context, controller),
+        ),
       ),
     );
   }
@@ -34,11 +57,11 @@ class CartScreen extends StatelessWidget {
         Expanded(
           child: ListView.separated(
             physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.symmetric(vertical: 8),
+            padding: const EdgeInsets.symmetric(vertical: 16),
             itemCount: controller.cartItems.length,
-            separatorBuilder: (_, _) => 4.heightBox,
+            separatorBuilder: (_, _) => 12.heightBox,
             itemBuilder: (context, index) {
-              return _buildCartItem(controller, controller.cartItems[index]);
+              return _buildCartItem(controller, controller.cartItems[index], context);
             },
           ),
         ),
@@ -47,51 +70,77 @@ class CartScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildEmptyCart() {
+  Widget _buildEmptyCart(BuildContext context) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Image.asset(
-            icCart,
-            width: 80,
-            height: 80,
-          ).box.padding(const EdgeInsets.all(20)).make(),
-          10.heightBox,
+          Container(
+            padding: const EdgeInsets.all(32),
+            decoration: BoxDecoration(
+              color: primaryColor.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Image.asset(
+              icCart,
+              width: 100,
+              height: 100,
+              color: primaryColor,
+            ),
+          ),
+          30.heightBox,
           "Your Cart is Empty".text
-              .color(darkFontGrey)
+              .color(Theme.of(context).textTheme.bodyLarge?.color)
               .fontFamily(bold)
-              .size(18)
+              .size(24)
               .make(),
-          5.heightBox,
-          "Start shopping to add items to your cart".text
-              .color(fontGrey)
-              .fontFamily(semibold)
-              .size(14)
+          16.heightBox,
+          "Looks like you haven't added anything yet.\nStart exploring our products!"
+              .text
+              .color(Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7))
+              .fontFamily(regular)
+              .size(16)
+              .align(TextAlign.center)
               .make(),
+          40.heightBox,
+          SizedBox(
+            width: 220,
+            height: 54,
+            child: ourButton(
+              onPress: () {
+                Get.find<HomeController>().currentNavIndex.value = 0;
+              },
+              color: primaryColor,
+              title: "Start Shopping",
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildCartItem(CartController controller, CartItem item) {
+  Widget _buildCartItem(CartController controller, CartItem item, BuildContext context) {
     final image = item.product.images.isEmpty ? '' : item.product.images.first;
     final options = [
       if (item.selectedColor != null) item.selectedColor!,
       if (item.selectedSize != null) 'Size ${item.selectedSize!}',
     ].join(' | ');
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: whiteColor,
-        borderRadius: BorderRadius.circular(12),
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isDark ? darkDivider : lightDivider.withOpacity(0.5),
+        ),
         boxShadow: [
           BoxShadow(
-            color: darkFontGrey.withValues(alpha: 0.1),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
+            color: isDark ? Colors.transparent : Colors.black.withOpacity(0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -101,74 +150,63 @@ class CartScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               ClipRRect(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(12),
                 child: ProductImage(source: image, width: 100, height: 100),
               ),
-              12.widthBox,
+              16.widthBox,
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     item.product.name.text
-                        .color(darkFontGrey)
+                        .color(Theme.of(context).textTheme.bodyLarge?.color)
                         .fontFamily(semibold)
-                        .size(14)
+                        .size(16)
                         .maxLines(2)
                         .overflow(TextOverflow.ellipsis)
                         .make(),
-                    5.heightBox,
-                    item.product.category.text
-                        .color(fontGrey)
-                        .fontFamily(semibold)
-                        .size(12)
-                        .make(),
+                    6.heightBox,
                     if (options.isNotEmpty) ...[
-                      5.heightBox,
                       options.text
-                          .color(fontGrey)
+                          .color(Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.6))
                           .fontFamily(semibold)
-                          .size(12)
+                          .size(13)
                           .make(),
+                      6.heightBox,
                     ],
-                    8.heightBox,
                     "\$${item.product.price.toStringAsFixed(2)}".text
                         .color(redColor)
                         .fontFamily(bold)
-                        .size(16)
+                        .size(18)
                         .make(),
                   ],
                 ),
               ),
-              Image.asset(icTrash, width: 20, height: 20).box
-                  .padding(const EdgeInsets.all(8))
-                  .make()
-                  .onTap(() => controller.removeItem(item.id)),
             ],
           ),
-          12.heightBox,
-          const Divider(height: 1),
+          16.heightBox,
+          Divider(height: 1, color: isDark ? darkDivider : lightDivider),
           12.heightBox,
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              "Quantity:".text.color(darkFontGrey).fontFamily(semibold).make(),
               Row(
                 children: [
                   GestureDetector(
                     onTap: () =>
                         controller.updateQuantity(item.id, item.quantity - 1),
-                    child: _quantityButton(icMinus, textfieldGrey),
+                    child: _quantityButton(Icons.remove, isDark ? darkDivider : textfieldGrey, context),
                   ),
-                  12.widthBox,
+                  16.widthBox,
                   "${item.quantity}".text
-                      .color(darkFontGrey)
+                      .color(Theme.of(context).textTheme.bodyLarge?.color)
                       .fontFamily(bold)
                       .size(16)
                       .make()
                       .box
-                      .width(30)
+                      .width(24)
                       .makeCentered(),
-                  12.widthBox,
+                  16.widthBox,
                   GestureDetector(
                     onTap: item.quantity < item.product.stock
                         ? () => controller.updateQuantity(
@@ -177,13 +215,25 @@ class CartScreen extends StatelessWidget {
                           )
                         : null,
                     child: _quantityButton(
-                      icPlus,
+                      Icons.add,
                       item.quantity < item.product.stock
-                          ? redColor
-                          : textfieldGrey,
+                          ? primaryColor
+                          : (isDark ? darkDivider : textfieldGrey),
+                      context,
                     ),
                   ),
                 ],
+              ),
+              GestureDetector(
+                onTap: () => controller.removeItem(item.id),
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: redColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(Icons.delete_outline, color: redColor, size: 20),
+                ),
               ),
             ],
           ),
@@ -192,80 +242,79 @@ class CartScreen extends StatelessWidget {
     );
   }
 
-  Widget _quantityButton(String icon, Color borderColor) {
+  Widget _quantityButton(IconData icon, Color borderColor, BuildContext context) {
     return Container(
       width: 32,
       height: 32,
       decoration: BoxDecoration(
         border: Border.all(color: borderColor),
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: BorderRadius.circular(8),
+        color: Theme.of(context).cardColor,
       ),
-      child: Image.asset(icon, width: 16, height: 16).box.makeCentered(),
+      child: Icon(icon, size: 16, color: Theme.of(context).textTheme.bodyLarge?.color),
     );
   }
 
   Widget _buildPriceSummary(BuildContext context, CartController controller) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       width: context.screenWidth,
       decoration: BoxDecoration(
-        color: whiteColor,
+        color: Theme.of(context).cardColor,
         borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(20),
-          topRight: Radius.circular(20),
+          topLeft: Radius.circular(24),
+          topRight: Radius.circular(24),
         ),
         boxShadow: [
           BoxShadow(
-            color: darkFontGrey.withValues(alpha: 0.1),
-            blurRadius: 8,
-            offset: const Offset(0, -2),
+            color: isDark ? Colors.black.withOpacity(0.5) : Colors.black.withOpacity(0.05),
+            blurRadius: 16,
+            offset: const Offset(0, -4),
           ),
         ],
       ),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(24),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          "Price Summary".text
-              .color(darkFontGrey)
-              .fontFamily(bold)
-              .size(16)
-              .make(),
-          16.heightBox,
           _summaryRow(
-            "Subtotal:",
+            "Subtotal",
             "\$${controller.subtotal.toStringAsFixed(2)}",
+            context,
           ),
-          8.heightBox,
-          _summaryRow("Tax (10%):", "\$${controller.tax.toStringAsFixed(2)}"),
-          8.heightBox,
+          12.heightBox,
+          _summaryRow("Tax (10%)", "\$${controller.tax.toStringAsFixed(2)}", context),
+          12.heightBox,
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              "Shipping:".text.color(fontGrey).fontFamily(semibold).make(),
-              "FREE".text.color(redColor).fontFamily(bold).make(),
+              "Shipping".text.color(Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.6)).fontFamily(semibold).size(16).make(),
+              "FREE".text.color(successColor).fontFamily(bold).size(16).make(),
             ],
           ),
-          12.heightBox,
-          Divider(color: textfieldGrey, height: 1),
-          12.heightBox,
+          20.heightBox,
+          Divider(color: isDark ? darkDivider : lightDivider, height: 1),
+          20.heightBox,
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              "Total:".text
-                  .color(darkFontGrey)
+              "Total".text
+                  .color(Theme.of(context).textTheme.bodyLarge?.color)
                   .fontFamily(bold)
-                  .size(16)
+                  .size(18)
                   .make(),
               "\$${controller.total.toStringAsFixed(2)}".text
                   .color(redColor)
                   .fontFamily(bold)
-                  .size(18)
+                  .size(24)
                   .make(),
             ],
           ),
-          16.heightBox,
+          24.heightBox,
           SizedBox(
             width: double.infinity,
+            height: 54,
             child: ourButton(
               onPress: () {
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -274,26 +323,28 @@ class CartScreen extends StatelessWidget {
                         .color(whiteColor)
                         .fontFamily(semibold)
                         .make(),
-                    backgroundColor: redColor,
+                    backgroundColor: successColor,
                     duration: const Duration(seconds: 2),
+                    behavior: SnackBarBehavior.floating,
                   ),
                 );
               },
-              title: "Proceed to Checkout",
-              color: redColor,
+              title: "Checkout",
+              color: primaryColor,
             ),
           ),
+          SafeArea(child: SizedBox(height: 8)),
         ],
       ),
     );
   }
 
-  Widget _summaryRow(String label, String value) {
+  Widget _summaryRow(String label, String value, BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        label.text.color(fontGrey).fontFamily(semibold).make(),
-        value.text.color(darkFontGrey).fontFamily(semibold).make(),
+        label.text.color(Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.6)).fontFamily(semibold).size(16).make(),
+        value.text.color(Theme.of(context).textTheme.bodyLarge?.color).fontFamily(semibold).size(16).make(),
       ],
     );
   }

@@ -1,5 +1,6 @@
 import 'package:e_mart/controllers/cart_controller.dart';
 import 'package:e_mart/controllers/home_controller.dart';
+import 'package:e_mart/controllers/theme_controller.dart';
 import 'package:e_mart/views/cart_screen/cart_screen.dart';
 import 'package:e_mart/views/category_screen/category_screen.dart';
 import 'package:e_mart/views/home_screen/home_screen.dart';
@@ -13,7 +14,6 @@ class Home extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    //init home controller
     var controller = Get.put(HomeController());
     Get.put(CartController());
 
@@ -43,27 +43,39 @@ class Home extends StatelessWidget {
       const ProfileScreen(),
     ];
 
-    return Scaffold(
-      body: Column(
-        children: [
-          Obx(
-            () => Expanded(
-              child: navBody.elementAt(controller.currentNavIndex.value),
+    return Obx(
+      () => Scaffold(
+        extendBody: true,
+        body: navBody.elementAt(controller.currentNavIndex.value),
+        bottomNavigationBar: Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).cardColor,
+            boxShadow: [
+              BoxShadow(
+                color: Theme.of(context).brightness == Brightness.dark 
+                    ? Colors.black.withOpacity(0.5) 
+                    : Colors.black.withOpacity(0.05),
+                blurRadius: 10,
+                offset: const Offset(0, -4),
+              ),
+            ],
+          ),
+          child: SafeArea(
+            child: BottomNavigationBar(
+              currentIndex: controller.currentNavIndex.value,
+              type: BottomNavigationBarType.fixed,
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              selectedItemColor: primaryColor,
+              unselectedItemColor: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.4) ?? fontGrey,
+              selectedLabelStyle: const TextStyle(fontFamily: bold, fontSize: 12),
+              unselectedLabelStyle: const TextStyle(fontFamily: semibold, fontSize: 12),
+              items: navbarItem,
+              onTap: (value) {
+                controller.currentNavIndex.value = value;
+              },
             ),
           ),
-        ],
-      ),
-      bottomNavigationBar: Obx(
-        () => BottomNavigationBar(
-          currentIndex: controller.currentNavIndex.value,
-          type: BottomNavigationBarType.fixed,
-          backgroundColor: whiteColor,
-          selectedItemColor: redColor,
-          selectedLabelStyle: const TextStyle(fontFamily: semibold),
-          items: navbarItem,
-          onTap: (value) {
-            controller.currentNavIndex.value = value;
-          },
         ),
       ),
     );

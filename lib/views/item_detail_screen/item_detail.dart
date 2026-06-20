@@ -1,6 +1,6 @@
 import 'package:e_mart/consts/consts.dart';
-import 'package:e_mart/consts/lists.dart';
 import 'package:e_mart/controllers/cart_controller.dart';
+import 'package:e_mart/controllers/home_controller.dart';
 import 'package:e_mart/models/product_model.dart';
 import 'package:e_mart/widget_common/our_button.dart';
 import 'package:e_mart/widget_common/product_card.dart';
@@ -34,31 +34,32 @@ class _ItemDetailState extends State<ItemDetail> {
   @override
   Widget build(BuildContext context) {
     final images = product.images.isEmpty ? [''] : product.images;
-    final relatedProducts = dummyProducts
+    final homeController = Get.find<HomeController>();
+    final relatedProducts = homeController.products
         .where(
           (item) => item.category == product.category && item.id != product.id,
         )
         .toList();
 
     return Scaffold(
-      backgroundColor: lightGrey,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(
           product.name,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: const TextStyle(color: darkFontGrey, fontFamily: bold),
+          style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color, fontFamily: bold),
         ),
         actions: [
           IconButton(
             onPressed: () => _showMessage('Sharing will be available soon.'),
-            icon: const Icon(Icons.share),
+            icon: Icon(Icons.share, color: Theme.of(context).textTheme.bodyMedium?.color),
           ),
           IconButton(
             onPressed: () => setState(() => isFavorite = !isFavorite),
             icon: Icon(
               isFavorite ? Icons.favorite : Icons.favorite_outline,
-              color: isFavorite ? redColor : darkFontGrey,
+              color: isFavorite ? primaryColor : Theme.of(context).textTheme.bodyMedium?.color,
             ),
           ),
         ],
@@ -67,12 +68,12 @@ class _ItemDetailState extends State<ItemDetail> {
         children: [
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(16),
                     child: VxSwiper.builder(
                       autoPlay: images.length > 1,
                       height: 350,
@@ -90,10 +91,10 @@ class _ItemDetailState extends State<ItemDetail> {
                   16.heightBox,
                   Text(
                     product.name,
-                    style: const TextStyle(
-                      color: darkFontGrey,
+                    style: TextStyle(
+                      color: Theme.of(context).textTheme.bodyLarge?.color,
                       fontFamily: bold,
-                      fontSize: 19,
+                      fontSize: 20,
                     ),
                   ),
                   10.heightBox,
@@ -106,95 +107,127 @@ class _ItemDetailState extends State<ItemDetail> {
                               ? Icons.star
                               : Icons.star_border,
                           color: golden,
-                          size: 22,
+                          size: 20,
                         ),
                       ),
                       8.widthBox,
                       Text(
                         '${product.rating} (${product.reviewCount} reviews)',
-                        style: const TextStyle(color: fontGrey),
+                        style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7)),
                       ),
                     ],
                   ),
-                  10.heightBox,
+                  16.heightBox,
                   Wrap(
                     crossAxisAlignment: WrapCrossAlignment.center,
-                    spacing: 10,
+                    spacing: 12,
                     children: [
                       Text(
                         '\$${product.price.toStringAsFixed(2)}',
                         style: const TextStyle(
-                          color: redColor,
+                          color: primaryColor,
                           fontFamily: bold,
-                          fontSize: 21,
+                          fontSize: 24,
                         ),
                       ),
                       if (product.originalPrice > product.price)
                         Text(
                           '\$${product.originalPrice.toStringAsFixed(2)}',
-                          style: const TextStyle(
-                            color: fontGrey,
+                          style: TextStyle(
+                            color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.5),
                             decoration: TextDecoration.lineThrough,
+                            fontSize: 16,
                           ),
                         ),
                       if (product.discountPercentage > 0)
-                        Text(
-                          '${product.discountPercentage.round()}% off',
-                          style: const TextStyle(
-                            color: Colors.orange,
-                            fontFamily: bold,
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: warningColor.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            'Save ${product.discountPercentage.round()}%',
+                            style: const TextStyle(
+                              color: warningColor,
+                              fontFamily: bold,
+                              fontSize: 12,
+                            ),
                           ),
                         ),
                     ],
                   ),
-                  14.heightBox,
+                  20.heightBox,
                   Container(
-                    height: 66,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    color: textfieldGrey,
-                    child: const Row(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).cardColor,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Row(
                       children: [
+                        const CircleAvatar(
+                          backgroundColor: primaryColor,
+                          child: Icon(
+                            Icons.store,
+                            color: whiteColor,
+                          ),
+                        ),
+                        16.widthBox,
                         Expanded(
                           child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('Seller'),
-                              SizedBox(height: 5),
                               Text(
                                 'E-Mart Store',
                                 style: TextStyle(
-                                  color: darkFontGrey,
+                                  color: Theme.of(context).textTheme.bodyLarge?.color,
                                   fontFamily: semibold,
                                   fontSize: 16,
                                 ),
                               ),
+                              4.heightBox,
+                              Text('Official Seller', style: TextStyle(color: successColor, fontSize: 12, fontFamily: semibold)),
                             ],
                           ),
                         ),
-                        CircleAvatar(
-                          backgroundColor: whiteColor,
-                          child: Icon(
-                            Icons.message_rounded,
-                            color: darkFontGrey,
-                          ),
+                        IconButton(
+                          onPressed: () {},
+                          icon: const Icon(Icons.chat_bubble_outline, color: primaryColor),
                         ),
                       ],
                     ),
                   ),
-                  12.heightBox,
+                  20.heightBox,
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.all(12),
-                    color: whiteColor,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).cardColor,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
                     child: Column(
                       children: [
                         if (product.colors.isNotEmpty)
                           _optionRow(
                             label: 'Color:',
                             child: Wrap(
-                              spacing: 8,
-                              runSpacing: 8,
+                              spacing: 12,
+                              runSpacing: 12,
                               children: List.generate(product.colors.length, (
                                 index,
                               ) {
@@ -208,16 +241,16 @@ class _ItemDetailState extends State<ItemDetail> {
                                       () => selectedColorIndex = index,
                                     ),
                                     child: Container(
-                                      width: 38,
-                                      height: 38,
+                                      width: 40,
+                                      height: 40,
                                       decoration: BoxDecoration(
                                         shape: BoxShape.circle,
                                         color: color,
                                         border: Border.all(
-                                          width: 3,
+                                          width: selectedColorIndex == index ? 3 : 1,
                                           color: selectedColorIndex == index
-                                              ? redColor
-                                              : textfieldGrey,
+                                              ? primaryColor
+                                              : Theme.of(context).dividerColor,
                                         ),
                                       ),
                                       child: selectedColorIndex == index
@@ -237,7 +270,7 @@ class _ItemDetailState extends State<ItemDetail> {
                             ),
                           ),
                         if (product.sizes.isNotEmpty) ...[
-                          12.heightBox,
+                          16.heightBox,
                           _optionRow(
                             label: 'Size:',
                             child: Wrap(
@@ -250,11 +283,13 @@ class _ItemDetailState extends State<ItemDetail> {
                                 return ChoiceChip(
                                   label: Text(product.sizes[index]),
                                   selected: isSelected,
-                                  selectedColor: redColor,
+                                  selectedColor: primaryColor,
+                                  backgroundColor: Theme.of(context).scaffoldBackgroundColor,
                                   labelStyle: TextStyle(
                                     color: isSelected
                                         ? whiteColor
-                                        : darkFontGrey,
+                                        : Theme.of(context).textTheme.bodyMedium?.color,
+                                    fontFamily: isSelected ? bold : regular,
                                   ),
                                   onSelected: (_) =>
                                       setState(() => selectedSizeIndex = index),
@@ -263,103 +298,164 @@ class _ItemDetailState extends State<ItemDetail> {
                             ),
                           ),
                         ],
-                        8.heightBox,
+                        16.heightBox,
                         _optionRow(
                           label: 'Quantity:',
                           child: Row(
                             children: [
-                              IconButton(
-                                onPressed: quantity > 1
-                                    ? () => setState(() => quantity--)
-                                    : null,
-                                icon: const Icon(Icons.remove),
-                              ),
-                              Text(
-                                '$quantity',
-                                style: const TextStyle(
-                                  color: darkFontGrey,
-                                  fontFamily: bold,
-                                  fontSize: 16,
+                              Container(
+                                decoration: BoxDecoration(
+                                  border: Border.all(color: Theme.of(context).dividerColor),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Row(
+                                  children: [
+                                    IconButton(
+                                      onPressed: quantity > 1
+                                          ? () => setState(() => quantity--)
+                                          : null,
+                                      icon: const Icon(Icons.remove, size: 16),
+                                      padding: EdgeInsets.zero,
+                                      constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+                                    ),
+                                    Text(
+                                      '$quantity',
+                                      style: TextStyle(
+                                        color: Theme.of(context).textTheme.bodyLarge?.color,
+                                        fontFamily: bold,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                    IconButton(
+                                      onPressed: quantity < product.stock
+                                          ? () => setState(() => quantity++)
+                                          : null,
+                                      icon: const Icon(Icons.add, size: 16),
+                                      padding: EdgeInsets.zero,
+                                      constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+                                    ),
+                                  ],
                                 ),
                               ),
-                              IconButton(
-                                onPressed: quantity < product.stock
-                                    ? () => setState(() => quantity++)
-                                    : null,
-                                icon: const Icon(Icons.add),
-                              ),
+                              12.widthBox,
                               Flexible(
                                 child: Text(
                                   '(${product.stock} available)',
-                                  style: const TextStyle(color: fontGrey),
+                                  style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.5)),
                                 ),
                               ),
                             ],
                           ),
                         ),
-                        _optionRow(
-                          label: 'Total:',
-                          child: Text(
-                            '\$${(product.price * quantity).toStringAsFixed(2)}',
-                            style: const TextStyle(
-                              color: redColor,
-                              fontFamily: bold,
-                              fontSize: 16,
+                        16.heightBox,
+                        const Divider(),
+                        16.heightBox,
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Total Price:',
+                              style: TextStyle(
+                                color: Theme.of(context).textTheme.bodyLarge?.color,
+                                fontFamily: semibold,
+                                fontSize: 16,
+                              ),
                             ),
-                          ),
+                            Text(
+                              '\$${(product.price * quantity).toStringAsFixed(2)}',
+                              style: const TextStyle(
+                                color: primaryColor,
+                                fontFamily: bold,
+                                fontSize: 22,
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
                   ),
-                  18.heightBox,
-                  const Text(
+                  24.heightBox,
+                  Text(
                     'Description',
                     style: TextStyle(
-                      color: darkFontGrey,
-                      fontFamily: semibold,
-                      fontSize: 16,
+                      color: Theme.of(context).textTheme.bodyLarge?.color,
+                      fontFamily: bold,
+                      fontSize: 18,
                     ),
                   ),
-                  8.heightBox,
+                  12.heightBox,
                   Text(
                     product.description,
-                    style: const TextStyle(color: darkFontGrey, height: 1.5),
+                    style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color, height: 1.6),
                   ),
                   if (product.attributes.isNotEmpty) ...[
-                    18.heightBox,
-                    const Text(
-                      'Product information',
+                    24.heightBox,
+                    Text(
+                      'Product Information',
                       style: TextStyle(
-                        color: darkFontGrey,
-                        fontFamily: semibold,
-                        fontSize: 16,
+                        color: Theme.of(context).textTheme.bodyLarge?.color,
+                        fontFamily: bold,
+                        fontSize: 18,
                       ),
                     ),
-                    8.heightBox,
-                    ...product.attributes.entries.map(
-                      (entry) => Padding(
-                        padding: const EdgeInsets.only(bottom: 6),
-                        child: Text(
-                          '${entry.key}: ${entry.value}',
-                          style: const TextStyle(color: darkFontGrey),
-                        ),
+                    12.heightBox,
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).cardColor,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Theme.of(context).dividerColor.withOpacity(0.1)),
+                      ),
+                      child: Column(
+                        children: product.attributes.entries.map((entry) {
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 8),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  flex: 2,
+                                  child: Text(
+                                    entry.key,
+                                    style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7)),
+                                  ),
+                                ),
+                                Expanded(
+                                  flex: 3,
+                                  child: Text(
+                                    entry.value.toString(),
+                                    style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color, fontFamily: semibold),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }).toList(),
                       ),
                     ),
                   ],
                   if (relatedProducts.isNotEmpty) ...[
-                    22.heightBox,
-                    productsYouMayLike.text
-                        .fontFamily(bold)
-                        .size(16)
-                        .color(darkFontGrey)
-                        .make(),
-                    10.heightBox,
+                    30.heightBox,
+                    Row(
+                      children: [
+                        Container(width: 4, height: 24, color: primaryColor),
+                        8.widthBox,
+                        Text(
+                          productsYouMayLike,
+                          style: TextStyle(
+                            color: Theme.of(context).textTheme.bodyLarge?.color,
+                            fontFamily: bold,
+                            fontSize: 18,
+                          ),
+                        ),
+                      ],
+                    ),
+                    16.heightBox,
                     SizedBox(
-                      height: 275,
+                      height: 290,
                       child: ListView.separated(
                         scrollDirection: Axis.horizontal,
                         itemCount: relatedProducts.length,
-                        separatorBuilder: (_, _) => 10.widthBox,
+                        separatorBuilder: (_, _) => 16.widthBox,
                         itemBuilder: (context, index) => SizedBox(
                           width: 170,
                           child: ProductCard(
@@ -370,16 +466,33 @@ class _ItemDetailState extends State<ItemDetail> {
                       ),
                     ),
                   ],
+                  30.heightBox,
                 ],
               ),
             ),
           ),
-          SizedBox(
-            width: double.infinity,
-            height: 60,
-            child: ourButton(
-              onPress: product.isInStock ? _addToCart : null,
-              title: product.isInStock ? 'Add To Cart' : 'Out of Stock',
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Theme.of(context).cardColor,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, -5),
+                ),
+              ],
+            ),
+            child: SafeArea(
+              child: SizedBox(
+                width: double.infinity,
+                height: 54,
+                child: ourButton(
+                  color: product.isInStock ? primaryColor : Theme.of(context).disabledColor,
+                  onPress: product.isInStock ? _addToCart : null,
+                  title: product.isInStock ? 'Add To Cart' : 'Out of Stock',
+                ),
+              ),
             ),
           ),
         ],
@@ -392,8 +505,14 @@ class _ItemDetailState extends State<ItemDetail> {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         SizedBox(
-          width: 90,
-          child: Text(label, style: const TextStyle(color: fontGrey)),
+          width: 80,
+          child: Text(
+            label, 
+            style: TextStyle(
+              color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
+              fontFamily: semibold,
+            ),
+          ),
         ),
         Expanded(child: child),
       ],

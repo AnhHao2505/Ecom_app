@@ -1,10 +1,7 @@
 import 'package:e_mart/consts/consts.dart';
-import 'package:e_mart/consts/lists.dart';
 import 'package:e_mart/controllers/auth_controller.dart';
 import 'package:e_mart/views/auth_screen/login_screen.dart';
-import 'package:e_mart/views/profile_screen/components/details_card.dart';
 import 'package:e_mart/views/profile_screen/edit_profile_screen.dart';
-import 'package:e_mart/widget_common/bg_widget.dart';
 import 'package:get/get.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -12,108 +9,280 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return bgWidget(
-      child: Scaffold(
-        body: SafeArea(
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final List<Map<String, dynamic>> menuItems = [
+      {"icon": Icons.shopping_bag_outlined, "title": "My Orders"},
+      {"icon": Icons.location_on_outlined, "title": "Addresses"},
+      {"icon": Icons.favorite_border, "title": "Wishlist"},
+      {"icon": Icons.notifications_none, "title": "Notifications"},
+      {"icon": Icons.settings_outlined, "title": "Settings"},
+      {"icon": Icons.help_outline, "title": "Help Center"},
+    ];
+
+    Widget buildStatCard(String count, String title) {
+      return Expanded(
+        child: Container(
+          margin: const EdgeInsets.symmetric(horizontal: 4),
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          decoration: BoxDecoration(
+            color: Theme.of(context).cardColor,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: isDark ? darkDivider : lightDivider.withOpacity(0.5),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: isDark ? Colors.transparent : Colors.black.withOpacity(0.04),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
           child: Column(
             children: [
-              // edit profile button
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child:
-                    Align(
-                      alignment: Alignment.topRight,
-                      child: const Icon(Icons.edit, color: whiteColor),
-                    ).onTap(() {
-                      Get.to(() => const EditProfileScreen());
-                    }),
+              Text(
+                count,
+                style: const TextStyle(
+                  fontFamily: bold,
+                  fontSize: 20,
+                  color: primaryColor,
+                ),
               ),
+              4.heightBox,
+              Text(
+                title,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.8),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
 
-              // users' detail section
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: Row(
-                  children: [
-                    // profile picture
-                    Image.asset(
-                      imgProfile2,
-                      width: 100,
-                      fit: BoxFit.cover,
-                    ).box.roundedFull.clip(Clip.antiAlias).make(),
-                    // user details
-                    Expanded(
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: isDark
+                ? [darkBg, darkBgGradientEnd]
+                : [lightBg, lightBgGradientEnd],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: CustomScrollView(
+          physics: const BouncingScrollPhysics(),
+          slivers: [
+            SliverAppBar(
+              expandedHeight: 140,
+              pinned: true,
+              backgroundColor: isDark ? darkSurface : primaryColor,
+              flexibleSpace: FlexibleSpaceBar(
+                background: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: isDark
+                          ? [primaryDark.withOpacity(0.8), darkBg]
+                          : [primaryColor, primaryDark],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                  ),
+                  child: SafeArea(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          "Dummy User".text.fontFamily(semibold).white.make(),
-                          5.heightBox,
-                          "customer&example.com".text.white.make(),
+                          Row(
+                            children: [
+                              Container(
+                                width: 64,
+                                height: 64,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(color: whiteColor.withOpacity(0.5), width: 2),
+                                  image: const DecorationImage(
+                                    image: AssetImage(imgProfile2),
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                              ),
+                              16.widthBox,
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    "Dummy User"
+                                        .text
+                                        .fontFamily(bold)
+                                        .size(18)
+                                        .white
+                                        .make(),
+                                    4.heightBox,
+                                    "customer@example.com"
+                                        .text
+                                        .white
+                                        .size(13)
+                                        .make(),
+                                  ],
+                                ),
+                              ),
+                              IconButton(
+                                onPressed: () {
+                                  Get.to(() => const EditProfileScreen());
+                                },
+                                style: IconButton.styleFrom(
+                                  backgroundColor: whiteColor.withOpacity(0.2),
+                                ),
+                                icon: const Icon(Icons.edit_outlined, color: whiteColor, size: 20),
+                              ),
+                            ],
+                          ),
                         ],
                       ),
                     ),
-                    // logout button
-                    OutlinedButton(
-                      style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: whiteColor),
-                      ),
-                      onPressed: () async {
-                        await Get.put(AuthController()).signoutMethod(context);
-                        Get.offAll(() => const LoginScreen());
-                      },
-                      child: logout.text.fontFamily(semibold).white.make(),
+                  ),
+                ),
+              ),
+            ),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    // Stats Row
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        buildStatCard("675", "Orders"),
+                        buildStatCard("32", "Wishlist"),
+                        buildStatCard("0", "Cart"),
+                      ],
                     ),
+                    24.heightBox,
+                    // Menu Section
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).cardColor,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: isDark ? darkDivider : lightDivider.withOpacity(0.5),
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: isDark ? Colors.transparent : Colors.black.withOpacity(0.03),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: ListView.separated(
+                        shrinkWrap: true,
+                        padding: EdgeInsets.zero,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: menuItems.length,
+                        separatorBuilder: (context, index) => Divider(
+                          color: isDark ? darkDivider : lightDivider,
+                          height: 1,
+                          indent: 56,
+                          endIndent: 16,
+                        ),
+                        itemBuilder: (context, index) {
+                          return Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: () {},
+                              borderRadius: BorderRadius.vertical(
+                                top: index == 0 ? const Radius.circular(16) : Radius.zero,
+                                bottom: index == menuItems.length - 1 ? const Radius.circular(16) : Radius.zero,
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: primaryColor.withOpacity(0.1),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Icon(
+                                        menuItems[index]["icon"],
+                                        color: primaryColor,
+                                        size: 20,
+                                      ),
+                                    ),
+                                    16.widthBox,
+                                    Expanded(
+                                      child: Text(
+                                        menuItems[index]["title"],
+                                        style: TextStyle(
+                                          color: Theme.of(context).textTheme.bodyLarge?.color,
+                                          fontFamily: semibold,
+                                          fontSize: 15,
+                                        ),
+                                      ),
+                                    ),
+                                    Icon(
+                                      Icons.chevron_right,
+                                      color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.4),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    32.heightBox,
+                    // Logout Button
+                    SizedBox(
+                      width: double.infinity,
+                      height: 56,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: redColor.withOpacity(0.1),
+                          foregroundColor: redColor,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        onPressed: () async {
+                          await Get.put(AuthController()).signoutMethod(context);
+                          Get.offAll(() => const LoginScreen());
+                        },
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.logout, size: 20),
+                            8.widthBox,
+                            const Text(
+                              "Log Out",
+                              style: TextStyle(
+                                fontFamily: bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    30.heightBox,
                   ],
                 ),
               ),
-
-              20.heightBox,
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  detailsCard(
-                    count: "00",
-                    title: "in your cart",
-                    width: context.screenWidth / 3.6,
-                  ),
-                  detailsCard(
-                    count: "32",
-                    title: "in your wishlist",
-                    width: context.screenWidth / 3.6,
-                  ),
-                  detailsCard(
-                    count: "675",
-                    title: "your order",
-                    width: context.screenWidth / 3.6,
-                  ),
-                ],
-              ),
-
-              // buttons section
-              ListView.separated(
-                    shrinkWrap: true,
-                    itemBuilder: (context, index) {
-                      return ListTile(
-                        leading: Image.asset(
-                          profileButtonImages[index],
-                          width: 22,
-                        ),
-                        title: profileButtonsList[index].text.make(),
-                      );
-                    },
-                    separatorBuilder: (context, index) {
-                      return const Divider(color: lightGrey);
-                    },
-                    itemCount: profileButtonsList.length,
-                  ).box.white.rounded
-                  .padding(const EdgeInsets.symmetric(horizontal: 16))
-                  .margin(const EdgeInsets.all(12))
-                  .shadowSm
-                  .make()
-                  .box
-                  .color(redColor)
-                  .make(),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
