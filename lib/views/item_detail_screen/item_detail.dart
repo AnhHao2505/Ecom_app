@@ -1,6 +1,8 @@
 import 'package:e_mart/consts/consts.dart';
 import 'package:e_mart/controllers/cart_controller.dart';
 import 'package:e_mart/controllers/home_controller.dart';
+import 'package:e_mart/controllers/wishlist_controller.dart';
+import 'package:e_mart/controllers/recent_view_controller.dart';
 import 'package:e_mart/models/product_model.dart';
 import 'package:e_mart/widget_common/our_button.dart';
 import 'package:e_mart/widget_common/product_card.dart';
@@ -21,7 +23,6 @@ class _ItemDetailState extends State<ItemDetail> {
   int quantity = 1;
   int selectedColorIndex = 0;
   int selectedSizeIndex = 0;
-  bool isFavorite = false;
 
   Product get product => widget.product;
 
@@ -29,6 +30,7 @@ class _ItemDetailState extends State<ItemDetail> {
   void initState() {
     super.initState();
     if (!product.isInStock) quantity = 0;
+    Get.find<RecentViewController>().addView(product.id);
   }
 
   @override
@@ -55,13 +57,16 @@ class _ItemDetailState extends State<ItemDetail> {
             onPressed: () => _showMessage('Sharing will be available soon.'),
             icon: Icon(Icons.share, color: Theme.of(context).textTheme.bodyMedium?.color),
           ),
-          IconButton(
-            onPressed: () => setState(() => isFavorite = !isFavorite),
-            icon: Icon(
-              isFavorite ? Icons.favorite : Icons.favorite_outline,
-              color: isFavorite ? primaryColor : Theme.of(context).textTheme.bodyMedium?.color,
-            ),
-          ),
+          Obx(() {
+            final isWishlisted = Get.find<WishlistController>().isWishlisted(product.id);
+            return IconButton(
+              onPressed: () => Get.find<WishlistController>().toggle(product.id),
+              icon: Icon(
+                isWishlisted ? Icons.favorite : Icons.favorite_outline,
+                color: isWishlisted ? redColor : Theme.of(context).textTheme.bodyMedium?.color,
+              ),
+            );
+          }),
         ],
       ),
       body: Column(

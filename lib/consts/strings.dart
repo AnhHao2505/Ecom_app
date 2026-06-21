@@ -66,3 +66,28 @@ const video = "Video",
 
 // profile strings
 const wishList = "My Wishlist", orders = "My Orders", messages = "Messages";
+
+// ecommerce ui strings
+const allProducts = "All Products";
+const sortBy = "Sort by";
+const filterProducts = "Filter";
+const priceRange = "Price Range";
+const minimumRating = "Minimum Rating";
+const inStockOnly = "In Stock Only";
+const bestSeller = "Best Seller";
+const newLabel = "NEW";
+const outOfStock = "Out of Stock";
+const addedToCart = "Added to Cart";
+const viewCart = "View Cart";
+const chooseColor = "Choose Color";
+const chooseSize = "Choose Size";
+const popular = "Popular";
+const newest = "Newest";
+const priceAsc = "Price ↑";
+const priceDesc = "Price ↓";
+const ratingSort = "Rating";
+const apply = "Apply";
+const reset = "Reset";
+const trendingNow = "Trending Now";
+const newArrivals = "New Arrivals";
+const recentlyViewed = "Recently Viewed";

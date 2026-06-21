@@ -2,6 +2,9 @@ import 'package:e_mart/consts/consts.dart';
 import 'package:e_mart/controllers/auth_controller.dart';
 import 'package:e_mart/views/auth_screen/login_screen.dart';
 import 'package:e_mart/views/profile_screen/edit_profile_screen.dart';
+import 'package:e_mart/views/wishlist_screen/wishlist_screen.dart';
+import 'package:e_mart/controllers/wishlist_controller.dart';
+import 'package:e_mart/controllers/cart_controller.dart';
 import 'package:get/get.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -12,12 +15,12 @@ class ProfileScreen extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final List<Map<String, dynamic>> menuItems = [
-      {"icon": Icons.shopping_bag_outlined, "title": "My Orders"},
-      {"icon": Icons.location_on_outlined, "title": "Addresses"},
-      {"icon": Icons.favorite_border, "title": "Wishlist"},
-      {"icon": Icons.notifications_none, "title": "Notifications"},
-      {"icon": Icons.settings_outlined, "title": "Settings"},
-      {"icon": Icons.help_outline, "title": "Help Center"},
+      {"icon": Icons.shopping_bag_outlined, "title": "My Orders", "onTap": () {}},
+      {"icon": Icons.location_on_outlined, "title": "Addresses", "onTap": () {}},
+      {"icon": Icons.favorite_border, "title": "Wishlist", "onTap": () => Get.to(() => const WishlistScreen())},
+      {"icon": Icons.notifications_none, "title": "Notifications", "onTap": () {}},
+      {"icon": Icons.settings_outlined, "title": "Settings", "onTap": () {}},
+      {"icon": Icons.help_outline, "title": "Help Center", "onTap": () {}},
     ];
 
     Widget buildStatCard(String count, String title) {
@@ -159,14 +162,14 @@ class ProfileScreen extends StatelessWidget {
                 child: Column(
                   children: [
                     // Stats Row
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        buildStatCard("675", "Orders"),
-                        buildStatCard("32", "Wishlist"),
-                        buildStatCard("0", "Cart"),
-                      ],
-                    ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          buildStatCard("675", "Orders"),
+                          Obx(() => buildStatCard("${Get.find<WishlistController>().count}", "Wishlist")),
+                          Obx(() => buildStatCard("${Get.find<CartController>().cartItems.length}", "Cart")),
+                        ],
+                      ),
                     24.heightBox,
                     // Menu Section
                     Container(
@@ -199,7 +202,7 @@ class ProfileScreen extends StatelessWidget {
                           return Material(
                             color: Colors.transparent,
                             child: InkWell(
-                              onTap: () {},
+                              onTap: menuItems[index]["onTap"],
                               borderRadius: BorderRadius.vertical(
                                 top: index == 0 ? const Radius.circular(16) : Radius.zero,
                                 bottom: index == menuItems.length - 1 ? const Radius.circular(16) : Radius.zero,

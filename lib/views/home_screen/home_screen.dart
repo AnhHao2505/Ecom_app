@@ -3,7 +3,11 @@ import 'package:e_mart/consts/lists.dart';
 import 'package:e_mart/controllers/home_controller.dart';
 import 'package:e_mart/widget_common/home_button.dart';
 import 'package:e_mart/widget_common/product_card.dart';
+import 'package:e_mart/widget_common/sort_chips.dart';
+import 'package:e_mart/views/home_screen/all_products_screen.dart';
+import 'package:e_mart/views/home_screen/flash_sale_section.dart';
 import 'package:e_mart/controllers/theme_controller.dart';
+import 'package:e_mart/controllers/recent_view_controller.dart';
 import 'package:get/get.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -132,6 +136,50 @@ class HomeScreen extends StatelessWidget {
                         },
                       ),
                       16.heightBox,
+                      
+                      // Recently Viewed (if any)
+                      Obx(() {
+                        final recent = Get.find<RecentViewController>().recentProducts;
+                        if (recent.isEmpty) return const SizedBox.shrink();
+                        
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              child: Text(
+                                'Recently Viewed',
+                                style: TextStyle(
+                                  color: Theme.of(context).textTheme.bodyLarge?.color,
+                                  fontFamily: bold,
+                                  fontSize: 18,
+                                ),
+                              ),
+                            ),
+                            12.heightBox,
+                            SizedBox(
+                              height: 320,
+                              child: ListView.separated(
+                                padding: const EdgeInsets.symmetric(horizontal: 16),
+                                scrollDirection: Axis.horizontal,
+                                itemCount: recent.length,
+                                separatorBuilder: (_, _) => 12.widthBox,
+                                itemBuilder: (context, index) {
+                                  return SizedBox(
+                                    width: 170,
+                                    child: ProductCard(
+                                      product: recent[index],
+                                      imageHeight: 145,
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                            16.heightBox,
+                          ],
+                        );
+                      }),
+                      
                       // Category Icons
                       SizedBox(
                         height: 100,
@@ -158,76 +206,11 @@ class HomeScreen extends StatelessWidget {
                       ),
                       20.heightBox,
                       Obx(() {
-                        final featured = controller.featuredProducts;
-                        if (controller.searchQuery.isNotEmpty &&
-                            featured.isEmpty) {
+                        final flashSale = controller.flashSaleProducts;
+                        if (controller.searchQuery.isNotEmpty && flashSale.isEmpty) {
                           return const SizedBox.shrink();
                         }
-  
-                        return Container(
-                          width: double.infinity,
-                          margin: const EdgeInsets.symmetric(horizontal: 8),
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).cardColor,
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                              color: Theme.of(context).brightness == Brightness.dark 
-                                  ? darkDivider 
-                                  : primaryColor.withOpacity(0.2),
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Theme.of(context).brightness == Brightness.dark 
-                                    ? Colors.transparent 
-                                    : primaryColor.withOpacity(0.08),
-                                blurRadius: 12,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.all(8),
-                                    decoration: BoxDecoration(
-                                      color: primaryColor.withOpacity(0.1),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: const Icon(Icons.star_rounded, color: primaryColor, size: 24),
-                                  ),
-                                  12.widthBox,
-                                  featuredProduct.text
-                                      .color(Theme.of(context).textTheme.bodyLarge?.color)
-                                      .fontFamily(bold)
-                                      .size(18)
-                                      .make(),
-                                ],
-                              ),
-                              16.heightBox,
-                              SizedBox(
-                                height: 270,
-                                child: ListView.separated(
-                                  scrollDirection: Axis.horizontal,
-                                  itemCount: featured.length,
-                                  separatorBuilder: (_, _) => 12.widthBox,
-                                  itemBuilder: (context, index) {
-                                    return SizedBox(
-                                      width: 170,
-                                      child: ProductCard(
-                                        product: featured[index],
-                                        imageHeight: 145,
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
+                        return FlashSaleSection(products: flashSale);
                       }),
                       20.heightBox,
                       Row(
@@ -242,11 +225,17 @@ class HomeScreen extends StatelessWidget {
                             ),
                           ),
                           TextButton(
-                            onPressed: () {},
+                            onPressed: () => Get.to(
+                              () => const AllProductsScreen(),
+                              transition: Transition.rightToLeft,
+                              duration: const Duration(milliseconds: 300),
+                            ),
                             child: const Text('See all >', style: TextStyle(color: primaryColor)),
                           ),
                         ],
-                      ),
+                      ).paddingSymmetric(horizontal: 16),
+                      12.heightBox,
+                      const SortChips(),
                       12.heightBox,
                       Obx(() {
                         final products = controller.filteredProducts;
@@ -271,7 +260,7 @@ class HomeScreen extends StatelessWidget {
                               crossAxisCount: 2,
                               mainAxisSpacing: 8,
                               crossAxisSpacing: 8,
-                              mainAxisExtent: 270,
+                              mainAxisExtent: 320,
                             ),
                           itemBuilder: (context, index) {
                             return ProductCard(product: products[index]);

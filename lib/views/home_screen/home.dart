@@ -27,7 +27,17 @@ class Home extends StatelessWidget {
         label: categories,
       ),
       BottomNavigationBarItem(
-        icon: Image.asset(icCart, width: 26),
+        icon: Obx(() {
+          final count = Get.find<CartController>().cartItems.length;
+          final displayCount = count > 99 ? '99+' : '$count';
+          return Badge(
+            isLabelVisible: count > 0,
+            label: Text(displayCount, style: const TextStyle(fontSize: 10, fontFamily: bold, color: whiteColor)),
+            backgroundColor: redColor,
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+            child: Image.asset(icCart, width: 26),
+          );
+        }),
         label: cart,
       ),
       BottomNavigationBarItem(
