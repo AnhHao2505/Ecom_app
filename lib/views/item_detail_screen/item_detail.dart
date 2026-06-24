@@ -1,7 +1,10 @@
 import 'package:e_mart/consts/consts.dart';
 import 'package:e_mart/consts/lists.dart';
+import 'package:e_mart/controllers/cart_controller.dart';
 import 'package:e_mart/models/product_model.dart';
+import 'package:e_mart/views/store_screen/store_detail.dart';
 import 'package:e_mart/widget_common/our_button.dart';
+import 'package:get/get.dart';
 
 class ItemDetail extends StatefulWidget {
   final Product product;
@@ -16,6 +19,8 @@ class _ItemDetailState extends State<ItemDetail> {
 
   @override
   Widget build(BuildContext context) {
+    final store = storeById(widget.product.storeId);
+
     return Scaffold(
       backgroundColor: lightGrey,
       appBar: AppBar(
@@ -109,44 +114,86 @@ class _ItemDetailState extends State<ItemDetail> {
 
                     10.heightBox,
 
-                    Row(
-                          children: [
-                            Expanded(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                    GestureDetector(
+                      onTap: () => Get.to(() => StoreDetail(store: store)),
+                      child:
+                          Row(
                                 children: [
-                                  "Seller".text.white
-                                      .fontFamily(semibold)
+                                  Image.asset(
+                                        store.logo,
+                                        width: 42,
+                                        height: 42,
+                                        fit: BoxFit.contain,
+                                      ).box.white.roundedSM
+                                      .padding(const EdgeInsets.all(8))
                                       .make(),
-                                  5.heightBox,
-                                  "E-Mart Store".text
-                                      .fontFamily(semibold)
-                                      .color(darkFontGrey)
-                                      .size(16)
-                                      .make(),
+                                  12.widthBox,
+                                  Expanded(
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        "Seller".text.white
+                                            .fontFamily(semibold)
+                                            .make(),
+                                        5.heightBox,
+                                        store.name.text
+                                            .fontFamily(semibold)
+                                            .color(darkFontGrey)
+                                            .size(16)
+                                            .maxLines(1)
+                                            .overflow(TextOverflow.ellipsis)
+                                            .make(),
+                                        Row(
+                                          children: [
+                                            const Icon(
+                                              Icons.star,
+                                              color: golden,
+                                              size: 14,
+                                            ),
+                                            4.widthBox,
+                                            "${store.rating}".text
+                                                .size(11)
+                                                .color(darkFontGrey)
+                                                .make(),
+                                            8.widthBox,
+                                            store.address.text
+                                                .size(11)
+                                                .color(darkFontGrey)
+                                                .maxLines(1)
+                                                .overflow(TextOverflow.ellipsis)
+                                                .make()
+                                                .expand(),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const CircleAvatar(
+                                    backgroundColor: whiteColor,
+                                    child: Icon(
+                                      Icons.storefront,
+                                      color: darkFontGrey,
+                                    ),
+                                  ),
                                 ],
-                              ),
-                            ),
-                            const CircleAvatar(
-                              backgroundColor: whiteColor,
-                              child: Icon(
-                                Icons.message_rounded,
-                                color: darkFontGrey,
-                              ),
-                            ),
-                          ],
-                        ).box
-                        .height(60)
-                        .padding(const EdgeInsets.symmetric(horizontal: 16))
-                        .color(textfieldGrey)
-                        .make(),
+                              ).box
+                              .height(78)
+                              .padding(
+                                const EdgeInsets.symmetric(horizontal: 16),
+                              )
+                              .color(textfieldGrey)
+                              .make(),
+                    ),
 
                     // color and size section
                     Column(
                       children: [
                         if (widget.product.colors.isNotEmpty)
                           Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               SizedBox(
                                 width: 100,
@@ -154,30 +201,30 @@ class _ItemDetailState extends State<ItemDetail> {
                                     .color(textfieldGrey)
                                     .make(),
                               ),
-                              Row(
-                                children: List.generate(
-                                  widget.product.colors.length,
-                                  (index) => VxBox()
-                                      .size(40, 40)
-                                      .roundedFull
-                                      .color(
-                                        _getColorFromString(
-                                          widget.product.colors[index],
-                                        ),
-                                      )
-                                      .margin(
-                                        const EdgeInsets.symmetric(
-                                          horizontal: 4,
-                                        ),
-                                      )
-                                      .make()
-                                      .tooltip(widget.product.colors[index]),
+                              Expanded(
+                                child: Wrap(
+                                  spacing: 8,
+                                  runSpacing: 8,
+                                  children: List.generate(
+                                    widget.product.colors.length,
+                                    (index) => VxBox()
+                                        .size(40, 40)
+                                        .roundedFull
+                                        .color(
+                                          _getColorFromString(
+                                            widget.product.colors[index],
+                                          ),
+                                        )
+                                        .make()
+                                        .tooltip(widget.product.colors[index]),
+                                  ),
                                 ),
                               ),
                             ],
                           ).box.padding(const EdgeInsets.all(8)).make(),
                         if (widget.product.sizes.isNotEmpty)
                           Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               SizedBox(
                                 width: 100,
@@ -185,28 +232,27 @@ class _ItemDetailState extends State<ItemDetail> {
                                     .color(textfieldGrey)
                                     .make(),
                               ),
-                              Row(
-                                children: List.generate(
-                                  widget.product.sizes.length,
-                                  (index) => widget.product.sizes[index].text
-                                      .size(12)
-                                      .color(darkFontGrey)
-                                      .make()
-                                      .box
-                                      .border(color: textfieldGrey)
-                                      .roundedSM
-                                      .padding(
-                                        const EdgeInsets.symmetric(
-                                          horizontal: 12,
-                                          vertical: 8,
-                                        ),
-                                      )
-                                      .margin(
-                                        const EdgeInsets.symmetric(
-                                          horizontal: 4,
-                                        ),
-                                      )
-                                      .make(),
+                              Expanded(
+                                child: Wrap(
+                                  spacing: 8,
+                                  runSpacing: 8,
+                                  children: List.generate(
+                                    widget.product.sizes.length,
+                                    (index) => widget.product.sizes[index].text
+                                        .size(12)
+                                        .color(darkFontGrey)
+                                        .make()
+                                        .box
+                                        .border(color: textfieldGrey)
+                                        .roundedSM
+                                        .padding(
+                                          const EdgeInsets.symmetric(
+                                            horizontal: 12,
+                                            vertical: 8,
+                                          ),
+                                        )
+                                        .make(),
+                                  ),
                                 ),
                               ),
                             ],
@@ -366,6 +412,10 @@ class _ItemDetailState extends State<ItemDetail> {
             height: 60,
             child: ourButton(
               onPress: () {
+                Get.find<CartController>().addProduct(
+                  widget.product,
+                  quantity: quantity,
+                );
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: "Added ${widget.product.name} x$quantity to cart"

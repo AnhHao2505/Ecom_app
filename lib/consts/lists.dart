@@ -1,6 +1,7 @@
 import 'package:e_mart/consts/consts.dart';
 import 'package:e_mart/models/category_model.dart';
 import 'package:e_mart/models/product_model.dart';
+import 'package:e_mart/models/store_model.dart';
 
 const socialIconList = [icFacebookLogo, icGoogleLogo, icTwitterLogo];
 
@@ -29,6 +30,81 @@ const itemDetailButtonList = [
   supportPolicy,
 ];
 
+// Dummy Stores for E-mart App
+final dummyStores = [
+  Store(
+    id: 'emart-central',
+    name: 'E-Mart Central',
+    description:
+        'Flagship store with curated electronics, home essentials, and daily deals.',
+    ownerName: 'E-Mart Official',
+    logo: icShop,
+    coverImage: imgSlider1,
+    phone: '+84 28 5550 1000',
+    email: 'central@emart.example',
+    address: '72 Le Thanh Ton, District 1, Ho Chi Minh City',
+    openingHours: 'Mon - Sun, 8:00 AM - 10:00 PM',
+    rating: 4.8,
+    followerCount: 12800,
+    productCount: 5,
+    latitude: 10.7769,
+    longitude: 106.7009,
+    createdAt: DateTime.now(),
+    updatedAt: DateTime.now(),
+  ),
+  Store(
+    id: 'style-hub',
+    name: 'Style Hub',
+    description:
+        'Fashion store for everyday outfits, footwear, and accessories.',
+    ownerName: 'Style Hub Team',
+    logo: icFavoriteSeller,
+    coverImage: imgSlider2,
+    phone: '+84 28 5550 2200',
+    email: 'hello@stylehub.example',
+    address: '191 Hai Ba Trung, District 3, Ho Chi Minh City',
+    openingHours: 'Mon - Sat, 9:00 AM - 9:00 PM',
+    rating: 4.6,
+    followerCount: 8400,
+    productCount: 3,
+    latitude: 10.7893,
+    longitude: 106.6917,
+    createdAt: DateTime.now(),
+    updatedAt: DateTime.now(),
+  ),
+  Store(
+    id: 'home-play',
+    name: 'Home & Play',
+    description:
+        'Trusted seller for furniture, children products, sports, and lifestyle gear.',
+    ownerName: 'Home & Play Co.',
+    logo: icTopSeller,
+    coverImage: imgSlider3,
+    phone: '+84 28 5550 3300',
+    email: 'support@homeplay.example',
+    address: '45 Nguyen Hue, District 1, Ho Chi Minh City',
+    openingHours: 'Mon - Sun, 8:30 AM - 9:30 PM',
+    rating: 4.7,
+    followerCount: 9600,
+    productCount: 4,
+    latitude: 10.7735,
+    longitude: 106.7042,
+    createdAt: DateTime.now(),
+    updatedAt: DateTime.now(),
+  ),
+];
+
+Store storeById(String storeId) {
+  return dummyStores.firstWhere(
+    (store) => store.id == storeId,
+    orElse: () => dummyStores.first,
+  );
+}
+
+List<Product> productsByStore(String storeId) {
+  return dummyProducts.where((product) => product.storeId == storeId).toList();
+}
+
 // Dummy Products for E-mart App
 final dummyProducts = [
   // Featured Products
@@ -41,6 +117,7 @@ final dummyProducts = [
     price: 79.99,
     originalPrice: 129.99,
     images: [imgP1],
+    storeId: 'emart-central',
     rating: 4.5,
     reviewCount: 320,
     stock: 45,
@@ -59,6 +136,7 @@ final dummyProducts = [
     price: 199.99,
     originalPrice: 299.99,
     images: [imgP2],
+    storeId: 'emart-central',
     rating: 4.8,
     reviewCount: 567,
     stock: 32,
@@ -77,6 +155,7 @@ final dummyProducts = [
     price: 249.99,
     originalPrice: 399.99,
     images: [imgP3],
+    storeId: 'home-play',
     rating: 4.3,
     reviewCount: 245,
     stock: 18,
@@ -94,6 +173,7 @@ final dummyProducts = [
     price: 49.99,
     originalPrice: 79.99,
     images: [imgP4],
+    storeId: 'emart-central',
     rating: 4.6,
     reviewCount: 189,
     stock: 60,
@@ -111,6 +191,7 @@ final dummyProducts = [
     price: 89.99,
     originalPrice: 139.99,
     images: [imgP5],
+    storeId: 'style-hub',
     rating: 4.4,
     reviewCount: 412,
     stock: 55,
@@ -129,6 +210,7 @@ final dummyProducts = [
     price: 45.99,
     originalPrice: 89.99,
     images: [imgP6],
+    storeId: 'style-hub',
     rating: 4.7,
     createdAt: DateTime.now(),
     updatedAt: DateTime.now(),
@@ -148,6 +230,7 @@ final dummyProducts = [
     price: 19.99,
     originalPrice: 34.99,
     images: [imgP7],
+    storeId: 'style-hub',
     rating: 4.2,
     reviewCount: 145,
     stock: 120,
@@ -166,6 +249,7 @@ final dummyProducts = [
     price: 59.99,
     originalPrice: 99.99,
     images: [imgP1],
+    storeId: 'style-hub',
     rating: 4.5,
     createdAt: DateTime.now(),
     updatedAt: DateTime.now(),
@@ -184,6 +268,7 @@ final dummyProducts = [
     price: 34.99,
     originalPrice: 59.99,
     images: [imgP2],
+    storeId: 'home-play',
     createdAt: DateTime.now(),
     updatedAt: DateTime.now(),
     rating: 4.6,
@@ -201,6 +286,7 @@ final dummyProducts = [
     price: 129.99,
     originalPrice: 199.99,
     images: [imgP3],
+    storeId: 'emart-central',
     createdAt: DateTime.now(),
     updatedAt: DateTime.now(),
     rating: 4.4,
@@ -218,6 +304,7 @@ final dummyProducts = [
     price: 29.99,
     originalPrice: 49.99,
     images: [imgP4],
+    storeId: 'home-play',
     createdAt: DateTime.now(),
     updatedAt: DateTime.now(),
     rating: 4.3,
@@ -237,6 +324,7 @@ final dummyProducts = [
     updatedAt: DateTime.now(),
     originalPrice: 649.99,
     images: [imgP5],
+    storeId: 'home-play',
     rating: 4.7,
     reviewCount: 98,
     stock: 12,

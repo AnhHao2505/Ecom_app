@@ -8,6 +8,7 @@ class Product {
   final double price;
   final double originalPrice;
   final List<String> images; // Cloudinary URLs
+  final String storeId;
   final double rating;
   final int reviewCount;
   final int stock;
@@ -27,6 +28,7 @@ class Product {
     required this.price,
     required this.originalPrice,
     required this.images,
+    this.storeId = 'emart-central',
     this.rating = 0.0,
     this.reviewCount = 0,
     required this.stock,
@@ -58,6 +60,7 @@ class Product {
       'price': price,
       'originalPrice': originalPrice,
       'images': images,
+      'storeId': storeId,
       'rating': rating,
       'reviewCount': reviewCount,
       'stock': stock,
@@ -81,6 +84,7 @@ class Product {
       price: (map['price'] ?? 0.0).toDouble(),
       originalPrice: (map['originalPrice'] ?? 0.0).toDouble(),
       images: List<String>.from(map['images'] ?? []),
+      storeId: map['storeId'] ?? 'emart-central',
       rating: (map['rating'] ?? 0.0).toDouble(),
       reviewCount: map['reviewCount'] ?? 0,
       stock: map['stock'] ?? 0,
@@ -104,6 +108,7 @@ class Product {
       'price': price,
       'originalPrice': originalPrice,
       'images': images,
+      'storeId': storeId,
       'rating': rating,
       'reviewCount': reviewCount,
       'stock': stock,
@@ -127,6 +132,7 @@ class Product {
       price: (json['price'] ?? 0.0).toDouble(),
       originalPrice: (json['originalPrice'] ?? 0.0).toDouble(),
       images: List<String>.from(json['images'] ?? []),
+      storeId: json['storeId'] ?? 'emart-central',
       rating: (json['rating'] ?? 0.0).toDouble(),
       reviewCount: json['reviewCount'] ?? 0,
       stock: json['stock'] ?? 0,
@@ -153,6 +159,7 @@ class Product {
     double? price,
     double? originalPrice,
     List<String>? images,
+    String? storeId,
     double? rating,
     int? reviewCount,
     int? stock,
@@ -172,6 +179,7 @@ class Product {
       price: price ?? this.price,
       originalPrice: originalPrice ?? this.originalPrice,
       images: images ?? this.images,
+      storeId: storeId ?? this.storeId,
       rating: rating ?? this.rating,
       reviewCount: reviewCount ?? this.reviewCount,
       stock: stock ?? this.stock,

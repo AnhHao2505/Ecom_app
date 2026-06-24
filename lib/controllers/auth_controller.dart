@@ -51,15 +51,18 @@ class AuthController extends GetxController {
 
   // storing data method
   Future<void> storeUserData({name, password, email}) async {
+    final user = auth.currentUser;
+    if (user == null) return;
+
     DocumentReference store = firestore
         .collection(usersCollection)
-        .doc(currentUser!.uid);
+        .doc(user.uid);
     store.set({
       'name': name,
       'password': password,
       'email': email,
       'imageUrl': '',
-      'id': currentUser!.uid
+      'id': user.uid,
     });
   }
 }

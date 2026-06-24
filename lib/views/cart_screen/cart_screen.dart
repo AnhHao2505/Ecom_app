@@ -1,94 +1,14 @@
 import 'package:e_mart/consts/consts.dart';
+import 'package:e_mart/controllers/cart_controller.dart';
+import 'package:e_mart/models/cart_item_model.dart';
+import 'package:e_mart/views/checkout_screen/checkout_screen.dart';
 import 'package:e_mart/widget_common/our_button.dart';
+import 'package:get/get.dart';
 
-// Dummy Cart Item Model
-class CartItem {
-  final String id;
-  final String name;
-  final String image;
-  final double price;
-  final String category;
-  int quantity;
-
-  CartItem({
-    required this.id,
-    required this.name,
-    required this.image,
-    required this.price,
-    required this.category,
-    this.quantity = 1,
-  });
-}
-
-class CartScreen extends StatefulWidget {
+class CartScreen extends StatelessWidget {
   const CartScreen({super.key});
 
-  @override
-  State<CartScreen> createState() => _CartScreenState();
-}
-
-class _CartScreenState extends State<CartScreen> {
-  // Dummy cart data
-  late List<CartItem> cartItems = [
-    CartItem(
-      id: '1',
-      name: 'Premium Wireless Headphones',
-      image: imgP1,
-      price: 79.99,
-      category: 'Electronics',
-      quantity: 1,
-    ),
-    CartItem(
-      id: '2',
-      name: 'Smart Watch Pro',
-      image: imgP2,
-      price: 199.99,
-      category: 'Electronics',
-      quantity: 2,
-    ),
-    CartItem(
-      id: '3',
-      name: 'Fashion Jacket',
-      image: imgP3,
-      price: 89.99,
-      category: 'Clothing',
-      quantity: 1,
-    ),
-    CartItem(
-      id: '4',
-      name: 'Designer Sunglasses',
-      image: imgP4,
-      price: 149.99,
-      category: 'Accessories',
-      quantity: 1,
-    ),
-  ];
-
-  double get subtotal {
-    return cartItems.fold(0, (sum, item) => sum + (item.price * item.quantity));
-  }
-
-  double get tax {
-    return subtotal * 0.1; // 10% tax
-  }
-
-  double get total {
-    return subtotal + tax;
-  }
-
-  void removeItem(int index) {
-    setState(() {
-      cartItems.removeAt(index);
-    });
-  }
-
-  void updateQuantity(int index, int newQuantity) {
-    if (newQuantity > 0) {
-      setState(() {
-        cartItems[index].quantity = newQuantity;
-      });
-    }
-  }
+  CartController get _cartController => Get.find<CartController>();
 
   @override
   Widget build(BuildContext context) {
@@ -98,72 +18,80 @@ class _CartScreenState extends State<CartScreen> {
         backgroundColor: whiteColor,
         elevation: 0,
         title: cart.text.color(darkFontGrey).fontFamily(bold).make(),
-        centerTitle: false,
       ),
-      body: cartItems.isEmpty ? _buildEmptyCart() : _buildCartBody(),
+      body: Obx(() {
+        if (_cartController.isLoading.value) {
+          return const Center(
+            child: CircularProgressIndicator(color: redColor),
+          );
+        }
+
+        return _cartController.items.isEmpty
+            ? _buildEmptyCart(context)
+            : _buildCartBody(context);
+      }),
     );
   }
 
-  Widget _buildCartBody() {
+  Widget _buildCartBody(BuildContext context) {
     return Column(
       children: [
         Expanded(
-          child: SingleChildScrollView(
+          child: ListView.builder(
             physics: const BouncingScrollPhysics(),
-            child: Column(
-              children: [
-                ...List.generate(
-                  cartItems.length,
-                  (index) => _buildCartItem(context, index),
-                ),
-              ],
-            ),
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            itemCount: _cartController.items.length,
+            itemBuilder: (context, index) {
+              return _buildCartItem(_cartController.items[index]);
+            },
           ),
         ),
-        _buildPriceSummary(),
+        _buildPriceSummary(context),
       ],
     );
   }
 
-  Widget _buildEmptyCart() {
+  Widget _buildEmptyCart(BuildContext context) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Image.asset(icCart, width: 80, height: 80)
-              .box
-              .padding(const EdgeInsets.all(20))
-              .make(),
-          10.heightBox,
-          "Your Cart is Empty"
-              .text
+          const Icon(Icons.shopping_cart_outlined, color: fontGrey, size: 72),
+          16.heightBox,
+          'Your cart is empty'.text
               .color(darkFontGrey)
               .fontFamily(bold)
               .size(18)
               .make(),
-          5.heightBox,
-          "Start shopping to add items to your cart"
-              .text
+          6.heightBox,
+          'Add products to place an order.'.text
               .color(fontGrey)
               .fontFamily(semibold)
               .size(14)
               .make(),
+          20.heightBox,
+          SizedBox(
+            width: 180,
+            child: ourButton(
+              title: 'Continue Shopping',
+              onPress: () => Get.back(),
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildCartItem(BuildContext context, int index) {
-    final item = cartItems[index];
+  Widget _buildCartItem(CartItem item) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: whiteColor,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
-            color: darkFontGrey.withValues(alpha: 0.1),
+            color: darkFontGrey.withValues(alpha: 0.08),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -175,13 +103,12 @@ class _CartScreenState extends State<CartScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                width: 100,
-                height: 100,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
-                  color: lightGrey,
-                ),
-                child: Image.asset(item.image, fit: BoxFit.cover),
+                width: 88,
+                height: 88,
+                color: lightGrey,
+                child: item.image.isEmpty
+                    ? const Icon(Icons.image_not_supported_outlined)
+                    : Image.asset(item.image, fit: BoxFit.cover),
               ),
               12.widthBox,
               Expanded(
@@ -202,8 +129,7 @@ class _CartScreenState extends State<CartScreen> {
                         .size(12)
                         .make(),
                     8.heightBox,
-                    "\$${item.price.toStringAsFixed(2)}"
-                        .text
+                    '\$${item.price.toStringAsFixed(2)}'.text
                         .color(redColor)
                         .fontFamily(bold)
                         .size(16)
@@ -211,69 +137,47 @@ class _CartScreenState extends State<CartScreen> {
                   ],
                 ),
               ),
-              Image.asset(icTrash, width: 20, height: 20)
-                  .box
-                  .padding(const EdgeInsets.all(8))
-                  .make()
-                  .onTap(() => removeItem(index)),
+              IconButton(
+                tooltip: 'Remove item',
+                onPressed: () => _cartController.removeProduct(item.id),
+                icon: const Icon(Icons.delete_outline, color: fontGrey),
+              ),
             ],
           ),
           12.heightBox,
           const Divider(height: 1),
-          12.heightBox,
+          8.heightBox,
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              "Quantity:"
-                  .text
-                  .color(darkFontGrey)
-                  .fontFamily(semibold)
-                  .make(),
+              'Quantity'.text.color(darkFontGrey).fontFamily(semibold).make(),
               Row(
                 children: [
-                  GestureDetector(
-                    onTap: () {
-                      if (item.quantity > 1) {
-                        updateQuantity(index, item.quantity - 1);
-                      }
-                    },
-                    child: Container(
-                      width: 32,
-                      height: 32,
-                      decoration: BoxDecoration(
-                        border: Border.all(color: textfieldGrey),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Image.asset(icMinus, width: 16, height: 16)
-                          .box
-                          .makeCentered(),
-                    ),
+                  _quantityButton(
+                    icon: Icons.remove,
+                    onPressed: item.quantity > 1
+                        ? () => _cartController.updateQuantity(
+                            item.id,
+                            item.quantity - 1,
+                          )
+                        : null,
                   ),
-                  12.widthBox,
-                  "${item.quantity}"
-                      .text
-                      .color(darkFontGrey)
-                      .fontFamily(bold)
-                      .size(16)
-                      .make()
-                      .box
-                      .width(30)
-                      .makeCentered(),
-                  12.widthBox,
-                  GestureDetector(
-                    onTap: () =>
-                        updateQuantity(index, item.quantity + 1),
-                    child: Container(
-                      width: 32,
-                      height: 32,
-                      decoration: BoxDecoration(
-                        border: Border.all(color: redColor),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Image.asset(icPlus, width: 16, height: 16)
-                          .box
-                          .makeCentered(),
-                    ),
+                  SizedBox(
+                    width: 38,
+                    child: '${item.quantity}'.text
+                        .color(darkFontGrey)
+                        .fontFamily(bold)
+                        .size(16)
+                        .makeCentered(),
+                  ),
+                  _quantityButton(
+                    icon: Icons.add,
+                    onPressed: item.quantity < item.product.stock
+                        ? () => _cartController.updateQuantity(
+                            item.id,
+                            item.quantity + 1,
+                          )
+                        : null,
                   ),
                 ],
               ),
@@ -284,124 +188,84 @@ class _CartScreenState extends State<CartScreen> {
     );
   }
 
-  Widget _buildPriceSummary() {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: context.screenWidth,
-          decoration: BoxDecoration(
-            color: whiteColor,
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(20),
-              topRight: Radius.circular(20),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: darkFontGrey.withValues(alpha: 0.1),
-                blurRadius: 8,
-                offset: const Offset(0, -2),
-              ),
-            ],
-          ),
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              "Price Summary"
-                  .text
-                  .color(darkFontGrey)
-                  .fontFamily(bold)
-                  .size(16)
-                  .make(),
-              16.heightBox,
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  "Subtotal:"
-                      .text
-                      .color(fontGrey)
-                      .fontFamily(semibold)
-                      .make(),
-                  "\$${subtotal.toStringAsFixed(2)}"
-                      .text
-                      .color(darkFontGrey)
-                      .fontFamily(semibold)
-                      .make(),
-                ],
-              ),
-              8.heightBox,
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  "Tax (10%):"
-                      .text
-                      .color(fontGrey)
-                      .fontFamily(semibold)
-                      .make(),
-                  "\$${tax.toStringAsFixed(2)}"
-                      .text
-                      .color(darkFontGrey)
-                      .fontFamily(semibold)
-                      .make(),
-                ],
-              ),
-              8.heightBox,
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  "Shipping:"
-                      .text
-                      .color(fontGrey)
-                      .fontFamily(semibold)
-                      .make(),
-                  "FREE".text.color(redColor).fontFamily(bold).make(),
-                ],
-              ),
-              12.heightBox,
-              Divider(color: textfieldGrey, height: 1),
-              12.heightBox,
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  "Total:"
-                      .text
-                      .color(darkFontGrey)
-                      .fontFamily(bold)
-                      .size(16)
-                      .make(),
-                  "\$${total.toStringAsFixed(2)}"
-                      .text
-                      .color(redColor)
-                      .fontFamily(bold)
-                      .size(18)
-                      .make(),
-                ],
-              ),
-              16.heightBox,
-              SizedBox(
-                width: double.infinity,
-                child: ourButton(
-                  onPress: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: "Proceeding to checkout"
-                            .text
-                            .color(whiteColor)
-                            .fontFamily(semibold)
-                            .make(),
-                        backgroundColor: redColor,
-                        duration: const Duration(seconds: 2),
-                      ),
-                    );
-                  },
-                  title: "Proceed to Checkout",
-                  color: redColor,
-                ),
-              ),
-            ],
-          ),
+  Widget _quantityButton({required IconData icon, VoidCallback? onPressed}) {
+    return SizedBox(
+      width: 36,
+      height: 36,
+      child: OutlinedButton(
+        onPressed: onPressed,
+        style: OutlinedButton.styleFrom(
+          padding: EdgeInsets.zero,
+          side: const BorderSide(color: textfieldGrey),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
         ),
+        child: Icon(icon, size: 18),
+      ),
+    );
+  }
+
+  Widget _buildPriceSummary(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
+      decoration: BoxDecoration(
+        color: whiteColor,
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(8),
+          topRight: Radius.circular(8),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: darkFontGrey.withValues(alpha: 0.1),
+            blurRadius: 8,
+            offset: const Offset(0, -2),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        top: false,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _summaryRow('Subtotal', _cartController.subtotal),
+            8.heightBox,
+            _summaryRow('Estimated tax', _cartController.tax),
+            10.heightBox,
+            const Divider(height: 1),
+            12.heightBox,
+            _summaryRow(
+              'Total',
+              _cartController.subtotal + _cartController.tax,
+              emphasis: true,
+            ),
+            14.heightBox,
+            SizedBox(
+              width: double.infinity,
+              child: ourButton(
+                title: 'Checkout (${_cartController.itemCount})',
+                onPress: () => Get.to(() => const CheckoutScreen()),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _summaryRow(String label, double amount, {bool emphasis = false}) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        label.text
+            .color(emphasis ? darkFontGrey : fontGrey)
+            .fontFamily(emphasis ? bold : semibold)
+            .size(emphasis ? 16 : 14)
+            .make(),
+        '\$${amount.toStringAsFixed(2)}'.text
+            .color(emphasis ? redColor : darkFontGrey)
+            .fontFamily(emphasis ? bold : semibold)
+            .size(emphasis ? 18 : 14)
+            .make(),
       ],
     );
   }
