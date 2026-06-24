@@ -9,9 +9,14 @@ import 'package:e_mart/widget_common/custom_textfield.dart';
 import 'package:e_mart/widget_common/our_button.dart';
 import 'package:get/get.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final controller = Get.put(AuthController());
@@ -69,7 +74,7 @@ class LoginScreen extends StatelessWidget {
                                       await controller
                                           .loginMethod(context)
                                           .then((value) {
-                                            if (value != null) {
+                                            if (value != null && mounted) {
                                               VxToast.show(
                                                 context,
                                                 msg: loggedIn,
