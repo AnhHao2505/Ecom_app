@@ -1,7 +1,9 @@
 import 'package:e_mart/controllers/home_controller.dart';
+import 'package:e_mart/controllers/notification_controller.dart';
 import 'package:e_mart/views/cart_screen/cart_screen.dart';
 import 'package:e_mart/views/category_screen/category_screen.dart';
 import 'package:e_mart/views/home_screen/home_screen.dart';
+import 'package:e_mart/views/notification_screen/notification.dart';
 import 'package:e_mart/views/profile_screen/profile_screen.dart';
 import 'package:get/get.dart';
 
@@ -14,6 +16,7 @@ class Home extends StatelessWidget {
   Widget build(BuildContext context) {
     //init home controller
     var controller = Get.put(HomeController());
+    Get.put(NotificationController());
 
     var navbarItem = [
       BottomNavigationBarItem(
@@ -29,6 +32,12 @@ class Home extends StatelessWidget {
         label: cart,
       ),
       BottomNavigationBarItem(
+        icon: Icon(
+          Icons.notifications_none
+        ),
+        label: notification,
+      ),
+      BottomNavigationBarItem(
         icon: Image.asset(icProfile, width: 26),
         label: account,
       ),
@@ -38,6 +47,7 @@ class Home extends StatelessWidget {
       const HomeScreen(),
       const CategoryScreen(),
       const CartScreen(),
+      const NotificationPage(),
       const ProfileScreen(),
     ];
 

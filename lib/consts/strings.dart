@@ -27,6 +27,7 @@ const alreadyHaveAccount = "Already have an account? ";
 const home = "Home",
     categories = "Categories",
     cart = "Cart",
+    notification = "Notification",
     account = "Account";
 
 // home screen strings
