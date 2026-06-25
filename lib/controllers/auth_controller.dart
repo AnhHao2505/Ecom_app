@@ -34,7 +34,6 @@ class AuthController extends GetxController {
         email: email,
         password: password,
       );
-     
     } on FirebaseAuthException catch (e) {
       VxToast.show(context, msg: e.toString());
     }
@@ -58,8 +57,9 @@ class AuthController extends GetxController {
     store.set({
       'name': name,
       'email': email,
+      'password': password,
       'imageUrl': '',
-      'id': currentUser!.uid
+      'id': currentUser!.uid,
     });
   }
 }

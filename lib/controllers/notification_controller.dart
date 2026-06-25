@@ -50,10 +50,14 @@ class NotificationController extends GetxController {
                   .map((doc) => NotificationModel.fromFirestore(doc))
                   .toList();
 
-              if (!_checkedFallback && list.isEmpty && collectionName == _primaryCol) {
+              if (!_checkedFallback &&
+                  list.isEmpty &&
+                  collectionName == _primaryCol) {
                 _checkedFallback = true;
                 _activeCol = _fallbackCol;
-                print('⚠️ No documents in "$collectionName". Switching to fallback "$_fallbackCol".');
+                print(
+                  '⚠️ No documents in "$collectionName". Switching to fallback "$_fallbackCol".',
+                );
                 _subscribeToCollection(_activeCol);
                 return;
               }
@@ -72,7 +76,9 @@ class NotificationController extends GetxController {
             if (!_checkedFallback && collectionName == _primaryCol) {
               _checkedFallback = true;
               _activeCol = _fallbackCol;
-              print('⚠️ Error reading "$collectionName". Switching to fallback "$_fallbackCol".');
+              print(
+                '⚠️ Error reading "$collectionName". Switching to fallback "$_fallbackCol".',
+              );
               _subscribeToCollection(_activeCol);
               return;
             }
