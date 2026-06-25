@@ -335,12 +335,15 @@ class _ItemDetailState extends State<ItemDetail> {
                       shrinkWrap: true,
                       children: List.generate(
                         itemDetailButtonList.length,
-                        (index) => ListTile(
-                          title: itemDetailButtonList[index].text
-                              .fontFamily(semibold)
-                              .color(darkFontGrey)
-                              .make(),
-                          trailing: const Icon(Icons.arrow_forward),
+                        (index) => Material(
+                          color: Colors.transparent,
+                          child: ListTile(
+                            title: itemDetailButtonList[index].text
+                                .fontFamily(semibold)
+                                .color(darkFontGrey)
+                                .make(),
+                            trailing: const Icon(Icons.arrow_forward),
+                          ),
                         ),
                       ),
                     ),

@@ -1,13 +1,15 @@
 import 'package:e_mart/consts/consts.dart';
 import 'package:e_mart/controllers/cart_controller.dart';
 import 'package:e_mart/models/order_receipt_model.dart';
+import 'package:e_mart/services/payos_payment_service.dart';
 import 'package:e_mart/views/checkout_screen/order_confirmation_screen.dart';
+import 'package:e_mart/views/checkout_screen/payos_checkout_screen.dart';
 import 'package:e_mart/widget_common/our_button.dart';
 import 'package:get/get.dart';
 
 enum DeliveryOption { standard, express }
 
-enum PaymentMethod { card, eWallet, cashOnDelivery }
+enum PaymentMethod { payos, cashOnDelivery }
 
 class CheckoutScreen extends StatefulWidget {
   const CheckoutScreen({super.key});
@@ -23,16 +25,14 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   final _addressController = TextEditingController();
   final _cityController = TextEditingController();
   final _billingAddressController = TextEditingController();
-  final _cardNameController = TextEditingController();
-  final _cardNumberController = TextEditingController();
-  final _expiryController = TextEditingController();
-  final _cvvController = TextEditingController();
 
   DeliveryOption _deliveryOption = DeliveryOption.standard;
-  PaymentMethod _paymentMethod = PaymentMethod.card;
+  PaymentMethod _paymentMethod = PaymentMethod.payos;
   bool _billingMatchesDelivery = true;
+  bool _isSubmitting = false;
 
   CartController get _cartController => Get.find<CartController>();
+  final PayosPaymentService _payosPaymentService = PayosPaymentService();
 
   double get _shippingCost {
     return _deliveryOption == DeliveryOption.express ? 12.99 : 0;
@@ -45,10 +45,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     _addressController.dispose();
     _cityController.dispose();
     _billingAddressController.dispose();
-    _cardNameController.dispose();
-    _cardNumberController.dispose();
-    _expiryController.dispose();
-    _cvvController.dispose();
     super.dispose();
   }
 
@@ -140,17 +136,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     child: Column(
                       children: [
                         _paymentOption(
-                          method: PaymentMethod.card,
-                          title: 'Credit or debit card',
-                          subtitle: 'Visa, Mastercard, and supported cards',
-                          icon: Icons.credit_card_outlined,
-                        ),
-                        const Divider(height: 1),
-                        _paymentOption(
-                          method: PaymentMethod.eWallet,
-                          title: 'E-wallet',
-                          subtitle: 'Continue with your preferred wallet',
-                          icon: Icons.account_balance_wallet_outlined,
+                          method: PaymentMethod.payos,
+                          title: 'PayOS',
+                          subtitle:
+                              'Pay by bank transfer, QR, or supported PayOS options',
+                          icon: Icons.qr_code_2_outlined,
                         ),
                         const Divider(height: 1),
                         _paymentOption(
@@ -159,48 +149,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                           subtitle: 'Pay when your order arrives',
                           icon: Icons.payments_outlined,
                         ),
-                        if (_paymentMethod == PaymentMethod.card) ...[
-                          16.heightBox,
-                          _inputField(
-                            controller: _cardNameController,
-                            label: 'Name on card',
-                            hint: 'As shown on the card',
-                            textCapitalization: TextCapitalization.words,
-                          ),
-                          12.heightBox,
-                          _inputField(
-                            controller: _cardNumberController,
-                            label: 'Card number',
-                            hint: '1234 5678 9012 3456',
-                            keyboardType: TextInputType.number,
-                            validator: _validateCardNumber,
-                          ),
-                          12.heightBox,
-                          Row(
-                            children: [
-                              Expanded(
-                                child: _inputField(
-                                  controller: _expiryController,
-                                  label: 'Expiry date',
-                                  hint: 'MM/YY',
-                                  keyboardType: TextInputType.datetime,
-                                  validator: _validateExpiry,
-                                ),
-                              ),
-                              12.widthBox,
-                              Expanded(
-                                child: _inputField(
-                                  controller: _cvvController,
-                                  label: 'CVV',
-                                  hint: '123',
-                                  keyboardType: TextInputType.number,
-                                  obscureText: true,
-                                  validator: _validateCvv,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
                       ],
                     ),
                   ),
@@ -210,17 +158,20 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     icon: Icons.receipt_long_outlined,
                     child: Column(
                       children: [
-                        SwitchListTile.adaptive(
-                          contentPadding: EdgeInsets.zero,
-                          title: 'Same as delivery address'.text
-                              .color(darkFontGrey)
-                              .fontFamily(semibold)
-                              .make(),
-                          value: _billingMatchesDelivery,
-                          activeTrackColor: redColor,
-                          onChanged: (value) {
-                            setState(() => _billingMatchesDelivery = value);
-                          },
+                        Material(
+                          color: Colors.transparent,
+                          child: SwitchListTile.adaptive(
+                            contentPadding: EdgeInsets.zero,
+                            title: 'Same as delivery address'.text
+                                .color(darkFontGrey)
+                                .fontFamily(semibold)
+                                .make(),
+                            value: _billingMatchesDelivery,
+                            activeTrackColor: redColor,
+                            onChanged: (value) {
+                              setState(() => _billingMatchesDelivery = value);
+                            },
+                          ),
                         ),
                         if (!_billingMatchesDelivery) ...[
                           8.heightBox,
@@ -419,8 +370,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               child: ourButton(
                 title: _paymentMethod == PaymentMethod.cashOnDelivery
                     ? 'Place order'
+                    : _isSubmitting
+                    ? 'Creating PayOS link...'
                     : 'Pay \$${total.toStringAsFixed(2)}',
-                onPress: _placeOrder,
+                onPress: _isSubmitting ? () {} : _placeOrder,
               ),
             ),
           ],
@@ -429,7 +382,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     );
   }
 
-  void _placeOrder() {
+  Future<void> _placeOrder() async {
     if (_cartController.items.isEmpty) {
       Get.back();
       return;
@@ -456,43 +409,83 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       createdAt: DateTime.now(),
     );
 
+    if (_paymentMethod == PaymentMethod.payos) {
+      await _startPayosPayment(receipt);
+      return;
+    }
+
     _cartController.clear();
     Get.off(() => OrderConfirmationScreen(receipt: receipt));
   }
 
+  Future<void> _startPayosPayment(OrderReceipt receipt) async {
+    setState(() => _isSubmitting = true);
+
+    try {
+      final payment = await _payosPaymentService.createPayment(
+        PayosPaymentRequest(
+          amount: receipt.total.round(),
+          buyerName: receipt.recipientName,
+          buyerEmail: auth.currentUser?.email ?? '',
+          buyerPhone: _phoneController.text.trim(),
+          buyerStreetAddress: _addressController.text.trim(),
+          buyerCity: _cityController.text.trim(),
+          billingAddress: receipt.billingAddress,
+          deliveryType: _deliveryOptionLabel,
+          deliveryPrice: receipt.shipping,
+          items: receipt.items,
+          tax: receipt.tax,
+          shipping: receipt.shipping,
+        ),
+      );
+
+      if (!mounted) return;
+      Get.to(
+        () => PayosCheckoutScreen(
+          checkoutUrl: payment.checkoutUrl,
+          orderCode: payment.orderCode,
+          receipt: receipt.copyWith(orderNumber: 'PO-${payment.orderCode}'),
+        ),
+      );
+    } on PayosPaymentException catch (error) {
+      Get.snackbar(
+        'PayOS checkout failed',
+        error.message,
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } catch (_) {
+      Get.snackbar(
+        'PayOS checkout failed',
+        'Please try again in a moment.',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isSubmitting = false);
+      }
+    }
+  }
+
   String get _paymentMethodLabel {
     switch (_paymentMethod) {
-      case PaymentMethod.card:
-        return 'Credit or debit card';
-      case PaymentMethod.eWallet:
-        return 'E-wallet';
+      case PaymentMethod.payos:
+        return 'PayOS';
       case PaymentMethod.cashOnDelivery:
         return 'Cash on delivery';
     }
   }
 
+  String get _deliveryOptionLabel {
+    switch (_deliveryOption) {
+      case DeliveryOption.standard:
+        return 'Standard delivery';
+      case DeliveryOption.express:
+        return 'Express delivery';
+    }
+  }
+
   String? _validateRequired(String? value) {
     if (value == null || value.trim().isEmpty) return 'This field is required';
-    return null;
-  }
-
-  String? _validateCardNumber(String? value) {
-    final digits = (value ?? '').replaceAll(RegExp(r'\s+'), '');
-    if (!RegExp(r'^\d{16}$').hasMatch(digits)) {
-      return 'Enter a 16-digit card number';
-    }
-    return null;
-  }
-
-  String? _validateExpiry(String? value) {
-    if (!RegExp(r'^(0[1-9]|1[0-2])\/\d{2}$').hasMatch(value ?? '')) {
-      return 'Use MM/YY';
-    }
-    return null;
-  }
-
-  String? _validateCvv(String? value) {
-    if (!RegExp(r'^\d{3,4}$').hasMatch(value ?? '')) return 'Use 3 or 4 digits';
     return null;
   }
 }

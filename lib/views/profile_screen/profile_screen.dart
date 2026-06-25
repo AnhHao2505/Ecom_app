@@ -92,12 +92,15 @@ class ProfileScreen extends StatelessWidget {
               ListView.separated(
                     shrinkWrap: true,
                     itemBuilder: (context, index) {
-                      return ListTile(
-                        leading: Image.asset(
-                          profileButtonImages[index],
-                          width: 22,
+                      return Material(
+                        color: Colors.transparent,
+                        child: ListTile(
+                          leading: Image.asset(
+                            profileButtonImages[index],
+                            width: 22,
+                          ),
+                          title: profileButtonsList[index].text.make(),
                         ),
-                        title: profileButtonsList[index].text.make(),
                       );
                     },
                     separatorBuilder: (context, index) {
