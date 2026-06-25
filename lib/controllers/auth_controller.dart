@@ -58,10 +58,10 @@ class AuthController extends GetxController {
         .doc(currentUser!.uid);
     store.set({
       'name': name,
-      'password': password,
       'email': email,
+      'password': password,
       'imageUrl': '',
-      'id': currentUser!.uid
+      'id': currentUser!.uid,
     });
   }
 

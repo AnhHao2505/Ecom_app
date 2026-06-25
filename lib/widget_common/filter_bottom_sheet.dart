@@ -142,7 +142,7 @@ class FilterBottomSheet extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            brand,
+                            "Brands",
                             style: TextStyle(
                               color: Theme.of(context).textTheme.bodyLarge?.color,
                               fontFamily: bold,

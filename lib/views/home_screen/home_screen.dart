@@ -1,7 +1,6 @@
 import 'package:e_mart/consts/consts.dart';
 import 'package:e_mart/consts/lists.dart';
 import 'package:e_mart/controllers/home_controller.dart';
-import 'package:e_mart/widget_common/home_button.dart';
 import 'package:e_mart/widget_common/product_card.dart';
 import 'package:e_mart/widget_common/sort_chips.dart';
 import 'package:e_mart/views/home_screen/all_products_screen.dart';
@@ -36,7 +35,10 @@ class HomeScreen extends StatelessWidget {
           children: [
             // Header: App Name & Dark Mode
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 8.0,
+              ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -64,7 +66,11 @@ class HomeScreen extends StatelessWidget {
             ),
             // Search Bar
             Padding(
-              padding: const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 8.0),
+              padding: const EdgeInsets.only(
+                left: 16.0,
+                right: 16.0,
+                bottom: 8.0,
+              ),
               child: Container(
                 height: 48,
                 decoration: BoxDecoration(
@@ -82,11 +88,21 @@ class HomeScreen extends StatelessWidget {
                 ),
                 child: TextFormField(
                   onChanged: (value) => controller.searchQuery.value = value,
-                  style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
+                  style: TextStyle(
+                    color: Theme.of(context).textTheme.bodyLarge?.color,
+                  ),
                   decoration: InputDecoration(
                     border: InputBorder.none,
-                    prefixIcon: Icon(Icons.search, color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.5)),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    prefixIcon: Icon(
+                      Icons.search,
+                      color: Theme.of(
+                        context,
+                      ).textTheme.bodyMedium?.color?.withOpacity(0.5),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 12,
+                    ),
                     hintText: searchAnything,
                     hintStyle: TextStyle(color: textfieldGrey.withOpacity(0.8)),
                   ),
@@ -115,12 +131,17 @@ class HomeScreen extends StatelessWidget {
                         itemCount: sliderLists.length,
                         itemBuilder: (context, index) {
                           return Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            margin: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(16),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Theme.of(context).brightness == Brightness.dark
+                                  color:
+                                      Theme.of(context).brightness ==
+                                          Brightness.dark
                                       ? Colors.transparent
                                       : Colors.black.withOpacity(0.1),
                                   blurRadius: 10,
@@ -130,27 +151,35 @@ class HomeScreen extends StatelessWidget {
                             ),
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(16),
-                              child: Image.asset(sliderLists[index], fit: BoxFit.fill),
+                              child: Image.asset(
+                                sliderLists[index],
+                                fit: BoxFit.fill,
+                              ),
                             ),
                           );
                         },
                       ),
                       16.heightBox,
-                      
+
                       // Recently Viewed (if any)
                       Obx(() {
-                        final recent = Get.find<RecentViewController>().recentProducts;
+                        final recent =
+                            Get.find<RecentViewController>().recentProducts;
                         if (recent.isEmpty) return const SizedBox.shrink();
-                        
+
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                              ),
                               child: Text(
                                 'Recently Viewed',
                                 style: TextStyle(
-                                  color: Theme.of(context).textTheme.bodyLarge?.color,
+                                  color: Theme.of(
+                                    context,
+                                  ).textTheme.bodyLarge?.color,
                                   fontFamily: bold,
                                   fontSize: 18,
                                 ),
@@ -158,9 +187,11 @@ class HomeScreen extends StatelessWidget {
                             ),
                             12.heightBox,
                             SizedBox(
-                              height: 320,
+                              height: context.height * 0.3,
                               child: ListView.separated(
-                                padding: const EdgeInsets.symmetric(horizontal: 16),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                ),
                                 scrollDirection: Axis.horizontal,
                                 itemCount: recent.length,
                                 separatorBuilder: (_, _) => 12.widthBox,
@@ -179,7 +210,7 @@ class HomeScreen extends StatelessWidget {
                           ],
                         );
                       }),
-                      
+
                       // Category Icons
                       SizedBox(
                         height: 100,
@@ -187,27 +218,19 @@ class HomeScreen extends StatelessWidget {
                           scrollDirection: Axis.horizontal,
                           itemCount: categoriesData.length,
                           itemBuilder: (context, index) {
-                            return _buildCategoryIcon(context, categoriesData[index].name, categoriesData[index].image);
+                            return _buildCategoryIcon(
+                              context,
+                              categoriesData[index].name,
+                              categoriesData[index].image,
+                            );
                           },
                         ),
                       ),
                       16.heightBox,
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: List.generate(
-                          2,
-                          (index) => HomeButton(
-                            height: context.screenHeight * 0.1,
-                            width: context.screenWidth / 2.5,
-                            icon: index == 0 ? icTodaysDeal : icFlashDeal,
-                            title: index == 0 ? todayDeal : flashsale,
-                          ),
-                        ),
-                      ),
-                      20.heightBox,
                       Obx(() {
                         final flashSale = controller.flashSaleProducts;
-                        if (controller.searchQuery.isNotEmpty && flashSale.isEmpty) {
+                        if (controller.searchQuery.isNotEmpty &&
+                            flashSale.isEmpty) {
                           return const SizedBox.shrink();
                         }
                         return FlashSaleSection(products: flashSale);
@@ -219,7 +242,9 @@ class HomeScreen extends StatelessWidget {
                           Text(
                             'All Products',
                             style: TextStyle(
-                              color: Theme.of(context).textTheme.bodyLarge?.color,
+                              color: Theme.of(
+                                context,
+                              ).textTheme.bodyLarge?.color,
                               fontFamily: bold,
                               fontSize: 18,
                             ),
@@ -230,7 +255,10 @@ class HomeScreen extends StatelessWidget {
                               transition: Transition.rightToLeft,
                               duration: const Duration(milliseconds: 300),
                             ),
-                            child: const Text('See all >', style: TextStyle(color: primaryColor)),
+                            child: const Text(
+                              'See all >',
+                              style: TextStyle(color: primaryColor),
+                            ),
                           ),
                         ],
                       ).paddingSymmetric(horizontal: 16),
@@ -245,23 +273,27 @@ class HomeScreen extends StatelessWidget {
                             child: Center(
                               child: Text(
                                 'No products match your search.',
-                                style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color),
+                                style: TextStyle(
+                                  color: Theme.of(
+                                    context,
+                                  ).textTheme.bodyMedium?.color,
+                                ),
                               ),
                             ),
                           );
                         }
-  
+
                         return GridView.builder(
                           physics: const NeverScrollableScrollPhysics(),
                           shrinkWrap: true,
                           itemCount: products.length,
                           gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 2,
-                              mainAxisSpacing: 8,
-                              crossAxisSpacing: 8,
-                              mainAxisExtent: 320,
-                            ),
+                              const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 2,
+                                mainAxisSpacing: 8,
+                                crossAxisSpacing: 8,
+                                mainAxisExtent: 270,
+                              ),
                           itemBuilder: (context, index) {
                             return ProductCard(product: products[index]);
                           },
@@ -278,7 +310,11 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildCategoryIcon(BuildContext context, String title, String imagePath) {
+  Widget _buildCategoryIcon(
+    BuildContext context,
+    String title,
+    String imagePath,
+  ) {
     return Container(
       width: 70,
       margin: const EdgeInsets.only(right: 12),
@@ -293,8 +329,8 @@ class HomeScreen extends StatelessWidget {
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: Theme.of(context).brightness == Brightness.dark 
-                      ? Colors.transparent 
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.transparent
                       : Colors.black.withOpacity(0.05),
                   blurRadius: 8,
                   offset: const Offset(0, 2),

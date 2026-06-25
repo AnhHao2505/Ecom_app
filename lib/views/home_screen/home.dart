@@ -3,6 +3,7 @@ import 'package:e_mart/controllers/home_controller.dart';
 import 'package:e_mart/views/cart_screen/cart_screen.dart';
 import 'package:e_mart/views/category_screen/category_screen.dart';
 import 'package:e_mart/views/home_screen/home_screen.dart';
+import 'package:e_mart/views/notification_screen/notification.dart';
 import 'package:e_mart/views/profile_screen/profile_screen.dart';
 import 'package:get/get.dart';
 
@@ -31,13 +32,24 @@ class Home extends StatelessWidget {
           final displayCount = count > 99 ? '99+' : '$count';
           return Badge(
             isLabelVisible: count > 0,
-            label: Text(displayCount, style: const TextStyle(fontSize: 10, fontFamily: bold, color: whiteColor)),
+            label: Text(
+              displayCount,
+              style: const TextStyle(
+                fontSize: 10,
+                fontFamily: bold,
+                color: whiteColor,
+              ),
+            ),
             backgroundColor: redColor,
             padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
             child: Image.asset(icCart, width: 26),
           );
         }),
         label: cart,
+      ),
+      BottomNavigationBarItem(
+        icon: Icon(Icons.notifications_none),
+        label: notification,
       ),
       BottomNavigationBarItem(
         icon: Image.asset(icProfile, width: 26),
@@ -49,6 +61,7 @@ class Home extends StatelessWidget {
       const HomeScreen(),
       const CategoryScreen(),
       const CartScreen(),
+      const NotificationPage(),
       const ProfileScreen(),
     ];
 
@@ -61,8 +74,8 @@ class Home extends StatelessWidget {
             color: Theme.of(context).cardColor,
             boxShadow: [
               BoxShadow(
-                color: Theme.of(context).brightness == Brightness.dark 
-                    ? Colors.black.withOpacity(0.5) 
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.black.withOpacity(0.5)
                     : Colors.black.withOpacity(0.05),
                 blurRadius: 10,
                 offset: const Offset(0, -4),
@@ -76,9 +89,19 @@ class Home extends StatelessWidget {
               backgroundColor: Colors.transparent,
               elevation: 0,
               selectedItemColor: primaryColor,
-              unselectedItemColor: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.4) ?? fontGrey,
-              selectedLabelStyle: const TextStyle(fontFamily: bold, fontSize: 12),
-              unselectedLabelStyle: const TextStyle(fontFamily: semibold, fontSize: 12),
+              unselectedItemColor:
+                  Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.color?.withOpacity(0.4) ??
+                  fontGrey,
+              selectedLabelStyle: const TextStyle(
+                fontFamily: bold,
+                fontSize: 12,
+              ),
+              unselectedLabelStyle: const TextStyle(
+                fontFamily: semibold,
+                fontSize: 12,
+              ),
               items: navbarItem,
               onTap: (value) {
                 controller.currentNavIndex.value = value;

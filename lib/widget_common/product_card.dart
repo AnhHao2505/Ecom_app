@@ -40,7 +40,7 @@ class _ProductCardState extends State<ProductCard> {
         final availableHeight = constraints.maxHeight;
         final effectiveImageHeight = math.min(
           widget.imageHeight,
-          availableHeight * 0.42,
+          availableHeight * 0.4,
         );
 
         return Material(
@@ -274,7 +274,7 @@ class _ProductCardState extends State<ProductCard> {
                                 height: 1.3,
                               ),
                             ),
-                            6.heightBox,
+                            3.heightBox,
                             Row(
                               children: [
                                 const Icon(
@@ -301,13 +301,13 @@ class _ProductCardState extends State<ProductCard> {
                                         .textTheme
                                         .bodyMedium
                                         ?.color
-                                        ?.withOpacity(0.6),
+                                        ?.withOpacity(0.9),
                                     fontSize: 11,
                                   ),
                                 ),
                               ],
                             ),
-                            const Spacer(),
+                            3.heightBox,
                             if (widget.product.originalPrice >
                                 widget.product.price)
                               Text(
@@ -358,18 +358,17 @@ class _ProductCardState extends State<ProductCard> {
                                         .textTheme
                                         .bodyMedium
                                         ?.color
-                                        ?.withOpacity(0.6),
+                                        ?.withOpacity(0.9),
                                     fontSize: 11,
                                   ),
                                 ),
                               ],
                             ),
-                            6.heightBox,
-
+                            8.heightBox,
                             // CTA Button
                             SizedBox(
                               width: double.infinity,
-                              height: 34,
+                              height: 32,
                               child: ElevatedButton(
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: isOutOfStock
@@ -457,10 +456,11 @@ class _ProductCardState extends State<ProductCard> {
                                         await Future.delayed(
                                           const Duration(milliseconds: 200),
                                         );
-                                        if (mounted)
+                                        if (mounted) {
                                           setState(
                                             () => _isCartPressed = false,
                                           );
+                                        }
                                       },
                                 child: AnimatedSwitcher(
                                   duration: const Duration(milliseconds: 200),
