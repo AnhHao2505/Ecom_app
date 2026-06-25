@@ -1,6 +1,5 @@
 import 'package:e_mart/controllers/cart_controller.dart';
 import 'package:e_mart/controllers/home_controller.dart';
-import 'package:e_mart/controllers/theme_controller.dart';
 import 'package:e_mart/views/cart_screen/cart_screen.dart';
 import 'package:e_mart/views/category_screen/category_screen.dart';
 import 'package:e_mart/views/home_screen/home_screen.dart';

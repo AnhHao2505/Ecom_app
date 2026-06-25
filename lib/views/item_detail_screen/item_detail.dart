@@ -30,7 +30,11 @@ class _ItemDetailState extends State<ItemDetail> {
   void initState() {
     super.initState();
     if (!product.isInStock) quantity = 0;
-    Get.find<RecentViewController>().addView(product.id);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        Get.find<RecentViewController>().addView(product.id);
+      }
+    });
   }
 
   @override

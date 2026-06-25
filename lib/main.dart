@@ -13,14 +13,13 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await GetStorage.init();
-  
-  ProductSeeder.checkAndSeed();
 
+  ProductSeeder.checkAndSeed();
 
   Get.put(ThemeController());
   Get.put(WishlistController());
   Get.put(RecentViewController());
-  
+
   runApp(const MyApp());
 }
 
@@ -29,13 +28,13 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final themeController = Get.find<ThemeController>();
-
-    return Obx(
-      () => GetMaterialApp(
+    return GetBuilder<ThemeController>(
+      builder: (controller) => GetMaterialApp(
         debugShowCheckedModeBanner: false,
         title: appname,
-        themeMode: themeController.isDarkMode.value ? ThemeMode.dark : ThemeMode.light,
+        themeMode: controller.isDarkMode.value
+            ? ThemeMode.dark
+            : ThemeMode.light,
         theme: ThemeData(
           brightness: Brightness.light,
           scaffoldBackgroundColor: lightBg,
