@@ -33,7 +33,7 @@ const itemDetailButtonList = [
 // Dummy Stores for E-mart App
 final dummyStores = [
   Store(
-    id: 'emart-central',
+    userId: 'emart-central',
     name: 'E-Mart Central',
     description:
         'Flagship store with curated electronics, home essentials, and daily deals.',
@@ -53,7 +53,7 @@ final dummyStores = [
     updatedAt: DateTime.now(),
   ),
   Store(
-    id: 'style-hub',
+    userId: 'style-hub',
     name: 'Style Hub',
     description:
         'Fashion store for everyday outfits, footwear, and accessories.',
@@ -73,7 +73,7 @@ final dummyStores = [
     updatedAt: DateTime.now(),
   ),
   Store(
-    id: 'home-play',
+    userId: 'home-play',
     name: 'Home & Play',
     description:
         'Trusted seller for furniture, children products, sports, and lifestyle gear.',
@@ -94,9 +94,9 @@ final dummyStores = [
   ),
 ];
 
-Store storeById(String storeId) {
+Store storeByUserId(String storeUserId) {
   return dummyStores.firstWhere(
-    (store) => store.id == storeId,
+    (store) => store.userId == storeUserId,
     orElse: () => dummyStores.first,
   );
 }

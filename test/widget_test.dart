@@ -7,8 +7,8 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   test('products are mapped to their store details', () {
     final product = dummyProducts.first;
-    final store = storeById(product.storeId);
-    final storeProducts = productsByStore(store.id);
+    final store = storeByUserId(product.storeId);
+    final storeProducts = productsByStore(store.userId);
 
     expect(store.name, 'E-Mart Central');
     expect(store.address, isNotEmpty);
