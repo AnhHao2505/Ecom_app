@@ -33,8 +33,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   appLogoWidget(),
                   10.heightBox,
                   "Log in to $appname".text
+                      .color(redColor)
                       .fontFamily(bold)
-                      .white
                       .size(18)
                       .make(),
                   15.heightBox,
@@ -156,7 +156,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         backgroundColor: whiteColor.withOpacity(0.18),
                         foregroundColor: whiteColor,
                       ),
-                      icon: const Icon(Icons.storefront_outlined),
+                      icon: const Icon(Icons.storefront_outlined, color: Colors.black,),
                     ),
                   ),
                 ),

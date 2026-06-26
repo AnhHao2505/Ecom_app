@@ -603,39 +603,52 @@ class _ItemDetailState extends State<ItemDetail> {
   }
 
   void _openChat(Store store) async {
-    // Kiểm tra đã đăng nhập chưa
-    if (FirebaseAuth.instance.currentUser == null) {
-      _showMessage('Vui lòng đăng nhập để chat');
-      return;
-    }
-
-    final receiverId = product.userId?.isNotEmpty == true
-        ? product.userId!
-        : store.userId;
-
-    try {
-      final messageController = Get.isRegistered<MessageController>()
-          ? Get.find<MessageController>()
-          : Get.put(MessageController());
-
-      // Tạo conversation với shop
-      final conversationId = await messageController.createConversation(
-        receiverId,
-      );
-
-      if (conversationId.isNotEmpty) {
-        Get.to(
-          () => ChatDetailScreen(
-            conversationId: conversationId,
-            receiverId: receiverId,
-            shopName: store.name,
-          ),
-        );
-      }
-    } catch (e) {
-      _showMessage('Không thể mở chat: $e');
-    }
+  if (FirebaseAuth.instance.currentUser == null) {
+    _showMessage('Vui lòng đăng nhập để chat');
+    return;
   }
+
+  // ✅ Ưu tiên dùng userId từ product, nếu không có thì dùng store.userId
+  final receiverId = product.userId?.isNotEmpty == true
+      ? product.userId!
+      : store.userId;
+
+  // ✅ Kiểm tra receiverId có hợp lệ không
+  if (receiverId.isEmpty) {
+    _showMessage('Không tìm thấy thông tin shop');
+    return;
+  }
+
+  // ✅ Không cho chat với chính mình
+  if (receiverId == FirebaseAuth.instance.currentUser?.uid) {
+    _showMessage('Bạn không thể chat với chính mình');
+    return;
+  }
+
+  try {
+    final messageController = Get.isRegistered<MessageController>()
+        ? Get.find<MessageController>()
+        : Get.put(MessageController());
+
+    final conversationId = await messageController.createConversation(
+      receiverId,
+    );
+
+    if (conversationId.isNotEmpty) {
+      Get.to(
+        () => ChatDetailScreen(
+          conversationId: conversationId,
+          receiverId: receiverId,
+          shopName: store.name,
+        ),
+      );
+    } else {
+      _showMessage('Không thể tạo cuộc trò chuyện');
+    }
+  } catch (e) {
+    _showMessage('Không thể mở chat: $e');
+  }
+}
 }
 
 class _ProductStoreCard extends StatelessWidget {

@@ -18,12 +18,18 @@ class SignupScreen extends StatefulWidget {
 
 class _SignupScreenState extends State<SignupScreen> {
   bool? isCheck = false;
+  late bool isSellerMode; 
   final controller = Get.put(AuthController());
-  // text field controllers
   final emailController = TextEditingController();
   final nameController = TextEditingController();
   final passwordController = TextEditingController();
   final retypePasswordController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    isSellerMode = widget.isSeller; 
+  }
 
   @override
   void dispose() {
@@ -36,6 +42,7 @@ class _SignupScreenState extends State<SignupScreen> {
 
   @override
   Widget build(BuildContext context) {
+
     return bgWidget(
       child: Scaffold(
         resizeToAvoidBottomInset: false,
@@ -47,244 +54,223 @@ class _SignupScreenState extends State<SignupScreen> {
                   (context.screenHeight * 0.1).heightBox,
                   appLogoWidget(),
                   10.heightBox,
-                  (widget.isSeller
+                  (isSellerMode
                           ? "Create your seller account"
                           : "Join the $appname")
                       .text
                       .fontFamily(bold)
-                      .white
+                      .color(redColor)
                       .size(18)
                       .make(),
                   15.heightBox,
-
                   Obx(
-                    () =>
-                        Column(
+                    () => Column(
+                      children: [
+                        if (isSellerMode) ...[
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: Colors.orange.withOpacity(0.08),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: Colors.orange.withOpacity(0.2),
+                              ),
+                            ),
+                            child: const Row(
                               children: [
-                                if (widget.isSeller) ...[
-                                  Container(
-                                    width: double.infinity,
-                                    padding: const EdgeInsets.all(10),
-                                    decoration: BoxDecoration(
-                                      color: redColor.withOpacity(0.08),
-                                      borderRadius: BorderRadius.circular(8),
-                                      border: Border.all(
-                                        color: redColor.withOpacity(0.2),
+                                Icon(
+                                  Icons.storefront,
+                                  color: Colors.orange,
+                                  size: 18,
+                                ),
+                                SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    '⭐ Seller Account Mode',
+                                    style: TextStyle(
+                                      color: Colors.orange,
+                                      fontFamily: bold,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          10.heightBox,
+                        ],
+                        // name
+                        customTextField(
+                          title: name,
+                          hint: nameHint,
+                          controller: nameController,
+                        ),
+                        // email
+                        customTextField(
+                          title: email,
+                          hint: emailHint,
+                          controller: emailController,
+                        ),
+                        // password
+                        customTextField(
+                          title: password,
+                          hint: passwordHint,
+                          controller: passwordController,
+                          isPass: true,
+                        ),
+                        // retype password
+                        customTextField(
+                          title: retypePassword,
+                          hint: passwordHint,
+                          controller: retypePasswordController,
+                          isPass: true,
+                        ),
+                        // forget pass
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: TextButton(
+                            onPressed: () {},
+                            child: forgetPass.text
+                                .color(Vx.blue500)
+                                .make(),
+                          ),
+                        ),
+                        // check policy
+                        Row(
+                          children: [
+                            Checkbox(
+                              checkColor: whiteColor,
+                              activeColor: redColor,
+                              value: isCheck,
+                              onChanged: (newValue) {
+                                setState(() {
+                                  isCheck = newValue;
+                                });
+                              },
+                            ),
+                            10.widthBox,
+                            Expanded(
+                              child: RichText(
+                                text: TextSpan(
+                                  children: [
+                                    TextSpan(
+                                      text: "I agree to the ",
+                                      style: TextStyle(
+                                        color: fontGrey,
+                                        fontFamily: regular,
                                       ),
                                     ),
-                                    child: const Row(
-                                      children: [
-                                        Icon(
-                                          Icons.storefront,
-                                          color: redColor,
-                                          size: 18,
-                                        ),
-                                        SizedBox(width: 8),
-                                        Expanded(
-                                          child: Text(
-                                            'Seller account',
-                                            style: TextStyle(
-                                              color: redColor,
-                                              fontFamily: bold,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
+                                    TextSpan(
+                                      text: termAndConditions,
+                                      style: TextStyle(
+                                        color: redColor,
+                                        fontFamily: regular,
+                                      ),
                                     ),
-                                  ),
-                                  10.heightBox,
-                                ],
-                                // name
-                                customTextField(
-                                  title: name,
-                                  hint: nameHint,
-                                  controller: nameController,
-                                ),
-                                // email
-                                customTextField(
-                                  title: email,
-                                  hint: emailHint,
-                                  controller: emailController,
-                                ),
-                                // password
-                                customTextField(
-                                  title: password,
-                                  hint: passwordHint,
-                                  controller: passwordController,
-                                  isPass: true,
-                                ),
-                                // retype password
-                                customTextField(
-                                  title: retypePassword,
-                                  hint: passwordHint,
-                                  controller: retypePasswordController,
-                                  isPass: true,
-                                ),
-                                // forget pass
-                                Align(
-                                  alignment: Alignment.centerRight,
-                                  child: TextButton(
-                                    onPressed: () {},
-                                    child: forgetPass.text
-                                        .color(Vx.blue500)
-                                        .make(),
-                                  ),
-                                ),
-                                // check policy
-                                Row(
-                                  children: [
-                                    Checkbox(
-                                      checkColor: whiteColor,
-                                      activeColor: redColor,
-                                      value: isCheck,
-                                      onChanged: (newValue) {
-                                        setState(() {
-                                          isCheck = newValue;
-                                        });
-                                      },
+                                    TextSpan(
+                                      text: " & ",
+                                      style: TextStyle(
+                                        color: fontGrey,
+                                        fontFamily: regular,
+                                      ),
                                     ),
-                                    10.widthBox,
-                                    Expanded(
-                                      child: RichText(
-                                        text: TextSpan(
-                                          children: [
-                                            TextSpan(
-                                              text: "I agree to the ",
-                                              style: TextStyle(
-                                                color: fontGrey,
-                                                fontFamily: regular,
-                                              ),
-                                            ),
-                                            TextSpan(
-                                              text: termAndConditions,
-                                              style: TextStyle(
-                                                color: redColor,
-                                                fontFamily: regular,
-                                              ),
-                                            ),
-                                            TextSpan(
-                                              text: " & ",
-                                              style: TextStyle(
-                                                color: fontGrey,
-                                                fontFamily: regular,
-                                              ),
-                                            ),
-                                            TextSpan(
-                                              text: privacyPolicy,
-                                              style: TextStyle(
-                                                color: redColor,
-                                                fontFamily: regular,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
+                                    TextSpan(
+                                      text: privacyPolicy,
+                                      style: TextStyle(
+                                        color: redColor,
+                                        fontFamily: regular,
                                       ),
                                     ),
                                   ],
                                 ),
-                                5.heightBox,
-                                // signup button
-                                controller.isLoading.value
-                                    ? const CircularProgressIndicator(
-                                        valueColor: AlwaysStoppedAnimation(
-                                          redColor,
-                                        ),
-                                      )
-                                    : ourButton(
-                                            color: isCheck == true
-                                                ? redColor
-                                                : lightGrey,
-                                            title: signup,
-                                            textColor: whiteColor,
-                                            onPress: () async {
-                                              if (isCheck != false) {
-                                                controller.isLoading(true);
-                                                try {
-                                                  final credential =
-                                                      await controller
-                                                          .signupMethod(
-                                                            context: context,
-                                                            email:
-                                                                emailController
-                                                                    .text
-                                                                    .trim(),
-                                                            password:
-                                                                passwordController
-                                                                    .text
-                                                                    .trim(),
-                                                          );
-                                                  if (credential?.user ==
-                                                      null) {
-                                                    controller.isLoading(false);
-                                                    return;
-                                                  }
-                                                  await controller
-                                                      .storeUserData(
-                                                        email: emailController
-                                                            .text
-                                                            .trim(),
-                                                        password:
-                                                            passwordController
-                                                                .text
-                                                                .trim(),
-                                                        name: nameController
-                                                            .text
-                                                            .trim(),
-                                                        role: widget.isSeller
-                                                            ? 'Seller'
-                                                            : 'Customer',
-                                                      );
-                                                  if (!mounted) return;
-                                                  VxToast.show(
-                                                    context,
-                                                    msg: loggedIn,
-                                                  );
-                                                  await openLandingForUser(
-                                                    credential!.user!,
-                                                  );
-                                                } catch (e) {
-                                                  auth.signOut();
-                                                  VxToast.show(
-                                                    context,
-                                                    msg: e.toString(),
-                                                  );
-                                                  controller.isLoading(false);
-                                                }
-                                              }
-                                            },
-                                          ).box
-                                          .width(context.screenWidth - 50)
-                                          .make(),
-                                10.heightBox,
-                                // return to log in
-                                RichText(
-                                  text: TextSpan(
-                                    children: [
-                                      TextSpan(
-                                        text: alreadyHaveAccount,
-                                        style: TextStyle(
-                                          color: fontGrey,
-                                          fontFamily: bold,
-                                        ),
-                                      ),
-                                      TextSpan(
-                                        text: login,
-                                        style: TextStyle(
-                                          color: redColor,
-                                          fontFamily: bold,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ).onTap(() {
-                                  Get.back();
-                                }),
-                              ],
-                            ).box.white.rounded
-                            .padding(const EdgeInsets.all(16))
-                            .width(context.screenWidth - 70)
-                            .shadowSm
-                            .make(),
+                              ),
+                            ),
+                          ],
+                        ),
+                        5.heightBox,
+                        // signup button
+                        controller.isLoading.value
+                            ? const CircularProgressIndicator(
+                                valueColor: AlwaysStoppedAnimation(
+                                  redColor,
+                                ),
+                              )
+                            : ourButton(
+                                color: isCheck == true
+                                    ? (isSellerMode ? Colors.orange : redColor)
+                                    : lightGrey,
+                                title: isSellerMode ? 'Create Seller Account' : signup,
+                                textColor: whiteColor,
+                                onPress: () async {
+                                  if (isCheck != false) {
+                                    controller.isLoading(true);
+                                    try {
+                                      final credential = await controller.signupMethod(
+                                        context: context,
+                                        email: emailController.text.trim(),
+                                        password: passwordController.text.trim(),
+                                      );
+                                      if (credential?.user == null) {
+                                        controller.isLoading(false);
+                                        return;
+                                      }
+                                      await controller.storeUserData(
+                                        email: emailController.text.trim(),
+                                        password: passwordController.text.trim(),
+                                        name: nameController.text.trim(),
+                                        role: isSellerMode ? 'Seller' : 'Customer',
+                                      );
+                                      if (!mounted) return;
+                                      VxToast.show(
+                                        context,
+                                        msg: loggedIn,
+                                      );
+                                      await openLandingForUser(
+                                        credential!.user!,
+                                      );
+                                    } catch (e) {
+                                      auth.signOut();
+                                      VxToast.show(
+                                        context,
+                                        msg: e.toString(),
+                                      );
+                                      controller.isLoading(false);
+                                    }
+                                  }
+                                },
+                              ).box
+                              .width(context.screenWidth - 50)
+                              .make(),
+                        10.heightBox,
+                        // return to log in
+                        RichText(
+                          text: TextSpan(
+                            children: [
+                              TextSpan(
+                                text: alreadyHaveAccount,
+                                style: TextStyle(
+                                  color: fontGrey,
+                                  fontFamily: bold,
+                                ),
+                              ),
+                              TextSpan(
+                                text: login,
+                                style: TextStyle(
+                                  color: redColor,
+                                  fontFamily: bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ).onTap(() {
+                          Get.back();
+                        }),
+                      ],
+                    ).box.white.rounded
+                    .padding(const EdgeInsets.all(16))
+                    .width(context.screenWidth - 70)
+                    .shadowSm
+                    .make(),
                   ),
                 ],
               ),
@@ -295,22 +281,37 @@ class _SignupScreenState extends State<SignupScreen> {
                 child: Padding(
                   padding: const EdgeInsets.only(top: 10, right: 14),
                   child: Tooltip(
-                    message: widget.isSeller
-                        ? 'Seller account'
-                        : 'Create seller account',
+                    message: isSellerMode
+                        ? 'Switch to Customer'
+                        : 'Switch to Seller',
                     child: IconButton(
-                      onPressed: widget.isSeller
-                          ? null
-                          : () => Get.off(
-                              () => const SignupScreen(isSeller: true),
-                            ),
+                      onPressed: () {
+                        setState(() {
+                          isSellerMode = !isSellerMode;
+                        });
+                        
+                        setState(() {
+                          isCheck = false;
+                        });
+                        emailController.clear();
+                        nameController.clear();
+                        passwordController.clear();
+                        retypePasswordController.clear();
+                      },
                       style: IconButton.styleFrom(
-                        backgroundColor: whiteColor.withOpacity(0.18),
+                        backgroundColor: isSellerMode 
+                            ? Colors.orange.withOpacity(0.2) 
+                            : whiteColor.withOpacity(0.18),
                         disabledBackgroundColor: whiteColor.withOpacity(0.25),
-                        foregroundColor: whiteColor,
-                        disabledForegroundColor: whiteColor,
+                        foregroundColor: isSellerMode ? Colors.orange : Colors.black,
+                        disabledForegroundColor: Colors.grey,
                       ),
-                      icon: const Icon(Icons.storefront_outlined),
+                      icon: Icon(
+                        isSellerMode
+                            ? Icons.person_outline
+                            : Icons.storefront_outlined,
+                        color: isSellerMode ? Colors.orange : Colors.black,
+                      ),
                     ),
                   ),
                 ),
