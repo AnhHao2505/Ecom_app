@@ -38,10 +38,9 @@ class NotificationController extends GetxController {
     _subscription?.cancel();
     isLoading.value = true;
 
-    print('📡 Listening to notifications collection: "$collectionName"');
     _subscription = _firestore
         .collection(collectionName)
-        // .orderBy('createdAt', descending: true) // bỏ nếu chưa có index
+        .orderBy('createdAt', descending: true)
         .snapshots()
         .listen(
           (snapshot) {
@@ -55,18 +54,14 @@ class NotificationController extends GetxController {
                   collectionName == _primaryCol) {
                 _checkedFallback = true;
                 _activeCol = _fallbackCol;
-                print(
-                  '⚠️ No documents in "$collectionName". Switching to fallback "$_fallbackCol".',
-                );
                 _subscribeToCollection(_activeCol);
                 return;
               }
 
               notifications.value = list;
               unreadCount.value = list.where((n) => !n.isRead).length;
-            } catch (error, stackTrace) {
+            } catch (error) {
               print('❌ Notification parse error: $error');
-              print(stackTrace);
             } finally {
               isLoading.value = false;
             }
@@ -76,9 +71,6 @@ class NotificationController extends GetxController {
             if (!_checkedFallback && collectionName == _primaryCol) {
               _checkedFallback = true;
               _activeCol = _fallbackCol;
-              print(
-                '⚠️ Error reading "$collectionName". Switching to fallback "$_fallbackCol".',
-              );
               _subscribeToCollection(_activeCol);
               return;
             }
@@ -87,9 +79,8 @@ class NotificationController extends GetxController {
         );
   }
 
-  // ✅ Fix getter - trả về List thông thường
   List<NotificationModel> get filteredNotifications {
-    final list = notifications.toList(); // convert ra List thường
+    final list = notifications.toList();
     if (selectedFilter.value == 'all') return list;
     return list.where((n) => n.type == selectedFilter.value).toList();
   }
@@ -124,23 +115,5 @@ class NotificationController extends GetxController {
     await batch.commit();
     notifications.clear();
     unreadCount.value = 0;
-  }
-
-  Future<void> addNotification({
-    required String title,
-    required String body,
-    required String type,
-    String? imageUrl,
-    Map<String, dynamic>? data,
-  }) async {
-    await _firestore.collection(_activeCol).add({
-      'title': title,
-      'body': body,
-      'type': type,
-      'isRead': false,
-      'imageUrl': imageUrl ?? '',
-      'createdAt': FieldValue.serverTimestamp(),
-      'data': data ?? {},
-    });
   }
 }

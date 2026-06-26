@@ -2,15 +2,18 @@ import 'package:e_mart/consts/consts.dart';
 import 'package:e_mart/consts/lists.dart';
 import 'package:e_mart/controllers/cart_controller.dart';
 import 'package:e_mart/controllers/home_controller.dart';
+import 'package:e_mart/controllers/message_controller.dart';
 import 'package:e_mart/controllers/recent_view_controller.dart';
 import 'package:e_mart/controllers/wishlist_controller.dart';
 import 'package:e_mart/models/product_model.dart';
 import 'package:e_mart/models/store_model.dart';
 import 'package:e_mart/services/seller_service.dart';
+import 'package:e_mart/views/chat_screen/chat_detail_screen.dart';
 import 'package:e_mart/views/store_screen/store_detail.dart';
 import 'package:e_mart/widget_common/our_button.dart';
 import 'package:e_mart/widget_common/product_card.dart';
 import 'package:e_mart/widget_common/product_image.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
 
 class ItemDetail extends StatefulWidget {
@@ -195,6 +198,7 @@ class _ItemDetailState extends State<ItemDetail> {
                   _ProductStoreCard(
                     product: product,
                     fallbackStore: fallbackStore,
+                    onChat: _openChat,
                   ),
                   20.heightBox,
                   Container(
@@ -597,25 +601,68 @@ class _ItemDetailState extends State<ItemDetail> {
     };
     return colors[value.toLowerCase()] ?? darkFontGrey;
   }
+
+  void _openChat(Store store) async {
+    // Kiểm tra đã đăng nhập chưa
+    if (FirebaseAuth.instance.currentUser == null) {
+      _showMessage('Vui lòng đăng nhập để chat');
+      return;
+    }
+
+    final receiverId = product.userId?.isNotEmpty == true
+        ? product.userId!
+        : store.id;
+
+    try {
+      final messageController = Get.isRegistered<MessageController>()
+          ? Get.find<MessageController>()
+          : Get.put(MessageController());
+
+      // Tạo conversation với shop
+      final conversationId = await messageController.createConversation(
+        receiverId,
+      );
+
+      if (conversationId.isNotEmpty) {
+        Get.to(
+          () => ChatDetailScreen(
+            conversationId: conversationId,
+            receiverId: receiverId,
+            shopName: store.name,
+          ),
+        );
+      }
+    } catch (e) {
+      _showMessage('Không thể mở chat: $e');
+    }
+  }
 }
 
 class _ProductStoreCard extends StatelessWidget {
   final Product product;
   final Store fallbackStore;
+  final ValueChanged<Store> onChat;
 
-  const _ProductStoreCard({required this.product, required this.fallbackStore});
+  const _ProductStoreCard({
+    required this.product,
+    required this.fallbackStore,
+    required this.onChat,
+  });
 
   @override
   Widget build(BuildContext context) {
     final sellerUserId = product.userId;
     if (sellerUserId == null || sellerUserId.isEmpty) {
-      return _StoreCardContent(store: fallbackStore);
+      return _StoreCardContent(store: fallbackStore, onChat: onChat);
     }
 
     return StreamBuilder<Store?>(
       stream: SellerService().watchStore(sellerUserId),
       builder: (context, snapshot) {
-        return _StoreCardContent(store: snapshot.data ?? fallbackStore);
+        return _StoreCardContent(
+          store: snapshot.data ?? fallbackStore,
+          onChat: onChat,
+        );
       },
     );
   }
@@ -623,8 +670,9 @@ class _ProductStoreCard extends StatelessWidget {
 
 class _StoreCardContent extends StatelessWidget {
   final Store store;
+  final ValueChanged<Store> onChat;
 
-  const _StoreCardContent({required this.store});
+  const _StoreCardContent({required this.store, required this.onChat});
 
   @override
   Widget build(BuildContext context) {
@@ -701,6 +749,11 @@ class _StoreCardContent extends StatelessWidget {
                   ),
                 ],
               ),
+            ),
+            IconButton(
+              tooltip: 'Chat with shop',
+              onPressed: () => onChat(store),
+              icon: const Icon(Icons.chat_bubble_outline, color: primaryColor),
             ),
             const Icon(Icons.chevron_right, color: primaryColor),
           ],

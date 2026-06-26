@@ -1,6 +1,7 @@
 import 'package:e_mart/consts/consts.dart';
 import 'package:e_mart/consts/lists.dart';
 import 'package:e_mart/controllers/home_controller.dart';
+import 'package:e_mart/views/chat_screen/chat_list_screen.dart';
 import 'package:e_mart/widget_common/product_card.dart';
 import 'package:e_mart/widget_common/sort_chips.dart';
 import 'package:e_mart/views/home_screen/all_products_screen.dart';
@@ -50,6 +51,7 @@ class HomeScreen extends StatelessWidget {
                       fontSize: 22,
                     ),
                   ),
+                  const Spacer(),
                   IconButton(
                     icon: Icon(
                       Theme.of(context).brightness == Brightness.dark
@@ -59,6 +61,12 @@ class HomeScreen extends StatelessWidget {
                     ),
                     onPressed: () {
                       Get.find<ThemeController>().toggleTheme();
+                    },
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.message_rounded),
+                    onPressed: () {
+                      Get.to(() => const ChatListScreen());
                     },
                   ),
                 ],

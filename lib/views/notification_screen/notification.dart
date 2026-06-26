@@ -1,6 +1,5 @@
 import 'package:e_mart/consts/consts.dart';
 import 'package:e_mart/controllers/notification_controller.dart';
-import 'package:e_mart/models/notification_model.dart';
 import 'package:e_mart/views/notification_screen/widgets/notification_item.dart';
 import 'package:get/get.dart';
 
@@ -14,7 +13,7 @@ class NotificationPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: lightGrey,
       appBar: AppBar(
-        backgroundColor: redColor,
+        backgroundColor: primaryColor,
         elevation: 0,
         title: 'Thông báo'.text.fontFamily(bold).white.size(20).make(),
         centerTitle: true,
@@ -68,7 +67,6 @@ class NotificationPage extends StatelessWidget {
                       if (!notification.isRead) {
                         controller.markAsRead(notification.id);
                       }
-                      _handleNotificationTap(context, notification);
                     },
                     onDelete: () {
                       controller.deleteNotification(notification.id);
@@ -107,9 +105,11 @@ class NotificationPage extends StatelessWidget {
                   vertical: 8,
                 ),
                 decoration: BoxDecoration(
-                  color: isSelected ? redColor : Colors.white,
+                  color: isSelected ? primaryColor : Colors.white,
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: isSelected ? redColor : lightGrey),
+                  border: Border.all(
+                    color: isSelected ? primaryColor : lightGrey,
+                  ),
                 ),
                 child: tabs[index].text
                     .color(isSelected ? whiteColor : darkFontGrey)
@@ -137,26 +137,6 @@ class NotificationPage extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  void _handleNotificationTap(
-    BuildContext context,
-    NotificationModel notification,
-  ) {
-    switch (notification.type) {
-      case 'order':
-        // Đi đến chi tiết đơn hàng
-        break;
-      case 'promotion':
-        // Đi đến trang khuyến mãi
-        break;
-      case 'payment':
-        // Đi đến trang thanh toán
-        break;
-      default:
-        VxToast.show(context, msg: '${notification.title}');
-        break;
-    }
   }
 
   void _showDeleteAllDialog(
