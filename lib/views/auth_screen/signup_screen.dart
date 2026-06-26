@@ -1,6 +1,6 @@
 import 'package:e_mart/consts/consts.dart';
 import 'package:e_mart/controllers/auth_controller.dart';
-import 'package:e_mart/views/home_screen/home.dart';
+import 'package:e_mart/utils/auth_navigation.dart';
 import 'package:e_mart/widget_common/applogo_widget.dart';
 import 'package:e_mart/widget_common/bg_widget.dart';
 import 'package:e_mart/widget_common/custom_textfield.dart';
@@ -8,7 +8,9 @@ import 'package:e_mart/widget_common/our_button.dart';
 import 'package:get/get.dart';
 
 class SignupScreen extends StatefulWidget {
-  const SignupScreen({super.key});
+  final bool isSeller;
+
+  const SignupScreen({super.key, this.isSeller = false});
 
   @override
   State<SignupScreen> createState() => _SignupScreenState();
@@ -37,189 +39,284 @@ class _SignupScreenState extends State<SignupScreen> {
     return bgWidget(
       child: Scaffold(
         resizeToAvoidBottomInset: false,
-        body: Center(
-          child: Column(
-            children: [
-              (context.screenHeight * 0.1).heightBox,
-              appLogoWidget(),
-              10.heightBox,
-              "Join the $appname".text.fontFamily(bold).white.size(18).make(),
-              15.heightBox,
+        body: Stack(
+          children: [
+            Center(
+              child: Column(
+                children: [
+                  (context.screenHeight * 0.1).heightBox,
+                  appLogoWidget(),
+                  10.heightBox,
+                  (widget.isSeller
+                          ? "Create your seller account"
+                          : "Join the $appname")
+                      .text
+                      .fontFamily(bold)
+                      .white
+                      .size(18)
+                      .make(),
+                  15.heightBox,
 
-              Obx(
-                () =>
-                    Column(
-                          children: [
-                            // name
-                            customTextField(
-                              title: name,
-                              hint: nameHint,
-                              controller: nameController,
-                            ),
-                            // email
-                            customTextField(
-                              title: email,
-                              hint: emailHint,
-                              controller: emailController,
-                            ),
-                            // password
-                            customTextField(
-                              title: password,
-                              hint: passwordHint,
-                              controller: passwordController,
-                              isPass: true,
-                            ),
-                            // retype password
-                            customTextField(
-                              title: retypePassword,
-                              hint: passwordHint,
-                              controller: retypePasswordController,
-                              isPass: true,
-                            ),
-                            // forget pass
-                            Align(
-                              alignment: Alignment.centerRight,
-                              child: TextButton(
-                                onPressed: () {},
-                                child: forgetPass.text.color(Vx.blue500).make(),
-                              ),
-                            ),
-                            // check policy
-                            Row(
+                  Obx(
+                    () =>
+                        Column(
                               children: [
-                                Checkbox(
-                                  checkColor: whiteColor,
-                                  activeColor: redColor,
-                                  value: isCheck,
-                                  onChanged: (newValue) {
-                                    setState(() {
-                                      isCheck = newValue;
-                                    });
-                                  },
-                                ),
-                                10.widthBox,
-                                Expanded(
-                                  child: RichText(
-                                    text: TextSpan(
+                                if (widget.isSeller) ...[
+                                  Container(
+                                    width: double.infinity,
+                                    padding: const EdgeInsets.all(10),
+                                    decoration: BoxDecoration(
+                                      color: redColor.withOpacity(0.08),
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(
+                                        color: redColor.withOpacity(0.2),
+                                      ),
+                                    ),
+                                    child: const Row(
                                       children: [
-                                        TextSpan(
-                                          text: "I agree to the ",
-                                          style: TextStyle(
-                                            color: fontGrey,
-                                            fontFamily: regular,
-                                          ),
+                                        Icon(
+                                          Icons.storefront,
+                                          color: redColor,
+                                          size: 18,
                                         ),
-                                        TextSpan(
-                                          text: termAndConditions,
-                                          style: TextStyle(
-                                            color: redColor,
-                                            fontFamily: regular,
-                                          ),
-                                        ),
-                                        TextSpan(
-                                          text: " & ",
-                                          style: TextStyle(
-                                            color: fontGrey,
-                                            fontFamily: regular,
-                                          ),
-                                        ),
-                                        TextSpan(
-                                          text: privacyPolicy,
-                                          style: TextStyle(
-                                            color: redColor,
-                                            fontFamily: regular,
+                                        SizedBox(width: 8),
+                                        Expanded(
+                                          child: Text(
+                                            'Seller account',
+                                            style: TextStyle(
+                                              color: redColor,
+                                              fontFamily: bold,
+                                            ),
                                           ),
                                         ),
                                       ],
                                     ),
                                   ),
-                                ),
-                              ],
-                            ),
-                            5.heightBox,
-                            // signup button
-                            controller.isLoading.value
-                                ? const CircularProgressIndicator(
-                                    valueColor: AlwaysStoppedAnimation(
-                                      redColor,
-                                    ),
-                                  )
-                                : ourButton(
-                                    color: isCheck == true
-                                        ? redColor
-                                        : lightGrey,
-                                    title: signup,
-                                    textColor: whiteColor,
-                                    onPress: () async {
-                                      if (isCheck != false) {
-                                        controller.isLoading(true);
-                                        try {
-                                          await controller
-                                              .signupMethod(
-                                                context: context,
-                                                email: emailController.text,
-                                                password:
-                                                    passwordController.text,
-                                              )
-                                              .then((value) {
-                                                return controller.storeUserData(
-                                                  email: emailController.text,
-                                                  password:
-                                                      passwordController.text,
-                                                  name: nameController.text,
-                                                );
-                                              })
-                                              .then((value) {
-                                                VxToast.show(
-                                                  context,
-                                                  msg: loggedIn,
-                                                );
-                                                Get.offAll(() => const Home());
-                                              });
-                                        } catch (e) {
-                                          auth.signOut();
-                                          VxToast.show(
-                                            context,
-                                            msg: e.toString(),
-                                          );
-                                          controller.isLoading(false);
-                                        }
-                                      }
-                                    },
-                                  ).box.width(context.screenWidth - 50).make(),
-                            10.heightBox,
-                            // return to log in
-                            RichText(
-                              text: TextSpan(
-                                children: [
-                                  TextSpan(
-                                    text: alreadyHaveAccount,
-                                    style: TextStyle(
-                                      color: fontGrey,
-                                      fontFamily: bold,
-                                    ),
-                                  ),
-                                  TextSpan(
-                                    text: login,
-                                    style: TextStyle(
-                                      color: redColor,
-                                      fontFamily: bold,
-                                    ),
-                                  ),
+                                  10.heightBox,
                                 ],
-                              ),
-                            ).onTap(() {
-                              Get.back();
-                            }),
-                          ],
-                        ).box.white.rounded
-                        .padding(const EdgeInsets.all(16))
-                        .width(context.screenWidth - 70)
-                        .shadowSm
-                        .make(),
+                                // name
+                                customTextField(
+                                  title: name,
+                                  hint: nameHint,
+                                  controller: nameController,
+                                ),
+                                // email
+                                customTextField(
+                                  title: email,
+                                  hint: emailHint,
+                                  controller: emailController,
+                                ),
+                                // password
+                                customTextField(
+                                  title: password,
+                                  hint: passwordHint,
+                                  controller: passwordController,
+                                  isPass: true,
+                                ),
+                                // retype password
+                                customTextField(
+                                  title: retypePassword,
+                                  hint: passwordHint,
+                                  controller: retypePasswordController,
+                                  isPass: true,
+                                ),
+                                // forget pass
+                                Align(
+                                  alignment: Alignment.centerRight,
+                                  child: TextButton(
+                                    onPressed: () {},
+                                    child: forgetPass.text
+                                        .color(Vx.blue500)
+                                        .make(),
+                                  ),
+                                ),
+                                // check policy
+                                Row(
+                                  children: [
+                                    Checkbox(
+                                      checkColor: whiteColor,
+                                      activeColor: redColor,
+                                      value: isCheck,
+                                      onChanged: (newValue) {
+                                        setState(() {
+                                          isCheck = newValue;
+                                        });
+                                      },
+                                    ),
+                                    10.widthBox,
+                                    Expanded(
+                                      child: RichText(
+                                        text: TextSpan(
+                                          children: [
+                                            TextSpan(
+                                              text: "I agree to the ",
+                                              style: TextStyle(
+                                                color: fontGrey,
+                                                fontFamily: regular,
+                                              ),
+                                            ),
+                                            TextSpan(
+                                              text: termAndConditions,
+                                              style: TextStyle(
+                                                color: redColor,
+                                                fontFamily: regular,
+                                              ),
+                                            ),
+                                            TextSpan(
+                                              text: " & ",
+                                              style: TextStyle(
+                                                color: fontGrey,
+                                                fontFamily: regular,
+                                              ),
+                                            ),
+                                            TextSpan(
+                                              text: privacyPolicy,
+                                              style: TextStyle(
+                                                color: redColor,
+                                                fontFamily: regular,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                5.heightBox,
+                                // signup button
+                                controller.isLoading.value
+                                    ? const CircularProgressIndicator(
+                                        valueColor: AlwaysStoppedAnimation(
+                                          redColor,
+                                        ),
+                                      )
+                                    : ourButton(
+                                            color: isCheck == true
+                                                ? redColor
+                                                : lightGrey,
+                                            title: signup,
+                                            textColor: whiteColor,
+                                            onPress: () async {
+                                              if (isCheck != false) {
+                                                controller.isLoading(true);
+                                                try {
+                                                  final credential =
+                                                      await controller
+                                                          .signupMethod(
+                                                            context: context,
+                                                            email:
+                                                                emailController
+                                                                    .text
+                                                                    .trim(),
+                                                            password:
+                                                                passwordController
+                                                                    .text
+                                                                    .trim(),
+                                                          );
+                                                  if (credential?.user ==
+                                                      null) {
+                                                    controller.isLoading(false);
+                                                    return;
+                                                  }
+                                                  await controller
+                                                      .storeUserData(
+                                                        email: emailController
+                                                            .text
+                                                            .trim(),
+                                                        password:
+                                                            passwordController
+                                                                .text
+                                                                .trim(),
+                                                        name: nameController
+                                                            .text
+                                                            .trim(),
+                                                        role: widget.isSeller
+                                                            ? 'Seller'
+                                                            : 'Customer',
+                                                      );
+                                                  if (!mounted) return;
+                                                  VxToast.show(
+                                                    context,
+                                                    msg: loggedIn,
+                                                  );
+                                                  await openLandingForUser(
+                                                    credential!.user!,
+                                                  );
+                                                } catch (e) {
+                                                  auth.signOut();
+                                                  VxToast.show(
+                                                    context,
+                                                    msg: e.toString(),
+                                                  );
+                                                  controller.isLoading(false);
+                                                }
+                                              }
+                                            },
+                                          ).box
+                                          .width(context.screenWidth - 50)
+                                          .make(),
+                                10.heightBox,
+                                // return to log in
+                                RichText(
+                                  text: TextSpan(
+                                    children: [
+                                      TextSpan(
+                                        text: alreadyHaveAccount,
+                                        style: TextStyle(
+                                          color: fontGrey,
+                                          fontFamily: bold,
+                                        ),
+                                      ),
+                                      TextSpan(
+                                        text: login,
+                                        style: TextStyle(
+                                          color: redColor,
+                                          fontFamily: bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ).onTap(() {
+                                  Get.back();
+                                }),
+                              ],
+                            ).box.white.rounded
+                            .padding(const EdgeInsets.all(16))
+                            .width(context.screenWidth - 70)
+                            .shadowSm
+                            .make(),
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+            SafeArea(
+              child: Align(
+                alignment: Alignment.topRight,
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 10, right: 14),
+                  child: Tooltip(
+                    message: widget.isSeller
+                        ? 'Seller account'
+                        : 'Create seller account',
+                    child: IconButton(
+                      onPressed: widget.isSeller
+                          ? null
+                          : () => Get.off(
+                              () => const SignupScreen(isSeller: true),
+                            ),
+                      style: IconButton.styleFrom(
+                        backgroundColor: whiteColor.withOpacity(0.18),
+                        disabledBackgroundColor: whiteColor.withOpacity(0.25),
+                        foregroundColor: whiteColor,
+                        disabledForegroundColor: whiteColor,
+                      ),
+                      icon: const Icon(Icons.storefront_outlined),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

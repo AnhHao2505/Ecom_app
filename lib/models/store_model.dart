@@ -1,7 +1,9 @@
-  import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:e_mart/consts/images.dart';
 
 class Store {
   final String id;
+  final String? ownerUserId;
   final String name;
   final String description;
   final String ownerName;
@@ -21,6 +23,7 @@ class Store {
 
   Store({
     required this.id,
+    this.ownerUserId,
     required this.name,
     required this.description,
     required this.ownerName,
@@ -46,6 +49,8 @@ class Store {
   Map<String, dynamic> toMap() {
     return {
       'id': id,
+      if (ownerUserId != null && ownerUserId!.isNotEmpty)
+        'ownerUserId': ownerUserId,
       'name': name,
       'description': description,
       'ownerName': ownerName,
@@ -68,20 +73,21 @@ class Store {
   factory Store.fromMap(Map<String, dynamic> map, String docId) {
     return Store(
       id: docId,
-      name: map['name'] ?? '',
-      description: map['description'] ?? '',
-      ownerName: map['ownerName'] ?? '',
-      logo: map['logo'] ?? '',
-      coverImage: map['coverImage'] ?? '',
-      phone: map['phone'] ?? '',
-      email: map['email'] ?? '',
-      address: map['address'] ?? '',
-      openingHours: map['openingHours'] ?? '',
-      rating: (map['rating'] ?? 0.0).toDouble(),
-      followerCount: map['followerCount'] ?? 0,
-      productCount: map['productCount'] ?? 0,
-      latitude: (map['latitude'] ?? 0.0).toDouble(),
-      longitude: (map['longitude'] ?? 0.0).toDouble(),
+      ownerUserId: _nullableString(map['ownerUserId']),
+      name: map['name']?.toString() ?? '',
+      description: map['description']?.toString() ?? '',
+      ownerName: map['ownerName']?.toString() ?? '',
+      logo: _nonEmptyString(map['logo'], icShop),
+      coverImage: _nonEmptyString(map['coverImage'], imgSlider1),
+      phone: map['phone']?.toString() ?? '',
+      email: map['email']?.toString() ?? '',
+      address: map['address']?.toString() ?? '',
+      openingHours: map['openingHours']?.toString() ?? '',
+      rating: _toDouble(map['rating']),
+      followerCount: _toInt(map['followerCount']),
+      productCount: _toInt(map['productCount']),
+      latitude: _toDouble(map['latitude']),
+      longitude: _toDouble(map['longitude']),
       createdAt: (map['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       updatedAt: (map['updatedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
     );
@@ -90,6 +96,8 @@ class Store {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
+      if (ownerUserId != null && ownerUserId!.isNotEmpty)
+        'ownerUserId': ownerUserId,
       'name': name,
       'description': description,
       'ownerName': ownerName,
@@ -112,20 +120,21 @@ class Store {
   factory Store.fromJson(Map<String, dynamic> json) {
     return Store(
       id: json['id'] ?? '',
-      name: json['name'] ?? '',
-      description: json['description'] ?? '',
-      ownerName: json['ownerName'] ?? '',
-      logo: json['logo'] ?? '',
-      coverImage: json['coverImage'] ?? '',
-      phone: json['phone'] ?? '',
-      email: json['email'] ?? '',
-      address: json['address'] ?? '',
-      openingHours: json['openingHours'] ?? '',
-      rating: (json['rating'] ?? 0.0).toDouble(),
-      followerCount: json['followerCount'] ?? 0,
-      productCount: json['productCount'] ?? 0,
-      latitude: (json['latitude'] ?? 0.0).toDouble(),
-      longitude: (json['longitude'] ?? 0.0).toDouble(),
+      ownerUserId: _nullableString(json['ownerUserId']),
+      name: json['name']?.toString() ?? '',
+      description: json['description']?.toString() ?? '',
+      ownerName: json['ownerName']?.toString() ?? '',
+      logo: _nonEmptyString(json['logo'], icShop),
+      coverImage: _nonEmptyString(json['coverImage'], imgSlider1),
+      phone: json['phone']?.toString() ?? '',
+      email: json['email']?.toString() ?? '',
+      address: json['address']?.toString() ?? '',
+      openingHours: json['openingHours']?.toString() ?? '',
+      rating: _toDouble(json['rating']),
+      followerCount: _toInt(json['followerCount']),
+      productCount: _toInt(json['productCount']),
+      latitude: _toDouble(json['latitude']),
+      longitude: _toDouble(json['longitude']),
       createdAt: json['createdAt'] != null
           ? DateTime.parse(json['createdAt'])
           : DateTime.now(),
@@ -137,6 +146,7 @@ class Store {
 
   Store copyWith({
     String? id,
+    String? ownerUserId,
     String? name,
     String? description,
     String? ownerName,
@@ -156,6 +166,7 @@ class Store {
   }) {
     return Store(
       id: id ?? this.id,
+      ownerUserId: ownerUserId ?? this.ownerUserId,
       name: name ?? this.name,
       description: description ?? this.description,
       ownerName: ownerName ?? this.ownerName,
@@ -178,5 +189,25 @@ class Store {
   @override
   String toString() {
     return 'Store(id: $id, name: $name, rating: $rating)';
+  }
+
+  static double _toDouble(dynamic value) {
+    if (value is num) return value.toDouble();
+    return double.tryParse(value?.toString() ?? '') ?? 0;
+  }
+
+  static int _toInt(dynamic value) {
+    if (value is num) return value.toInt();
+    return int.tryParse(value?.toString() ?? '') ?? 0;
+  }
+
+  static String _nonEmptyString(dynamic value, String fallback) {
+    final text = value?.toString().trim();
+    return text == null || text.isEmpty ? fallback : text;
+  }
+
+  static String? _nullableString(dynamic value) {
+    final text = value?.toString().trim();
+    return text == null || text.isEmpty ? null : text;
   }
 }

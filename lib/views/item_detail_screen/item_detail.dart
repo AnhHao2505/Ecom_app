@@ -5,6 +5,8 @@ import 'package:e_mart/controllers/home_controller.dart';
 import 'package:e_mart/controllers/recent_view_controller.dart';
 import 'package:e_mart/controllers/wishlist_controller.dart';
 import 'package:e_mart/models/product_model.dart';
+import 'package:e_mart/models/store_model.dart';
+import 'package:e_mart/services/seller_service.dart';
 import 'package:e_mart/views/store_screen/store_detail.dart';
 import 'package:e_mart/widget_common/our_button.dart';
 import 'package:e_mart/widget_common/product_card.dart';
@@ -42,7 +44,7 @@ class _ItemDetailState extends State<ItemDetail> {
   @override
   Widget build(BuildContext context) {
     final images = product.images.isEmpty ? [''] : product.images;
-    final store = storeById(product.storeId);
+    final fallbackStore = storeById(product.storeId);
     final homeController = Get.find<HomeController>();
     final relatedProducts = homeController.products
         .where(
@@ -190,94 +192,9 @@ class _ItemDetailState extends State<ItemDetail> {
                     ],
                   ),
                   20.heightBox,
-                  InkWell(
-                    onTap: () => Get.to(() => StoreDetail(store: store)),
-                    borderRadius: BorderRadius.circular(12),
-                    child: Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).cardColor,
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 48,
-                            height: 48,
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: Theme.of(context).scaffoldBackgroundColor,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Image.asset(store.logo, fit: BoxFit.contain),
-                          ),
-                          16.widthBox,
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  store.name,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                    color: Theme.of(
-                                      context,
-                                    ).textTheme.bodyLarge?.color,
-                                    fontFamily: semibold,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                                4.heightBox,
-                                Row(
-                                  children: [
-                                    const Icon(
-                                      Icons.star,
-                                      color: golden,
-                                      size: 14,
-                                    ),
-                                    4.widthBox,
-                                    Text(
-                                      store.rating.toString(),
-                                      style: TextStyle(
-                                        color: Theme.of(
-                                          context,
-                                        ).textTheme.bodyMedium?.color,
-                                        fontSize: 12,
-                                      ),
-                                    ),
-                                    8.widthBox,
-                                    Expanded(
-                                      child: Text(
-                                        store.address,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(
-                                          color: Theme.of(context)
-                                              .textTheme
-                                              .bodyMedium
-                                              ?.color
-                                              ?.withOpacity(0.7),
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                          const Icon(Icons.chevron_right, color: primaryColor),
-                        ],
-                      ),
-                    ),
+                  _ProductStoreCard(
+                    product: product,
+                    fallbackStore: fallbackStore,
                   ),
                   20.heightBox,
                   Container(
@@ -567,7 +484,7 @@ class _ItemDetailState extends State<ItemDetail> {
                     ),
                     16.heightBox,
                     SizedBox(
-                      height: 290,
+                      height: 312,
                       child: ListView.separated(
                         scrollDirection: Axis.horizontal,
                         itemCount: relatedProducts.length,
@@ -576,7 +493,7 @@ class _ItemDetailState extends State<ItemDetail> {
                           width: 170,
                           child: ProductCard(
                             product: relatedProducts[index],
-                            imageHeight: 145,
+                            imageHeight: 152,
                           ),
                         ),
                       ),
@@ -679,5 +596,116 @@ class _ItemDetailState extends State<ItemDetail> {
       'light blue': Color(0xff90caf9),
     };
     return colors[value.toLowerCase()] ?? darkFontGrey;
+  }
+}
+
+class _ProductStoreCard extends StatelessWidget {
+  final Product product;
+  final Store fallbackStore;
+
+  const _ProductStoreCard({required this.product, required this.fallbackStore});
+
+  @override
+  Widget build(BuildContext context) {
+    final sellerUserId = product.userId;
+    if (sellerUserId == null || sellerUserId.isEmpty) {
+      return _StoreCardContent(store: fallbackStore);
+    }
+
+    return StreamBuilder<Store?>(
+      stream: SellerService().watchStore(sellerUserId),
+      builder: (context, snapshot) {
+        return _StoreCardContent(store: snapshot.data ?? fallbackStore);
+      },
+    );
+  }
+}
+
+class _StoreCardContent extends StatelessWidget {
+  final Store store;
+
+  const _StoreCardContent({required this.store});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: () => Get.to(() => StoreDetail(store: store)),
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Theme.of(context).cardColor,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Theme.of(context).scaffoldBackgroundColor,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: ProductImage(source: store.logo, fit: BoxFit.contain),
+            ),
+            16.widthBox,
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    store.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: Theme.of(context).textTheme.bodyLarge?.color,
+                      fontFamily: semibold,
+                      fontSize: 16,
+                    ),
+                  ),
+                  4.heightBox,
+                  Row(
+                    children: [
+                      const Icon(Icons.star, color: golden, size: 14),
+                      4.widthBox,
+                      Text(
+                        store.rating.toString(),
+                        style: TextStyle(
+                          color: Theme.of(context).textTheme.bodyMedium?.color,
+                          fontSize: 12,
+                        ),
+                      ),
+                      8.widthBox,
+                      Expanded(
+                        child: Text(
+                          store.address,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: Theme.of(
+                              context,
+                            ).textTheme.bodyMedium?.color?.withOpacity(0.7),
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.chevron_right, color: primaryColor),
+          ],
+        ),
+      ),
+    );
   }
 }

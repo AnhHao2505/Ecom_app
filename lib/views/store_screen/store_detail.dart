@@ -1,8 +1,10 @@
 import 'package:e_mart/consts/consts.dart';
 import 'package:e_mart/consts/lists.dart';
+import 'package:e_mart/controllers/home_controller.dart';
 import 'package:e_mart/models/product_model.dart';
 import 'package:e_mart/models/store_model.dart';
 import 'package:e_mart/views/item_detail_screen/item_detail.dart';
+import 'package:e_mart/widget_common/product_image.dart';
 import 'package:get/get.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -13,8 +15,6 @@ class StoreDetail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final storeProducts = productsByStore(store.id);
-
     return Scaffold(
       backgroundColor: lightGrey,
       appBar: AppBar(
@@ -24,44 +24,79 @@ class StoreDetail extends StatelessWidget {
           IconButton(onPressed: () {}, icon: const Icon(Icons.favorite_border)),
         ],
       ),
-      body: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _StoreHeader(store: store, productTotal: storeProducts.length),
-            12.heightBox,
-            _StoreInfo(store: store),
-            12.heightBox,
-            _StoreMap(store: store),
-            16.heightBox,
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: "Products from this store".text
-                  .fontFamily(bold)
-                  .size(16)
-                  .color(darkFontGrey)
-                  .make(),
-            ),
-            10.heightBox,
-            GridView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              physics: const NeverScrollableScrollPhysics(),
-              shrinkWrap: true,
-              itemCount: storeProducts.length,
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                mainAxisSpacing: 8,
-                crossAxisSpacing: 8,
-                mainAxisExtent: 282,
+      body: Get.isRegistered<HomeController>()
+          ? Obx(
+              () => _StoreDetailBody(
+                store: store,
+                storeProducts: _productsForStore(),
               ),
-              itemBuilder: (context, index) {
-                return _StoreProductCard(product: storeProducts[index]);
-              },
+            )
+          : _StoreDetailBody(
+              store: store,
+              storeProducts: productsByStore(store.id),
             ),
-            16.heightBox,
-          ],
-        ),
+    );
+  }
+
+  List<Product> _productsForStore() {
+    final fallbackProducts = productsByStore(store.id);
+    final liveProducts = Get.find<HomeController>().products.where((product) {
+      final sellerUserId = product.userId;
+      if (sellerUserId != null && sellerUserId.isNotEmpty) {
+        return sellerUserId == store.id;
+      }
+      return product.storeId == store.id;
+    }).toList();
+
+    return liveProducts.isEmpty ? fallbackProducts : liveProducts;
+  }
+}
+
+class _StoreDetailBody extends StatelessWidget {
+  final Store store;
+  final List<Product> storeProducts;
+
+  const _StoreDetailBody({required this.store, required this.storeProducts});
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _StoreHeader(store: store, productTotal: storeProducts.length),
+          12.heightBox,
+          _StoreInfo(store: store),
+          12.heightBox,
+          _StoreMap(store: store),
+          16.heightBox,
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: "Products from this store".text
+                .fontFamily(bold)
+                .size(16)
+                .color(darkFontGrey)
+                .make(),
+          ),
+          10.heightBox,
+          GridView.builder(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            physics: const NeverScrollableScrollPhysics(),
+            shrinkWrap: true,
+            itemCount: storeProducts.length,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              mainAxisSpacing: 8,
+              crossAxisSpacing: 8,
+              mainAxisExtent: 282,
+            ),
+            itemBuilder: (context, index) {
+              return _StoreProductCard(product: storeProducts[index]);
+            },
+          ),
+          16.heightBox,
+        ],
       ),
     );
   }
@@ -78,8 +113,8 @@ class _StoreHeader extends StatelessWidget {
     return Stack(
       clipBehavior: Clip.none,
       children: [
-        Image.asset(
-          store.coverImage,
+        ProductImage(
+          source: store.coverImage,
           width: double.infinity,
           height: 160,
           fit: BoxFit.cover,
@@ -94,10 +129,12 @@ class _StoreHeader extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Image.asset(store.logo, width: 72, height: 72, fit: BoxFit.cover)
-                  .box
-                  .white
-                  .rounded
+              ProductImage(
+                    source: store.logo,
+                    width: 72,
+                    height: 72,
+                    fit: BoxFit.cover,
+                  ).box.white.rounded
                   .padding(const EdgeInsets.all(12))
                   .outerShadowSm
                   .make(),
@@ -206,8 +243,7 @@ class _StoreMap extends StatefulWidget {
 }
 
 class _StoreMapState extends State<_StoreMap> {
-  static const String _googleMapsEmbedApiKey =
-      '';
+  static const String _googleMapsEmbedApiKey = '';
 
   WebViewController? _webViewController;
 
@@ -218,13 +254,27 @@ class _StoreMapState extends State<_StoreMap> {
       ..loadHtmlString(_mapHtml);
   }
 
-  Uri get _mapEmbedUri {
-    final coordinates =
-        '${widget.store.latitude.toStringAsFixed(6)},${widget.store.longitude.toStringAsFixed(6)}';
+  @override
+  void didUpdateWidget(covariant _StoreMap oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.store.address != widget.store.address ||
+        oldWidget.store.latitude != widget.store.latitude ||
+        oldWidget.store.longitude != widget.store.longitude) {
+      _webViewController?.loadHtmlString(_mapHtml);
+    }
+  }
 
+  String get _mapQuery {
+    final address = widget.store.address.trim();
+    if (address.isNotEmpty) return address;
+
+    return '${widget.store.latitude.toStringAsFixed(6)},${widget.store.longitude.toStringAsFixed(6)}';
+  }
+
+  Uri get _mapEmbedUri {
     return Uri.https('www.google.com', '/maps/embed/v1/place', {
       'key': _googleMapsEmbedApiKey,
-      'q': coordinates,
+      'q': _mapQuery,
       'zoom': '16',
       'maptype': 'roadmap',
     });
@@ -275,7 +325,7 @@ class _StoreMapState extends State<_StoreMap> {
                   .color(darkFontGrey)
                   .make(),
               const Spacer(),
-              widget.store.coordinateLabel.text
+              "Google Maps".text
                   .size(12)
                   .fontFamily(semibold)
                   .color(redColor)
@@ -311,8 +361,8 @@ class _StoreProductCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Image.asset(
-            product.images.isNotEmpty ? product.images[0] : imgP1,
+          ProductImage(
+            source: product.images.isNotEmpty ? product.images[0] : imgP1,
             width: double.infinity,
             height: 145,
             fit: BoxFit.cover,

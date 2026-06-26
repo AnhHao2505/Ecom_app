@@ -38,10 +38,31 @@ void main() {
     expect(product.price, 599.0);
     expect(product.originalPrice, 699.5);
     expect(product.storeId, 'emart-central');
+    expect(product.userId, isNull);
     expect(product.rating, 4.5);
     expect(product.reviewCount, 12);
     expect(product.stock, 3);
     expect(product.isInStock, isTrue);
+  });
+
+  test('Product.fromJson preserves seller user id when present', () {
+    final product = Product.fromJson({
+      'id': 'seller-product-1',
+      'name': 'Seller item',
+      'description': 'Seller owned product',
+      'category': 'cellphone',
+      'price': 99,
+      'originalPrice': 120,
+      'images': ['https://example.com/product.jpg'],
+      'storeId': 'seller-uid-1',
+      'userId': 'seller-uid-1',
+      'stock': 5,
+      'createdAt': '2026-06-15T00:00:00.000',
+      'updatedAt': '2026-06-15T00:00:00.000',
+    });
+
+    expect(product.userId, 'seller-uid-1');
+    expect(product.toJson()['userId'], 'seller-uid-1');
   });
 
   test('cart merges matching products and respects stock limits', () {

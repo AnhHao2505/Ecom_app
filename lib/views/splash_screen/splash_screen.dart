@@ -1,9 +1,6 @@
 import 'package:e_mart/consts/consts.dart';
-import 'package:e_mart/views/auth_screen/login_screen.dart';
-import 'package:e_mart/views/home_screen/home.dart';
+import 'package:e_mart/utils/auth_navigation.dart';
 import 'package:e_mart/widget_common/applogo_widget.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:get/get.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -14,14 +11,9 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen> {
   void changeScreen() {
-    Future.delayed(const Duration(seconds: 3), () {
-      auth.authStateChanges().listen((User? user) {
-        if (user == null && mounted) {
-          Get.offAll(() => const LoginScreen());
-        } else {
-          Get.offAll(() => const Home());
-        }
-      });
+    Future.delayed(const Duration(seconds: 3), () async {
+      if (!mounted) return;
+      await openLandingForCurrentUser();
     });
   }
 

@@ -1,6 +1,7 @@
 import 'package:e_mart/consts/consts.dart';
 import 'package:e_mart/controllers/auth_controller.dart';
 import 'package:e_mart/controllers/cart_controller.dart';
+import 'package:e_mart/controllers/home_controller.dart';
 import 'package:e_mart/controllers/wishlist_controller.dart';
 import 'package:e_mart/models/billing_order_model.dart';
 import 'package:e_mart/services/order_billing_service.dart';
@@ -329,9 +330,14 @@ class ProfileScreen extends StatelessWidget {
                           ),
                         ),
                         onPressed: () async {
-                          await Get.put(
-                            AuthController(),
-                          ).signoutMethod(context);
+                          final authController =
+                              Get.isRegistered<AuthController>()
+                              ? Get.find<AuthController>()
+                              : Get.put(AuthController());
+                          await authController.signoutMethod(context);
+                          if (Get.isRegistered<HomeController>()) {
+                            Get.delete<HomeController>(force: true);
+                          }
                           Get.offAll(() => const LoginScreen());
                         },
                         child: const Row(
@@ -347,7 +353,9 @@ class ProfileScreen extends StatelessWidget {
                         ),
                       ),
                     ),
-                    30.heightBox,
+                    SizedBox(
+                      height: MediaQuery.of(context).padding.bottom + 96,
+                    ),
                   ],
                 ),
               ),

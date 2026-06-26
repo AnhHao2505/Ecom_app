@@ -52,7 +52,12 @@ class AuthController extends GetxController {
   }
 
   // storing data method
-  Future<void> storeUserData({name, password, email}) async {
+  Future<void> storeUserData({
+    name,
+    password,
+    email,
+    String role = 'Customer',
+  }) async {
     final user = auth.currentUser;
     if (user == null) return;
 
@@ -65,7 +70,19 @@ class AuthController extends GetxController {
       'password': password,
       'imageUrl': '',
       'id': user.uid,
+      'role': role,
+      'shopSetupComplete': false,
+      'createdAt': FieldValue.serverTimestamp(),
+      'updatedAt': FieldValue.serverTimestamp(),
     });
+  }
+
+  Future<String> roleForUser(String userId) async {
+    final snapshot = await firestore
+        .collection(usersCollection)
+        .doc(userId)
+        .get();
+    return snapshot.data()?['role']?.toString() ?? 'Customer';
   }
 
   Future<void> storeProductData(Product product) async {
