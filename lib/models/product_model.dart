@@ -81,18 +81,18 @@ class Product {
       name: map['name'] ?? '',
       description: map['description'] ?? '',
       category: map['category'] ?? '',
-      price: (map['price'] ?? 0.0).toDouble(),
-      originalPrice: (map['originalPrice'] ?? 0.0).toDouble(),
-      images: List<String>.from(map['images'] ?? []),
-      storeId: map['storeId'] ?? 'emart-central',
-      rating: (map['rating'] ?? 0.0).toDouble(),
-      reviewCount: map['reviewCount'] ?? 0,
-      stock: map['stock'] ?? 0,
+      price: _toDouble(map['price']),
+      originalPrice: _toDouble(map['originalPrice']),
+      images: _toStringList(map['images']),
+      storeId: map['storeId']?.toString() ?? 'emart-central',
+      rating: _toDouble(map['rating']),
+      reviewCount: _toInt(map['reviewCount']),
+      stock: _toInt(map['stock']),
       isFeatured: map['isFeatured'] ?? false,
       isNew: map['isNew'] ?? false,
-      sizes: List<String>.from(map['sizes'] ?? []),
-      colors: List<String>.from(map['colors'] ?? []),
-      attributes: map['attributes'] ?? {},
+      sizes: _toStringList(map['sizes']),
+      colors: _toStringList(map['colors']),
+      attributes: Map<String, dynamic>.from(map['attributes'] ?? {}),
       createdAt: (map['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       updatedAt: (map['updatedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
     );
@@ -129,18 +129,18 @@ class Product {
       name: json['name'] ?? '',
       description: json['description'] ?? '',
       category: json['category'] ?? '',
-      price: (json['price'] ?? 0.0).toDouble(),
-      originalPrice: (json['originalPrice'] ?? 0.0).toDouble(),
-      images: List<String>.from(json['images'] ?? []),
-      storeId: json['storeId'] ?? 'emart-central',
-      rating: (json['rating'] ?? 0.0).toDouble(),
-      reviewCount: json['reviewCount'] ?? 0,
-      stock: json['stock'] ?? 0,
+      price: _toDouble(json['price']),
+      originalPrice: _toDouble(json['originalPrice']),
+      images: _toStringList(json['images']),
+      storeId: json['storeId']?.toString() ?? 'emart-central',
+      rating: _toDouble(json['rating']),
+      reviewCount: _toInt(json['reviewCount']),
+      stock: _toInt(json['stock']),
       isFeatured: json['isFeatured'] ?? false,
       isNew: json['isNew'] ?? false,
-      sizes: List<String>.from(json['sizes'] ?? []),
-      colors: List<String>.from(json['colors'] ?? []),
-      attributes: json['attributes'] ?? {},
+      sizes: _toStringList(json['sizes']),
+      colors: _toStringList(json['colors']),
+      attributes: Map<String, dynamic>.from(json['attributes'] ?? {}),
       createdAt: json['createdAt'] != null
           ? DateTime.parse(json['createdAt'])
           : DateTime.now(),
@@ -196,5 +196,20 @@ class Product {
   @override
   String toString() {
     return 'Product(id: $id, name: $name, price: $price, category: $category)';
+  }
+
+  static double _toDouble(dynamic value) {
+    if (value is num) return value.toDouble();
+    return double.tryParse(value?.toString() ?? '') ?? 0;
+  }
+
+  static int _toInt(dynamic value) {
+    if (value is num) return value.toInt();
+    return int.tryParse(value?.toString() ?? '') ?? 0;
+  }
+
+  static List<String> _toStringList(dynamic value) {
+    if (value is! Iterable) return const [];
+    return value.map((item) => item.toString()).toList();
   }
 }

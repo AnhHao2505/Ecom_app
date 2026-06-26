@@ -1,312 +1,365 @@
 import 'package:e_mart/consts/consts.dart';
-import 'package:get/instance_manager.dart';
-import 'package:get/route_manager.dart';
-
-import '../../consts/lists.dart';
-import '../../views/item_detail_screen/item_detail.dart';
-import '../../widget_common/home_button.dart';
+import 'package:e_mart/consts/lists.dart';
+import 'package:e_mart/controllers/home_controller.dart';
+import 'package:e_mart/widget_common/product_card.dart';
+import 'package:e_mart/widget_common/sort_chips.dart';
+import 'package:e_mart/views/home_screen/all_products_screen.dart';
+import 'package:e_mart/views/home_screen/flash_sale_section.dart';
+import 'package:e_mart/controllers/theme_controller.dart';
+import 'package:e_mart/controllers/recent_view_controller.dart';
+import 'package:get/get.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final controller = Get.find<HomeController>();
+
     return Container(
-      color: lightGrey,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: Theme.of(context).brightness == Brightness.dark
+              ? [darkBg, darkBgGradientEnd]
+              : [lightBg, lightBgGradientEnd],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ),
+      ),
       width: context.screenWidth,
       height: context.screenHeight,
-      padding: const EdgeInsets.all(12),
+      padding: EdgeInsets.zero,
       child: SafeArea(
+        bottom: false,
         child: Column(
           children: [
-            Container(
-              alignment: Alignment.center,
-              color: lightGrey,
-              height: 60,
-              child: TextFormField(
-                decoration: const InputDecoration(
-                  border: InputBorder.none,
-                  suffixIcon: Icon(Icons.search),
-                  filled: true,
-                  fillColor: whiteColor,
-                  hintText: searchAnything,
-                  hintStyle: TextStyle(color: textfieldGrey),
+            // Header: App Name & Dark Mode
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 8.0,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    appname,
+                    style: TextStyle(
+                      color: Theme.of(context).textTheme.bodyLarge?.color,
+                      fontFamily: bold,
+                      fontSize: 22,
+                    ),
+                  ),
+                  IconButton(
+                    icon: Icon(
+                      Theme.of(context).brightness == Brightness.dark
+                          ? Icons.light_mode
+                          : Icons.dark_mode,
+                      color: Theme.of(context).textTheme.bodyLarge?.color,
+                    ),
+                    onPressed: () {
+                      Get.find<ThemeController>().toggleTheme();
+                    },
+                  ),
+                ],
+              ),
+            ),
+            // Search Bar
+            Padding(
+              padding: const EdgeInsets.only(
+                left: 16.0,
+                right: 16.0,
+                bottom: 8.0,
+              ),
+              child: Container(
+                height: 48,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).cardColor,
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? Colors.transparent
+                          : Colors.black.withOpacity(0.05),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: TextFormField(
+                  onChanged: (value) => controller.searchQuery.value = value,
+                  style: TextStyle(
+                    color: Theme.of(context).textTheme.bodyLarge?.color,
+                  ),
+                  decoration: InputDecoration(
+                    border: InputBorder.none,
+                    prefixIcon: Icon(
+                      Icons.search,
+                      color: Theme.of(
+                        context,
+                      ).textTheme.bodyMedium?.color?.withOpacity(0.5),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 12,
+                    ),
+                    hintText: searchAnything,
+                    hintStyle: TextStyle(color: textfieldGrey.withOpacity(0.8)),
+                  ),
                 ),
               ),
             ),
             10.heightBox,
-
             Expanded(
-              child: SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
-                child: Column(
-                  children: [
-                    //swiper brands
-                    VxSwiper.builder(
-                      aspectRatio: 16 / 9,
-                      autoPlay: true,
-                      height: 150,
-                      enlargeCenterPage: true,
-                      itemCount: sliderLists.length,
-                      itemBuilder: (context, index) {
-                        return Image.asset(sliderLists[index], fit: BoxFit.fill)
-                            .box
-                            .rounded
-                            .clip(Clip.antiAlias)
-                            .margin(const EdgeInsets.symmetric(horizontal: 8))
-                            .make();
-                      },
-                    ),
-                    10.heightBox,
-                    // deals buttons
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: List.generate(
-                        2,
-                        (index) => homeButtons(
-                          height: context.screenHeight * 0.1,
-                          width: context.screenWidth / 2.5,
-                          icon: index == 0 ? icTodaysDeal : icFlashDeal,
-                          title: index == 0 ? todayDeal : flashsale,
-                        ),
-                      ),
-                    ),
-                    10.heightBox,
-                    // 2nd swiper
-                    VxSwiper.builder(
-                      aspectRatio: 16 / 9,
-                      autoPlay: true,
-                      height: 150,
-                      enlargeCenterPage: true,
-                      itemCount: secondSliderList.length,
-                      itemBuilder: (context, index) {
-                        return Image.asset(
-                              secondSliderList[index],
-                              fit: BoxFit.fill,
-                            ).box.rounded
-                            .clip(Clip.antiAlias)
-                            .margin(const EdgeInsets.symmetric(horizontal: 8))
-                            .make();
-                      },
-                    ),
+              child: Obx(() {
+                if (controller.isLoading.value) {
+                  return const Center(
+                    child: CircularProgressIndicator(color: primaryColor),
+                  );
+                }
 
-                    // featured products
-                    20.heightBox,
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      width: double.infinity,
-                      decoration: const BoxDecoration(color: redColor),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          featuredProduct.text.white
-                              .fontFamily(bold)
-                              .size(18)
-                              .make(),
-                          10.heightBox,
-                          SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            child: Row(
-                              children: List.generate(
-                                dummyProducts.where((p) => p.isFeatured).length,
-                                (index) {
-                                  final product = dummyProducts
-                                      .where((p) => p.isFeatured)
-                                      .toList()[index];
-                                  return GestureDetector(
-                                    onTap: () {
-                                      Get.to(
-                                        () => ItemDetail(product: product),
-                                      );
-                                    },
-                                    child:
-                                        Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Image.asset(
-                                                  product.images.isNotEmpty
-                                                      ? product.images[0]
-                                                      : imgP1,
-                                                  width: 150,
-                                                  height: 150,
-                                                  fit: BoxFit.cover,
-                                                ),
-                                                10.heightBox,
-                                                product.name.text
-                                                    .fontFamily(semibold)
-                                                    .color(darkFontGrey)
-                                                    .size(12)
-                                                    .maxLines(2)
-                                                    .overflow(
-                                                      TextOverflow.ellipsis,
-                                                    )
-                                                    .make(),
-                                                5.heightBox,
-                                                Row(
-                                                  children: [
-                                                    Icon(
-                                                      Icons.star,
-                                                      color: Colors.yellow,
-                                                      size: 16,
-                                                    ),
-                                                    5.widthBox,
-                                                    "${product.rating}".text
-                                                        .size(12)
-                                                        .color(darkFontGrey)
-                                                        .make(),
-                                                  ],
-                                                ),
-                                                10.heightBox,
-                                                "\$${product.price.toStringAsFixed(2)}"
-                                                    .text
-                                                    .color(redColor)
-                                                    .fontFamily(bold)
-                                                    .size(14)
-                                                    .make(),
-                                              ],
-                                            ).box.white.roundedSM
-                                            .margin(
-                                              const EdgeInsets.symmetric(
-                                                horizontal: 4,
-                                              ),
-                                            )
-                                            .padding(const EdgeInsets.all(8))
-                                            .make(),
+                return SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      VxSwiper.builder(
+                        aspectRatio: 16 / 9,
+                        autoPlay: true,
+                        height: 150,
+                        enlargeCenterPage: true,
+                        itemCount: sliderLists.length,
+                        itemBuilder: (context, index) {
+                          return Container(
+                            margin: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: [
+                                BoxShadow(
+                                  color:
+                                      Theme.of(context).brightness ==
+                                          Brightness.dark
+                                      ? Colors.transparent
+                                      : Colors.black.withOpacity(0.1),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(16),
+                              child: Image.asset(
+                                sliderLists[index],
+                                fit: BoxFit.fill,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                      16.heightBox,
+
+                      // Recently Viewed (if any)
+                      Obx(() {
+                        final recent =
+                            Get.find<RecentViewController>().recentProducts;
+                        if (recent.isEmpty) return const SizedBox.shrink();
+
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                              ),
+                              child: Text(
+                                'Recently Viewed',
+                                style: TextStyle(
+                                  color: Theme.of(
+                                    context,
+                                  ).textTheme.bodyLarge?.color,
+                                  fontFamily: bold,
+                                  fontSize: 18,
+                                ),
+                              ),
+                            ),
+                            12.heightBox,
+                            SizedBox(
+                              height: context.height * 0.3,
+                              child: ListView.separated(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                ),
+                                scrollDirection: Axis.horizontal,
+                                itemCount: recent.length,
+                                separatorBuilder: (_, _) => 12.widthBox,
+                                itemBuilder: (context, index) {
+                                  return SizedBox(
+                                    width: 170,
+                                    child: ProductCard(
+                                      product: recent[index],
+                                      imageHeight: 145,
+                                    ),
                                   );
                                 },
                               ),
                             ),
+                            16.heightBox,
+                          ],
+                        );
+                      }),
+
+                      // Category Icons
+                      SizedBox(
+                        height: 100,
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: categoriesData.length,
+                          itemBuilder: (context, index) {
+                            return _buildCategoryIcon(
+                              context,
+                              categoriesData[index].name,
+                              categoriesData[index].image,
+                            );
+                          },
+                        ),
+                      ),
+                      16.heightBox,
+                      Obx(() {
+                        final flashSale = controller.flashSaleProducts;
+                        if (controller.searchQuery.isNotEmpty &&
+                            flashSale.isEmpty) {
+                          return const SizedBox.shrink();
+                        }
+                        return FlashSaleSection(products: flashSale);
+                      }),
+                      20.heightBox,
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'All Products',
+                            style: TextStyle(
+                              color: Theme.of(
+                                context,
+                              ).textTheme.bodyLarge?.color,
+                              fontFamily: bold,
+                              fontSize: 18,
+                            ),
+                          ),
+                          TextButton(
+                            onPressed: () => Get.to(
+                              () => const AllProductsScreen(),
+                              transition: Transition.rightToLeft,
+                              duration: const Duration(milliseconds: 300),
+                            ),
+                            child: const Text(
+                              'See all >',
+                              style: TextStyle(color: primaryColor),
+                            ),
                           ),
                         ],
-                      ),
-                    ),
+                      ).paddingSymmetric(horizontal: 16),
+                      12.heightBox,
+                      const SortChips(),
+                      12.heightBox,
+                      Obx(() {
+                        final products = controller.filteredProducts;
+                        if (products.isEmpty) {
+                          return SizedBox(
+                            height: 180,
+                            child: Center(
+                              child: Text(
+                                'No products match your search.',
+                                style: TextStyle(
+                                  color: Theme.of(
+                                    context,
+                                  ).textTheme.bodyMedium?.color,
+                                ),
+                              ),
+                            ),
+                          );
+                        }
 
-                    // all products section
-                    20.heightBox,
-                    GridView.builder(
-                      physics: const NeverScrollableScrollPhysics(),
-                      shrinkWrap: true,
-                      itemCount: dummyProducts
-                          .where((p) => !p.isFeatured)
-                          .length,
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            mainAxisSpacing: 8,
-                            crossAxisSpacing: 8,
-                            mainAxisExtent: 300,
-                          ),
-                      itemBuilder: (context, index) {
-                        final product = dummyProducts
-                            .where((p) => !p.isFeatured)
-                            .toList()[index];
-                        return GestureDetector(
-                          onTap: () {
-                            Get.to(() => ItemDetail(product: product));
+                        return GridView.builder(
+                          physics: const NeverScrollableScrollPhysics(),
+                          shrinkWrap: true,
+                          itemCount: products.length,
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 2,
+                                mainAxisSpacing: 8,
+                                crossAxisSpacing: 8,
+                                mainAxisExtent: 270,
+                              ),
+                          itemBuilder: (context, index) {
+                            return ProductCard(product: products[index]);
                           },
-                          child:
-                              Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Image.asset(
-                                        product.images.isNotEmpty
-                                            ? product.images[0]
-                                            : imgP5,
-                                        width: 200,
-                                        height: 150,
-                                        fit: BoxFit.cover,
-                                      ),
-                                      10.heightBox,
-                                      product.name.text
-                                          .fontFamily(semibold)
-                                          .color(darkFontGrey)
-                                          .size(12)
-                                          .maxLines(2)
-                                          .overflow(TextOverflow.ellipsis)
-                                          .make(),
-                                      5.heightBox,
-                                      Row(
-                                        children: [
-                                          Icon(
-                                            Icons.star,
-                                            color: Colors.yellow,
-                                            size: 14,
-                                          ),
-                                          5.widthBox,
-                                          "${product.rating}".text
-                                              .size(10)
-                                              .color(darkFontGrey)
-                                              .make(),
-                                          5.widthBox,
-                                          "(${product.reviewCount})".text
-                                              .size(10)
-                                              .color(darkFontGrey)
-                                              .make(),
-                                        ],
-                                      ),
-                                      5.heightBox,
-                                      product.isInStock
-                                          ? "In Stock".text
-                                                .size(10)
-                                                .color(Colors.green)
-                                                .make()
-                                          : "Out of Stock".text
-                                                .size(10)
-                                                .color(redColor)
-                                                .make(),
-                                      const Spacer(),
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          if (product.originalPrice >
-                                              product.price) ...[
-                                            "\$${product.originalPrice.toStringAsFixed(2)}"
-                                                .text
-                                                .lineThrough
-                                                .size(10)
-                                                .color(darkFontGrey)
-                                                .make(),
-                                          ],
-                                          Row(
-                                            children: [
-                                              "\$${product.price.toStringAsFixed(2)}"
-                                                  .text
-                                                  .color(redColor)
-                                                  .fontFamily(bold)
-                                                  .size(14)
-                                                  .make(),
-                                              5.widthBox,
-                                              if (product.discountPercentage >
-                                                  0)
-                                                "${product.discountPercentage.toStringAsFixed(0)}% off"
-                                                    .text
-                                                    .fontFamily(bold)
-                                                    .size(10)
-                                                    .color(Colors.orange)
-                                                    .make(),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ).box.white.roundedSM
-                                  .margin(
-                                    const EdgeInsets.symmetric(horizontal: 4),
-                                  )
-                                  .padding(const EdgeInsets.all(12))
-                                  .make(),
                         );
-                      },
-                    ),
-                  ],
-                ),
-              ),
+                      }),
+                    ],
+                  ),
+                );
+              }),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildCategoryIcon(
+    BuildContext context,
+    String title,
+    String imagePath,
+  ) {
+    return Container(
+      width: 70,
+      margin: const EdgeInsets.only(right: 12),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              color: Theme.of(context).cardColor,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.transparent
+                      : Colors.black.withOpacity(0.05),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Center(
+              child: Image.asset(
+                imagePath,
+                width: 32,
+                height: 32,
+                fit: BoxFit.contain,
+              ),
+            ),
+          ),
+          8.heightBox,
+          Text(
+            title,
+            maxLines: 2,
+            textAlign: TextAlign.center,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: Theme.of(context).textTheme.bodyMedium?.color,
+              fontSize: 11,
+              fontFamily: semibold,
+              height: 1.1,
+            ),
+          ),
+        ],
       ),
     );
   }

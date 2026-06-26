@@ -3,6 +3,8 @@ import 'package:e_mart/consts/consts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
 
+import '../models/product.dart';
+
 class AuthController extends GetxController {
   var isLoading = false.obs;
 
@@ -54,15 +56,25 @@ class AuthController extends GetxController {
     final user = auth.currentUser;
     if (user == null) return;
 
-    DocumentReference store = firestore
+    final DocumentReference store = firestore
         .collection(usersCollection)
         .doc(user.uid);
-    store.set({
+    await store.set({
       'name': name,
-      'password': password,
       'email': email,
+      'password': password,
       'imageUrl': '',
       'id': user.uid,
     });
+  }
+
+  Future<void> storeProductData(Product product) async {
+    final DocumentReference store = firestore
+        .collection(productCollection)
+        .doc();
+    final data = product.toMap();
+    data['id'] = store.id;
+
+    await store.set(data);
   }
 }

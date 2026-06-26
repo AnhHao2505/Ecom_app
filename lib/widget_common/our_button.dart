@@ -1,7 +1,7 @@
 import 'package:e_mart/consts/consts.dart';
 
 Widget ourButton({
-  required VoidCallback onPress,
+  required VoidCallback? onPress,
   Color? color = redColor,
   Color? textColor = whiteColor,
   required String title,

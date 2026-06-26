@@ -15,7 +15,7 @@ class CartController extends GetxController {
     }
   }
 
-  final RxList<CartItem> items = <CartItem>[].obs;
+  final RxList<CartItem> cartItems = <CartItem>[].obs;
   final RxBool isLoading = true.obs;
   final RxString syncError = ''.obs;
 
@@ -23,11 +23,14 @@ class CartController extends GetxController {
   Future<void> _writeQueue = Future.value();
   String? _activeUserId;
 
-  int get itemCount =>
-      items.fold(0, (itemTotal, item) => itemTotal + item.quantity);
+  RxList<CartItem> get items => cartItems;
+  int get itemCount => totalQuantity;
   double get subtotal =>
-      items.fold(0, (priceTotal, item) => priceTotal + item.lineTotal);
+      cartItems.fold(0, (runningTotal, item) => runningTotal + item.lineTotal);
   double get tax => subtotal * 0.1;
+  double get total => subtotal + tax;
+  int get totalQuantity =>
+      cartItems.fold(0, (runningTotal, item) => runningTotal + item.quantity);
 
   @override
   void onInit() {
@@ -41,52 +44,78 @@ class CartController extends GetxController {
     super.onClose();
   }
 
-  void addProduct(Product product, {int quantity = 1}) {
+  void addToCart({
+    required Product product,
+    required int quantity,
+    String? selectedColor,
+    String? selectedSize,
+  }) {
     if (!product.isInStock || quantity <= 0) return;
 
-    final existingIndex = items.indexWhere((item) => item.id == product.id);
-    if (existingIndex == -1) {
-      items.add(
+    final safeQuantity = quantity.clamp(1, product.stock).toInt();
+    final index = cartItems.indexWhere(
+      (item) => item.hasSameOptions(
+        otherProduct: product,
+        color: selectedColor,
+        size: selectedSize,
+      ),
+    );
+
+    if (index == -1) {
+      cartItems.add(
         CartItem(
           product: product,
-          quantity: quantity.clamp(1, product.stock).toInt(),
+          quantity: safeQuantity,
+          selectedColor: selectedColor,
+          selectedSize: selectedSize,
         ),
       );
     } else {
-      final existingItem = items[existingIndex];
-      final newQuantity = (existingItem.quantity + quantity)
+      final item = cartItems[index];
+      item.quantity = (item.quantity + safeQuantity)
           .clamp(1, product.stock)
           .toInt();
-      items[existingIndex] = existingItem.copyWith(quantity: newQuantity);
+      cartItems.refresh();
     }
 
     _persistCart();
   }
 
-  void updateQuantity(String productId, int quantity) {
-    final index = items.indexWhere((item) => item.id == productId);
+  void addProduct(Product product, {int quantity = 1}) {
+    addToCart(product: product, quantity: quantity);
+  }
+
+  void removeItem(String itemId) {
+    cartItems.removeWhere((item) => item.id == itemId);
+    _persistCart();
+  }
+
+  void removeProduct(String itemId) {
+    removeItem(itemId);
+  }
+
+  void updateQuantity(String itemId, int quantity) {
+    final index = cartItems.indexWhere((item) => item.id == itemId);
     if (index == -1) return;
 
+    final item = cartItems[index];
     if (quantity <= 0) {
-      items.removeAt(index);
-    } else {
-      final item = items[index];
-      items[index] = item.copyWith(
-        quantity: quantity.clamp(1, item.product.stock).toInt(),
-      );
+      removeItem(itemId);
+      return;
     }
 
+    item.quantity = quantity.clamp(1, item.product.stock).toInt();
+    cartItems.refresh();
     _persistCart();
   }
 
-  void removeProduct(String productId) {
-    items.removeWhere((item) => item.id == productId);
+  void clearCart() {
+    cartItems.clear();
     _persistCart();
   }
 
   void clear() {
-    items.clear();
-    _persistCart();
+    clearCart();
   }
 
   Future<void> _handleAuthStateChange(User? user) async {
@@ -94,7 +123,7 @@ class CartController extends GetxController {
     syncError.value = '';
 
     if (user == null) {
-      items.clear();
+      cartItems.clear();
       isLoading.value = false;
       return;
     }
@@ -110,7 +139,7 @@ class CartController extends GetxController {
 
       final rawItems = snapshot.data()?['items'];
       if (rawItems is! List) {
-        items.clear();
+        cartItems.clear();
         return;
       }
 
@@ -135,11 +164,13 @@ class CartController extends GetxController {
           CartItem(
             product: product,
             quantity: quantity.clamp(1, product.stock).toInt(),
+            selectedColor: itemData['selectedColor']?.toString(),
+            selectedSize: itemData['selectedSize']?.toString(),
           ),
         );
       }
 
-      items.assignAll(restoredItems);
+      cartItems.assignAll(restoredItems);
     } on FirebaseException {
       syncError.value = 'Unable to load your saved cart.';
     } finally {
@@ -153,11 +184,13 @@ class CartController extends GetxController {
     final userId = _activeUserId;
     if (userId == null) return;
 
-    final savedItems = items
+    final savedItems = cartItems
         .map(
           (item) => {
             'product': item.product.toMap(),
             'quantity': item.quantity,
+            'selectedColor': item.selectedColor,
+            'selectedSize': item.selectedSize,
           },
         )
         .toList(growable: false);
