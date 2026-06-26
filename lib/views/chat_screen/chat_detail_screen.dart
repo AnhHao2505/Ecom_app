@@ -23,7 +23,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   final TextEditingController _controller = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   late MessageController _msgController;
-  
+
   // ✅ Thêm FocusNode
   final FocusNode _focusNode = FocusNode();
 
@@ -37,7 +37,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
 
     _msgController = Get.find<MessageController>();
     _msgController.listenToMessages(widget.conversationId);
-    
+
     // ✅ Request focus sau khi build
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _focusNode.requestFocus();
@@ -64,7 +64,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () {
-            _focusNode.unfocus(); 
+            _focusNode.unfocus();
             Get.back();
           },
         ),
@@ -78,9 +78,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
               },
               child: Obx(() {
                 if (_msgController.messages.isEmpty) {
-                  return const Center(
-                    child: Text('Chưa có tin nhắn'),
-                  );
+                  return const Center(child: Text('Chưa có tin nhắn'));
                 }
 
                 WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -99,7 +97,8 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                   itemCount: _msgController.messages.length,
                   itemBuilder: (context, index) {
                     final msg = _msgController.messages[index];
-                    final isMe = msg['senderId'] == _msgController.currentUserId;
+                    final isMe =
+                        msg['senderId'] == _msgController.currentUserId;
 
                     return _buildMessageBubble(msg, isMe);
                   },
@@ -134,10 +133,9 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                 .size(14)
                 .make(),
             const SizedBox(height: 4),
-            _formatTime(createdAt ?? Timestamp.now()).text
-                .color(isMe ? Colors.white70 : lightGrey)
-                .size(10)
-                .make(),
+            _formatTime(
+              createdAt ?? Timestamp.now(),
+            ).text.color(isMe ? Colors.white70 : lightGrey).size(10).make(),
           ],
         ),
       ),
@@ -218,7 +216,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     );
 
     _controller.clear();
-    
+
     _focusNode.requestFocus();
   }
 

@@ -1,0 +1,93 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isSelf(userId) {
+      return signedIn() && request.auth.uid == userId;
+    }
+
+    function isSeller() {
+      return signedIn()
+          && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "Seller";
+    }
+
+    function hasProductOwner(data) {
+      return data.keys().hasAny(["userId"])
+          && data.userId is string
+          && data.userId.size() > 0;
+    }
+
+    match /users/{userId} {
+      allow read, create, update, delete: if isSelf(userId);
+
+      match /cart/{cartId} {
+        allow read, write: if isSelf(userId);
+      }
+
+      match /orders/{orderId} {
+        allow read: if isSelf(userId);
+        allow create: if isSelf(userId)
+            && request.resource.data.userId == userId
+            && request.resource.data.status == 'COD_PENDING'
+            && request.resource.data.paymentMethod == 'Cash on delivery';
+        allow update, delete: if false;
+      }
+    }
+
+    match /{collectionName}/{notificationId} {
+      allow read, write, delete: if collectionName == "notifications "
+          && signedIn();
+    }
+
+    match /stores/{storeId} {
+      allow read: if true;
+      allow create, update: if isSeller()
+          && request.auth.uid == storeId
+          && request.resource.data.ownerUserId == request.auth.uid;
+      allow delete: if false;
+    }
+
+    match /products/{productId} {
+      allow read: if true;
+      allow create: if signedIn()
+          && (
+            !hasProductOwner(request.resource.data)
+            || (
+              isSeller()
+              && request.resource.data.userId == request.auth.uid
+            )
+          );
+      allow update: if signedIn()
+          && (
+            !hasProductOwner(resource.data)
+            || (
+              isSeller()
+              && resource.data.userId == request.auth.uid
+              && request.resource.data.userId == request.auth.uid
+            )
+          );
+      allow delete: if signedIn()
+          && (
+            !hasProductOwner(resource.data)
+            || (
+              isSeller()
+              && resource.data.userId == request.auth.uid
+            )
+          );
+    }
+
+    match /messages/{messageId} {
+      allow read: if true;
+      allow write: if signedIn();
+    }
+
+    match /conversations/{conversationId} {
+      allow read: if true;
+      allow write: if signedIn();
+    }
+  }
+}

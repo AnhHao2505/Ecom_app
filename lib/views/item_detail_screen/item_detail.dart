@@ -1,11 +1,15 @@
 import 'package:e_mart/consts/consts.dart';
+import 'package:e_mart/consts/lists.dart';
 import 'package:e_mart/controllers/cart_controller.dart';
 import 'package:e_mart/controllers/home_controller.dart';
 import 'package:e_mart/controllers/message_controller.dart';
-import 'package:e_mart/controllers/wishlist_controller.dart';
 import 'package:e_mart/controllers/recent_view_controller.dart';
+import 'package:e_mart/controllers/wishlist_controller.dart';
 import 'package:e_mart/models/product_model.dart';
+import 'package:e_mart/models/store_model.dart';
+import 'package:e_mart/services/seller_service.dart';
 import 'package:e_mart/views/chat_screen/chat_detail_screen.dart';
+import 'package:e_mart/views/store_screen/store_detail.dart';
 import 'package:e_mart/widget_common/our_button.dart';
 import 'package:e_mart/widget_common/product_card.dart';
 import 'package:e_mart/widget_common/product_image.dart';
@@ -14,7 +18,6 @@ import 'package:get/get.dart';
 
 class ItemDetail extends StatefulWidget {
   final Product product;
-  
 
   const ItemDetail({super.key, required this.product});
 
@@ -27,8 +30,6 @@ class _ItemDetailState extends State<ItemDetail> {
   int quantity = 1;
   int selectedColorIndex = 0;
   int selectedSizeIndex = 0;
-  final String shopId = 'shop_demo_001';
-  final String shopName = 'E-Mart Store';
 
   Product get product => widget.product;
 
@@ -46,6 +47,7 @@ class _ItemDetailState extends State<ItemDetail> {
   @override
   Widget build(BuildContext context) {
     final images = product.images.isEmpty ? [''] : product.images;
+    final fallbackStore = storeById(product.storeId);
     final homeController = Get.find<HomeController>();
     final relatedProducts = homeController.products
         .where(
@@ -193,61 +195,10 @@ class _ItemDetailState extends State<ItemDetail> {
                     ],
                   ),
                   20.heightBox,
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).cardColor,
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      children: [
-                        const CircleAvatar(
-                          backgroundColor: primaryColor,
-                          child: Icon(Icons.store, color: whiteColor),
-                        ),
-                        16.widthBox,
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'E-Mart Store',
-                                style: TextStyle(
-                                  color: Theme.of(
-                                    context,
-                                  ).textTheme.bodyLarge?.color,
-                                  fontFamily: semibold,
-                                  fontSize: 16,
-                                ),
-                              ),
-                              4.heightBox,
-                              Text(
-                                'Official Seller',
-                                style: TextStyle(
-                                  color: successColor,
-                                  fontSize: 12,
-                                  fontFamily: semibold,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        IconButton(
-                          onPressed: () => _openChat(),
-                          icon: const Icon(
-                            Icons.chat_bubble_outline,
-                            color: primaryColor,
-                          ),
-                        ),
-                      ],
-                    ),
+                  _ProductStoreCard(
+                    product: product,
+                    fallbackStore: fallbackStore,
+                    onChat: _openChat,
                   ),
                   20.heightBox,
                   Container(
@@ -537,7 +488,7 @@ class _ItemDetailState extends State<ItemDetail> {
                     ),
                     16.heightBox,
                     SizedBox(
-                      height: 290,
+                      height: 312,
                       child: ListView.separated(
                         scrollDirection: Axis.horizontal,
                         itemCount: relatedProducts.length,
@@ -546,7 +497,7 @@ class _ItemDetailState extends State<ItemDetail> {
                           width: 170,
                           child: ProductCard(
                             product: relatedProducts[index],
-                            imageHeight: 145,
+                            imageHeight: 152,
                           ),
                         ),
                       ),
@@ -651,30 +602,163 @@ class _ItemDetailState extends State<ItemDetail> {
     return colors[value.toLowerCase()] ?? darkFontGrey;
   }
 
-  void _openChat() async {
-  // Kiểm tra đã đăng nhập chưa
-  if (FirebaseAuth.instance.currentUser == null) {
-    _showMessage('Vui lòng đăng nhập để chat');
-    return;
-  }
-  
-  try {
-    final messageController = Get.put(MessageController());
-    
-    // Tạo conversation với shop
-    final conversationId = await messageController.createConversation(
-      shopId, // shopId của sản phẩm
-    );
-    
-    if (conversationId.isNotEmpty) {
-      Get.to(() => ChatDetailScreen(
-        conversationId: conversationId,
-        receiverId: shopId,
-        shopName: shopName,
-      ));
+  void _openChat(Store store) async {
+    // Kiểm tra đã đăng nhập chưa
+    if (FirebaseAuth.instance.currentUser == null) {
+      _showMessage('Vui lòng đăng nhập để chat');
+      return;
     }
-  } catch (e) {
-    _showMessage('Không thể mở chat: $e');
+
+    final receiverId = product.userId?.isNotEmpty == true
+        ? product.userId!
+        : store.id;
+
+    try {
+      final messageController = Get.isRegistered<MessageController>()
+          ? Get.find<MessageController>()
+          : Get.put(MessageController());
+
+      // Tạo conversation với shop
+      final conversationId = await messageController.createConversation(
+        receiverId,
+      );
+
+      if (conversationId.isNotEmpty) {
+        Get.to(
+          () => ChatDetailScreen(
+            conversationId: conversationId,
+            receiverId: receiverId,
+            shopName: store.name,
+          ),
+        );
+      }
+    } catch (e) {
+      _showMessage('Không thể mở chat: $e');
+    }
   }
 }
+
+class _ProductStoreCard extends StatelessWidget {
+  final Product product;
+  final Store fallbackStore;
+  final ValueChanged<Store> onChat;
+
+  const _ProductStoreCard({
+    required this.product,
+    required this.fallbackStore,
+    required this.onChat,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final sellerUserId = product.userId;
+    if (sellerUserId == null || sellerUserId.isEmpty) {
+      return _StoreCardContent(store: fallbackStore, onChat: onChat);
+    }
+
+    return StreamBuilder<Store?>(
+      stream: SellerService().watchStore(sellerUserId),
+      builder: (context, snapshot) {
+        return _StoreCardContent(
+          store: snapshot.data ?? fallbackStore,
+          onChat: onChat,
+        );
+      },
+    );
+  }
+}
+
+class _StoreCardContent extends StatelessWidget {
+  final Store store;
+  final ValueChanged<Store> onChat;
+
+  const _StoreCardContent({required this.store, required this.onChat});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: () => Get.to(() => StoreDetail(store: store)),
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Theme.of(context).cardColor,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Theme.of(context).scaffoldBackgroundColor,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: ProductImage(source: store.logo, fit: BoxFit.contain),
+            ),
+            16.widthBox,
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    store.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: Theme.of(context).textTheme.bodyLarge?.color,
+                      fontFamily: semibold,
+                      fontSize: 16,
+                    ),
+                  ),
+                  4.heightBox,
+                  Row(
+                    children: [
+                      const Icon(Icons.star, color: golden, size: 14),
+                      4.widthBox,
+                      Text(
+                        store.rating.toString(),
+                        style: TextStyle(
+                          color: Theme.of(context).textTheme.bodyMedium?.color,
+                          fontSize: 12,
+                        ),
+                      ),
+                      8.widthBox,
+                      Expanded(
+                        child: Text(
+                          store.address,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: Theme.of(
+                              context,
+                            ).textTheme.bodyMedium?.color?.withOpacity(0.7),
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            IconButton(
+              tooltip: 'Chat with shop',
+              onPressed: () => onChat(store),
+              icon: const Icon(Icons.chat_bubble_outline, color: primaryColor),
+            ),
+            const Icon(Icons.chevron_right, color: primaryColor),
+          ],
+        ),
+      ),
+    );
+  }
 }

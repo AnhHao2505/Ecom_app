@@ -10,7 +10,7 @@ class ChatListScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = Get.put(MessageController());
-    
+
     return Scaffold(
       backgroundColor: lightGrey,
       appBar: AppBar(
@@ -29,13 +29,15 @@ class ChatListScreen extends StatelessWidget {
                 const SizedBox(height: 16),
                 'Chưa có tin nhắn'.text.color(darkFontGrey).size(16).make(),
                 const SizedBox(height: 8),
-                'Hãy bắt đầu trò chuyện với shop'
-                    .text.color(lightGrey).size(14).make(),
+                'Hãy bắt đầu trò chuyện với shop'.text
+                    .color(lightGrey)
+                    .size(14)
+                    .make(),
               ],
             ),
           );
         }
-        
+
         return ListView.builder(
           itemCount: controller.conversations.length,
           itemBuilder: (context, index) {
@@ -45,18 +47,21 @@ class ChatListScreen extends StatelessWidget {
               (p) => p != controller.currentUserId,
               orElse: () => '',
             );
-            
+
             // ✅ Lấy lastMessage là String
             final String lastMessage = conv['lastMessage'] ?? '';
-            final Timestamp? lastMessageTime = conv['lastMessageTime'] as Timestamp?;
-            
+            final Timestamp? lastMessageTime =
+                conv['lastMessageTime'] as Timestamp?;
+
             return InkWell(
               onTap: () {
-                Get.to(() => ChatDetailScreen(
-                  conversationId: conv['id'],
-                  receiverId: otherId,
-                  shopName: 'Shop', 
-                ));
+                Get.to(
+                  () => ChatDetailScreen(
+                    conversationId: conv['id'],
+                    receiverId: otherId,
+                    shopName: 'Shop',
+                  ),
+                );
               },
               child: Container(
                 margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -99,10 +104,9 @@ class ChatListScreen extends StatelessWidget {
                         ],
                       ),
                     ),
-                    _formatTime(lastMessageTime ?? Timestamp.now()).text
-                        .size(12)
-                        .color(darkFontGrey)
-                        .make(),
+                    _formatTime(
+                      lastMessageTime ?? Timestamp.now(),
+                    ).text.size(12).color(darkFontGrey).make(),
                   ],
                 ),
               ),
@@ -112,12 +116,12 @@ class ChatListScreen extends StatelessWidget {
       }),
     );
   }
-  
+
   String _formatTime(Timestamp timestamp) {
     final time = timestamp.toDate();
     final now = DateTime.now();
     final diff = now.difference(time);
-    
+
     if (diff.inDays > 0) return '${diff.inDays} ngày';
     if (diff.inHours > 0) return '${diff.inHours} giờ';
     if (diff.inMinutes > 0) return '${diff.inMinutes} phút';

@@ -1,8 +1,8 @@
 import 'package:e_mart/consts/consts.dart';
 import 'package:e_mart/consts/lists.dart';
 import 'package:e_mart/controllers/auth_controller.dart';
+import 'package:e_mart/utils/auth_navigation.dart';
 import 'package:e_mart/views/auth_screen/signup_screen.dart';
-import 'package:e_mart/views/home_screen/home.dart';
 import 'package:e_mart/widget_common/applogo_widget.dart';
 import 'package:e_mart/widget_common/bg_widget.dart';
 import 'package:e_mart/widget_common/custom_textfield.dart';
@@ -24,110 +24,145 @@ class _LoginScreenState extends State<LoginScreen> {
     return bgWidget(
       child: Scaffold(
         resizeToAvoidBottomInset: false,
-        body: Center(
-          child: Column(
-            children: [
-              (context.screenHeight * 0.1).heightBox,
-              appLogoWidget(),
-              10.heightBox,
-              "Log in to $appname".text.fontFamily(bold).white.size(18).make(),
-              15.heightBox,
+        body: Stack(
+          children: [
+            Center(
+              child: Column(
+                children: [
+                  (context.screenHeight * 0.1).heightBox,
+                  appLogoWidget(),
+                  10.heightBox,
+                  "Log in to $appname".text
+                      .fontFamily(bold)
+                      .white
+                      .size(18)
+                      .make(),
+                  15.heightBox,
 
-              Obx(
-                () =>
-                    Column(
-                          children: [
-                            customTextField(
-                              title: email,
-                              hint: emailHint,
-                              controller: controller.emailController,
-                            ),
-                            customTextField(
-                              title: password,
-                              hint: passwordHint,
-                              isPass: true,
-                              controller: controller.passwordController,
-                            ),
-                            // forgot password
-                            Align(
-                              alignment: Alignment.centerRight,
-                              child: TextButton(
-                                onPressed: () {},
-                                child: forgetPass.text.color(Vx.blue500).make(),
-                              ),
-                            ),
-                            5.heightBox,
-                            // login button
-                            controller.isLoading.value
-                                ? const CircularProgressIndicator(
-                                    valueColor: AlwaysStoppedAnimation(
-                                      redColor,
-                                    ),
-                                  )
-                                : ourButton(
-                                    color: redColor,
-                                    title: login,
-                                    textColor: whiteColor,
-                                    onPress: () async {
-                                      controller.isLoading(true);
+                  Obx(
+                    () =>
+                        Column(
+                              children: [
+                                customTextField(
+                                  title: email,
+                                  hint: emailHint,
+                                  controller: controller.emailController,
+                                ),
+                                customTextField(
+                                  title: password,
+                                  hint: passwordHint,
+                                  isPass: true,
+                                  controller: controller.passwordController,
+                                ),
+                                // forgot password
+                                Align(
+                                  alignment: Alignment.centerRight,
+                                  child: TextButton(
+                                    onPressed: () {},
+                                    child: forgetPass.text
+                                        .color(Vx.blue500)
+                                        .make(),
+                                  ),
+                                ),
+                                5.heightBox,
+                                // login button
+                                controller.isLoading.value
+                                    ? const CircularProgressIndicator(
+                                        valueColor: AlwaysStoppedAnimation(
+                                          redColor,
+                                        ),
+                                      )
+                                    : ourButton(
+                                            color: redColor,
+                                            title: login,
+                                            textColor: whiteColor,
+                                            onPress: () async {
+                                              controller.isLoading(true);
 
-                                      await controller
-                                          .loginMethod(context)
-                                          .then((value) {
-                                            if (value != null && mounted) {
-                                              VxToast.show(
-                                                context,
-                                                msg: loggedIn,
-                                              );
-                                              Get.offAll(() => const Home());
-                                            } else {
-                                              controller.isLoading(false);
-                                            }
-                                          });
-                                    },
-                                  ).box.width(context.screenWidth - 50).make(),
-                            5.heightBox,
-                            createNewAccount.text.color(fontGrey).make(),
-                            // signup button
-                            5.heightBox,
-                            ourButton(
-                              color: lightGolden,
-                              title: signup,
-                              textColor: redColor,
-                              onPress: () {
-                                Get.to(() => const SignupScreen());
-                              },
-                            ).box.width(context.screenWidth - 50).make(),
-                            10.heightBox,
-                            // alternative login options
-                            loginWith.text.color(fontGrey).make(),
-                            5.heightBox,
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: List.generate(
-                                3,
-                                (index) => Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: CircleAvatar(
-                                    backgroundColor: lightGrey,
-                                    radius: 25,
-                                    child: Image.asset(
-                                      socialIconList[index],
-                                      width: 30,
+                                              final credential =
+                                                  await controller.loginMethod(
+                                                    context,
+                                                  );
+                                              if (credential?.user != null &&
+                                                  mounted) {
+                                                VxToast.show(
+                                                  context,
+                                                  msg: loggedIn,
+                                                );
+                                                await openLandingForUser(
+                                                  credential!.user!,
+                                                );
+                                              } else {
+                                                controller.isLoading(false);
+                                              }
+                                            },
+                                          ).box
+                                          .width(context.screenWidth - 50)
+                                          .make(),
+                                5.heightBox,
+                                createNewAccount.text.color(fontGrey).make(),
+                                // signup button
+                                5.heightBox,
+                                ourButton(
+                                  color: lightGolden,
+                                  title: signup,
+                                  textColor: redColor,
+                                  onPress: () {
+                                    Get.to(() => const SignupScreen());
+                                  },
+                                ).box.width(context.screenWidth - 50).make(),
+                                10.heightBox,
+                                // alternative login options
+                                loginWith.text.color(fontGrey).make(),
+                                5.heightBox,
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: List.generate(
+                                    3,
+                                    (index) => Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: CircleAvatar(
+                                        backgroundColor: lightGrey,
+                                        radius: 25,
+                                        child: Image.asset(
+                                          socialIconList[index],
+                                          width: 30,
+                                        ),
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
-                            ),
-                          ],
-                        ).box.white.rounded
-                        .padding(const EdgeInsets.all(16))
-                        .width(context.screenWidth - 70)
-                        .shadowSm
-                        .make(),
+                              ],
+                            ).box.white.rounded
+                            .padding(const EdgeInsets.all(16))
+                            .width(context.screenWidth - 70)
+                            .shadowSm
+                            .make(),
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+            SafeArea(
+              child: Align(
+                alignment: Alignment.topRight,
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 10, right: 14),
+                  child: Tooltip(
+                    message: 'Create seller account',
+                    child: IconButton(
+                      onPressed: () =>
+                          Get.to(() => const SignupScreen(isSeller: true)),
+                      style: IconButton.styleFrom(
+                        backgroundColor: whiteColor.withOpacity(0.18),
+                        foregroundColor: whiteColor,
+                      ),
+                      icon: const Icon(Icons.storefront_outlined),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

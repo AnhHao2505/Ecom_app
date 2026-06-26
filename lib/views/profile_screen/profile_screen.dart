@@ -1,11 +1,15 @@
 import 'package:e_mart/consts/consts.dart';
 import 'package:e_mart/controllers/auth_controller.dart';
+import 'package:e_mart/controllers/cart_controller.dart';
+import 'package:e_mart/controllers/home_controller.dart';
+import 'package:e_mart/controllers/wishlist_controller.dart';
+import 'package:e_mart/models/billing_order_model.dart';
+import 'package:e_mart/services/order_billing_service.dart';
 import 'package:e_mart/views/auth_screen/login_screen.dart';
 import 'package:e_mart/views/notification_screen/notification.dart';
+import 'package:e_mart/views/order_screen/order_history_screen.dart';
 import 'package:e_mart/views/profile_screen/edit_profile_screen.dart';
 import 'package:e_mart/views/wishlist_screen/wishlist_screen.dart';
-import 'package:e_mart/controllers/wishlist_controller.dart';
-import 'package:e_mart/controllers/cart_controller.dart';
 import 'package:get/get.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -14,58 +18,81 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final orderBillingService = OrderBillingService();
 
     final List<Map<String, dynamic>> menuItems = [
-      {"icon": Icons.shopping_bag_outlined, "title": "My Orders", "onTap": () {}},
-      {"icon": Icons.location_on_outlined, "title": "Addresses", "onTap": () {}},
-      {"icon": Icons.favorite_border, "title": "Wishlist", "onTap": () => Get.to(() => const WishlistScreen())},
-      {"icon": Icons.notifications_none, "title": "Notifications", "onTap": () => Get.to(() => const NotificationPage())},
+      {
+        "icon": Icons.shopping_bag_outlined,
+        "title": "My Orders",
+        "onTap": () => Get.to(() => const OrderHistoryScreen()),
+      },
+      {
+        "icon": Icons.location_on_outlined,
+        "title": "Addresses",
+        "onTap": () {},
+      },
+      {
+        "icon": Icons.favorite_border,
+        "title": "Wishlist",
+        "onTap": () => Get.to(() => const WishlistScreen()),
+      },
+      {
+        "icon": Icons.notifications_none,
+        "title": "Notifications",
+        "onTap": () => Get.to(() => const NotificationPage()),
+      },
       {"icon": Icons.settings_outlined, "title": "Settings", "onTap": () {}},
       {"icon": Icons.help_outline, "title": "Help Center", "onTap": () {}},
     ];
 
-    Widget buildStatCard(String count, String title) {
-      return Expanded(
-        child: Container(
-          margin: const EdgeInsets.symmetric(horizontal: 4),
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          decoration: BoxDecoration(
-            color: Theme.of(context).cardColor,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: isDark ? darkDivider : lightDivider.withOpacity(0.5),
+    Widget buildStatContent(String count, String title) {
+      return Container(
+        margin: const EdgeInsets.symmetric(horizontal: 4),
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        decoration: BoxDecoration(
+          color: Theme.of(context).cardColor,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isDark ? darkDivider : lightDivider.withOpacity(0.5),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: isDark
+                  ? Colors.transparent
+                  : Colors.black.withOpacity(0.04),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
             ),
-            boxShadow: [
-              BoxShadow(
-                color: isDark ? Colors.transparent : Colors.black.withOpacity(0.04),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
+          ],
+        ),
+        child: Column(
+          children: [
+            Text(
+              count,
+              style: const TextStyle(
+                fontFamily: bold,
+                fontSize: 20,
+                color: primaryColor,
               ),
-            ],
-          ),
-          child: Column(
-            children: [
-              Text(
-                count,
-                style: const TextStyle(
-                  fontFamily: bold,
-                  fontSize: 20,
-                  color: primaryColor,
-                ),
+            ),
+            4.heightBox,
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 12,
+                color: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.color?.withOpacity(0.8),
               ),
-              4.heightBox,
-              Text(
-                title,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.8),
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       );
+    }
+
+    Widget buildStatCard(String count, String title) {
+      return Expanded(child: buildStatContent(count, title));
     }
 
     return Scaffold(
@@ -100,7 +127,10 @@ class ProfileScreen extends StatelessWidget {
                   ),
                   child: SafeArea(
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 10,
+                      ),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -111,7 +141,10 @@ class ProfileScreen extends StatelessWidget {
                                 height: 64,
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
-                                  border: Border.all(color: whiteColor.withOpacity(0.5), width: 2),
+                                  border: Border.all(
+                                    color: whiteColor.withOpacity(0.5),
+                                    width: 2,
+                                  ),
                                   image: const DecorationImage(
                                     image: AssetImage(imgProfile2),
                                     fit: BoxFit.cover,
@@ -124,16 +157,13 @@ class ProfileScreen extends StatelessWidget {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    "Dummy User"
-                                        .text
+                                    "Dummy User".text
                                         .fontFamily(bold)
                                         .size(18)
                                         .white
                                         .make(),
                                     4.heightBox,
-                                    "customer@example.com"
-                                        .text
-                                        .white
+                                    "customer@example.com".text.white
                                         .size(13)
                                         .make(),
                                   ],
@@ -146,7 +176,11 @@ class ProfileScreen extends StatelessWidget {
                                 style: IconButton.styleFrom(
                                   backgroundColor: whiteColor.withOpacity(0.2),
                                 ),
-                                icon: const Icon(Icons.edit_outlined, color: whiteColor, size: 20),
+                                icon: const Icon(
+                                  Icons.edit_outlined,
+                                  color: whiteColor,
+                                  size: 20,
+                                ),
                               ),
                             ],
                           ),
@@ -162,27 +196,50 @@ class ProfileScreen extends StatelessWidget {
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
                   children: [
-                    // Stats Row
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          buildStatCard("675", "Orders"),
-                          Obx(() => buildStatCard("${Get.find<WishlistController>().count}", "Wishlist")),
-                          Obx(() => buildStatCard("${Get.find<CartController>().cartItems.length}", "Cart")),
-                        ],
-                      ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: StreamBuilder<List<BillingOrder>>(
+                            stream: orderBillingService
+                                .watchCurrentUserOrders(),
+                            builder: (context, snapshot) {
+                              return buildStatContent(
+                                '${snapshot.data?.length ?? 0}',
+                                "Orders",
+                              );
+                            },
+                          ),
+                        ),
+                        Obx(
+                          () => buildStatCard(
+                            "${Get.find<WishlistController>().count}",
+                            "Wishlist",
+                          ),
+                        ),
+                        Obx(
+                          () => buildStatCard(
+                            "${Get.find<CartController>().cartItems.length}",
+                            "Cart",
+                          ),
+                        ),
+                      ],
+                    ),
                     24.heightBox,
-                    // Menu Section
                     Container(
                       decoration: BoxDecoration(
                         color: Theme.of(context).cardColor,
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
-                          color: isDark ? darkDivider : lightDivider.withOpacity(0.5),
+                          color: isDark
+                              ? darkDivider
+                              : lightDivider.withOpacity(0.5),
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: isDark ? Colors.transparent : Colors.black.withOpacity(0.03),
+                            color: isDark
+                                ? Colors.transparent
+                                : Colors.black.withOpacity(0.03),
                             blurRadius: 4,
                             offset: const Offset(0, 2),
                           ),
@@ -205,11 +262,18 @@ class ProfileScreen extends StatelessWidget {
                             child: InkWell(
                               onTap: menuItems[index]["onTap"],
                               borderRadius: BorderRadius.vertical(
-                                top: index == 0 ? const Radius.circular(16) : Radius.zero,
-                                bottom: index == menuItems.length - 1 ? const Radius.circular(16) : Radius.zero,
+                                top: index == 0
+                                    ? const Radius.circular(16)
+                                    : Radius.zero,
+                                bottom: index == menuItems.length - 1
+                                    ? const Radius.circular(16)
+                                    : Radius.zero,
                               ),
                               child: Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 16,
+                                ),
                                 child: Row(
                                   children: [
                                     Container(
@@ -229,7 +293,9 @@ class ProfileScreen extends StatelessWidget {
                                       child: Text(
                                         menuItems[index]["title"],
                                         style: TextStyle(
-                                          color: Theme.of(context).textTheme.bodyLarge?.color,
+                                          color: Theme.of(
+                                            context,
+                                          ).textTheme.bodyLarge?.color,
                                           fontFamily: semibold,
                                           fontSize: 15,
                                         ),
@@ -237,7 +303,11 @@ class ProfileScreen extends StatelessWidget {
                                     ),
                                     Icon(
                                       Icons.chevron_right,
-                                      color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.4),
+                                      color: Theme.of(context)
+                                          .textTheme
+                                          .bodyMedium
+                                          ?.color
+                                          ?.withOpacity(0.4),
                                     ),
                                   ],
                                 ),
@@ -248,7 +318,6 @@ class ProfileScreen extends StatelessWidget {
                       ),
                     ),
                     32.heightBox,
-                    // Logout Button
                     SizedBox(
                       width: double.infinity,
                       height: 56,
@@ -262,26 +331,32 @@ class ProfileScreen extends StatelessWidget {
                           ),
                         ),
                         onPressed: () async {
-                          await Get.put(AuthController()).signoutMethod(context);
+                          final authController =
+                              Get.isRegistered<AuthController>()
+                              ? Get.find<AuthController>()
+                              : Get.put(AuthController());
+                          await authController.signoutMethod(context);
+                          if (Get.isRegistered<HomeController>()) {
+                            Get.delete<HomeController>(force: true);
+                          }
                           Get.offAll(() => const LoginScreen());
                         },
-                        child: Row(
+                        child: const Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Icon(Icons.logout, size: 20),
-                            8.widthBox,
-                            const Text(
+                            Icon(Icons.logout, size: 20),
+                            SizedBox(width: 8),
+                            Text(
                               "Log Out",
-                              style: TextStyle(
-                                fontFamily: bold,
-                                fontSize: 16,
-                              ),
+                              style: TextStyle(fontFamily: bold, fontSize: 16),
                             ),
                           ],
                         ),
                       ),
                     ),
-                    30.heightBox,
+                    SizedBox(
+                      height: MediaQuery.of(context).padding.bottom + 96,
+                    ),
                   ],
                 ),
               ),

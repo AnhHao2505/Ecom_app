@@ -40,7 +40,7 @@ class NotificationController extends GetxController {
 
     _subscription = _firestore
         .collection(collectionName)
-        .orderBy('createdAt', descending: true) 
+        .orderBy('createdAt', descending: true)
         .snapshots()
         .listen(
           (snapshot) {
@@ -80,7 +80,7 @@ class NotificationController extends GetxController {
   }
 
   List<NotificationModel> get filteredNotifications {
-    final list = notifications.toList(); 
+    final list = notifications.toList();
     if (selectedFilter.value == 'all') return list;
     return list.where((n) => n.type == selectedFilter.value).toList();
   }

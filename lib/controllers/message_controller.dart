@@ -32,7 +32,6 @@ class MessageController extends GetxController {
   }
 
   void listenToConversations() {
-
     _convSubscription = _firestore
         .collection('conversations')
         .where('participants', arrayContains: currentUserId)
@@ -40,9 +39,8 @@ class MessageController extends GetxController {
         .snapshots()
         .listen((snapshot) {
           conversations.value = snapshot.docs.map((doc) {
-            return {'id': doc.id, ...doc.data() as Map<String, dynamic>};
+            return {'id': doc.id, ...doc.data()};
           }).toList();
-
         });
   }
 
@@ -56,7 +54,7 @@ class MessageController extends GetxController {
         .snapshots()
         .listen((snapshot) {
           messages.value = snapshot.docs.map((doc) {
-            return {'id': doc.id, ...doc.data() as Map<String, dynamic>};
+            return {'id': doc.id, ...doc.data()};
           }).toList();
 
           _markAsRead(conversationId);
@@ -108,8 +106,7 @@ class MessageController extends GetxController {
         await doc.reference.update({'isRead': true});
       }
 
-      if (unread.docs.isNotEmpty) {
-      }
+      if (unread.docs.isNotEmpty) {}
     } catch (e) {
       print(' Lỗi đánh dấu đọc: $e');
     }
@@ -125,7 +122,7 @@ class MessageController extends GetxController {
       for (var doc in existing.docs) {
         final participants = List<String>.from(doc['participants'] ?? []);
         if (participants.contains(shopId)) {
-          return doc.id; 
+          return doc.id;
         }
       }
 

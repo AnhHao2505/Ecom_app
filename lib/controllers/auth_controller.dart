@@ -52,21 +52,43 @@ class AuthController extends GetxController {
   }
 
   // storing data method
-  Future<void> storeUserData({name, password, email}) async {
-    DocumentReference store = firestore
+  Future<void> storeUserData({
+    name,
+    password,
+    email,
+    String role = 'Customer',
+  }) async {
+    final user = auth.currentUser;
+    if (user == null) return;
+
+    final DocumentReference store = firestore
         .collection(usersCollection)
-        .doc(currentUser!.uid);
-    store.set({
+        .doc(user.uid);
+    await store.set({
       'name': name,
       'email': email,
       'password': password,
       'imageUrl': '',
-      'id': currentUser!.uid,
+      'id': user.uid,
+      'role': role,
+      'shopSetupComplete': false,
+      'createdAt': FieldValue.serverTimestamp(),
+      'updatedAt': FieldValue.serverTimestamp(),
     });
   }
 
-  Future<void> storeProductData(Product product)async{
-    DocumentReference store = firestore.collection(productCollection).doc();
+  Future<String> roleForUser(String userId) async {
+    final snapshot = await firestore
+        .collection(usersCollection)
+        .doc(userId)
+        .get();
+    return snapshot.data()?['role']?.toString() ?? 'Customer';
+  }
+
+  Future<void> storeProductData(Product product) async {
+    final DocumentReference store = firestore
+        .collection(productCollection)
+        .doc();
     final data = product.toMap();
     data['id'] = store.id;
 

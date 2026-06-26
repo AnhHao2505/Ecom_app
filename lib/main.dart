@@ -1,13 +1,14 @@
 import 'package:e_mart/consts/consts.dart';
+import 'package:e_mart/controllers/cart_controller.dart';
+import 'package:e_mart/controllers/recent_view_controller.dart';
 import 'package:e_mart/controllers/theme_controller.dart';
 import 'package:e_mart/controllers/wishlist_controller.dart';
-import 'package:e_mart/controllers/recent_view_controller.dart';
 import 'package:e_mart/firebase_options.dart';
 import 'package:e_mart/services/product_seeder.dart';
 import 'package:e_mart/views/splash_screen/splash_screen.dart';
-import 'package:get_storage/get_storage.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,6 +20,7 @@ void main() async {
   Get.put(ThemeController());
   Get.put(WishlistController());
   Get.put(RecentViewController());
+  Get.put(CartController(), permanent: true);
 
   runApp(const MyApp());
 }

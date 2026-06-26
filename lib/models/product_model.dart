@@ -8,6 +8,8 @@ class Product {
   final double price;
   final double originalPrice;
   final List<String> images; // Cloudinary URLs
+  final String storeId;
+  final String? userId;
   final double rating;
   final int reviewCount;
   final int stock;
@@ -27,6 +29,8 @@ class Product {
     required this.price,
     required this.originalPrice,
     required this.images,
+    this.storeId = 'emart-central',
+    this.userId,
     this.rating = 0.0,
     this.reviewCount = 0,
     required this.stock,
@@ -50,7 +54,7 @@ class Product {
 
   // Convert Product to JSON for Firestore
   Map<String, dynamic> toMap() {
-    return {
+    final data = <String, dynamic>{
       'id': id,
       'name': name,
       'description': description,
@@ -58,6 +62,7 @@ class Product {
       'price': price,
       'originalPrice': originalPrice,
       'images': images,
+      'storeId': storeId,
       'rating': rating,
       'reviewCount': reviewCount,
       'stock': stock,
@@ -69,6 +74,10 @@ class Product {
       'createdAt': Timestamp.fromDate(createdAt),
       'updatedAt': Timestamp.fromDate(updatedAt),
     };
+    if (userId != null && userId!.isNotEmpty) {
+      data['userId'] = userId;
+    }
+    return data;
   }
 
   // Convert JSON from Firestore to Product
@@ -81,6 +90,8 @@ class Product {
       price: _toDouble(map['price']),
       originalPrice: _toDouble(map['originalPrice']),
       images: _toStringList(map['images']),
+      storeId: map['storeId']?.toString() ?? 'emart-central',
+      userId: _nullableString(map['userId']),
       rating: _toDouble(map['rating']),
       reviewCount: _toInt(map['reviewCount']),
       stock: _toInt(map['stock']),
@@ -96,7 +107,7 @@ class Product {
 
   // Convert Product to JSON for API calls or local storage
   Map<String, dynamic> toJson() {
-    return {
+    final data = <String, dynamic>{
       'id': id,
       'name': name,
       'description': description,
@@ -104,6 +115,7 @@ class Product {
       'price': price,
       'originalPrice': originalPrice,
       'images': images,
+      'storeId': storeId,
       'rating': rating,
       'reviewCount': reviewCount,
       'stock': stock,
@@ -115,6 +127,10 @@ class Product {
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
     };
+    if (userId != null && userId!.isNotEmpty) {
+      data['userId'] = userId;
+    }
+    return data;
   }
 
   // Convert JSON to Product
@@ -127,6 +143,8 @@ class Product {
       price: _toDouble(json['price']),
       originalPrice: _toDouble(json['originalPrice']),
       images: _toStringList(json['images']),
+      storeId: json['storeId']?.toString() ?? 'emart-central',
+      userId: _nullableString(json['userId']),
       rating: _toDouble(json['rating']),
       reviewCount: _toInt(json['reviewCount']),
       stock: _toInt(json['stock']),
@@ -153,6 +171,8 @@ class Product {
     double? price,
     double? originalPrice,
     List<String>? images,
+    String? storeId,
+    String? userId,
     double? rating,
     int? reviewCount,
     int? stock,
@@ -172,6 +192,8 @@ class Product {
       price: price ?? this.price,
       originalPrice: originalPrice ?? this.originalPrice,
       images: images ?? this.images,
+      storeId: storeId ?? this.storeId,
+      userId: userId ?? this.userId,
       rating: rating ?? this.rating,
       reviewCount: reviewCount ?? this.reviewCount,
       stock: stock ?? this.stock,
@@ -203,5 +225,10 @@ class Product {
   static List<String> _toStringList(dynamic value) {
     if (value is! Iterable) return const [];
     return value.map((item) => item.toString()).toList();
+  }
+
+  static String? _nullableString(dynamic value) {
+    final text = value?.toString().trim();
+    return text == null || text.isEmpty ? null : text;
   }
 }

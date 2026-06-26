@@ -15,7 +15,9 @@ class Home extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var controller = Get.put(HomeController());
-    Get.put(CartController());
+    if (!Get.isRegistered<CartController>()) {
+      Get.put(CartController(), permanent: true);
+    }
 
     var navbarItem = [
       BottomNavigationBarItem(

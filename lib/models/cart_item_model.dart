@@ -8,7 +8,7 @@ class CartItem {
 
   CartItem({
     required this.product,
-    required this.quantity,
+    this.quantity = 1,
     this.selectedColor,
     this.selectedSize,
   });
@@ -17,7 +17,11 @@ class CartItem {
     return '${product.id}_${selectedColor ?? ''}_${selectedSize ?? ''}';
   }
 
-  double get lineTotal => product.price * quantity;
+  String get name => product.name;
+  String get image => product.images.isNotEmpty ? product.images.first : '';
+  String get category => product.category;
+  double get price => product.price;
+  double get lineTotal => price * quantity;
 
   bool hasSameOptions({
     required Product otherProduct,
@@ -27,5 +31,19 @@ class CartItem {
     return product.id == otherProduct.id &&
         selectedColor == color &&
         selectedSize == size;
+  }
+
+  CartItem copyWith({
+    Product? product,
+    int? quantity,
+    String? selectedColor,
+    String? selectedSize,
+  }) {
+    return CartItem(
+      product: product ?? this.product,
+      quantity: quantity ?? this.quantity,
+      selectedColor: selectedColor ?? this.selectedColor,
+      selectedSize: selectedSize ?? this.selectedSize,
+    );
   }
 }

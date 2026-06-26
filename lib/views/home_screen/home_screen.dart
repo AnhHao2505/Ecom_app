@@ -51,7 +51,7 @@ class HomeScreen extends StatelessWidget {
                       fontSize: 22,
                     ),
                   ),
-                  const Spacer(), 
+                  const Spacer(),
                   IconButton(
                     icon: Icon(
                       Theme.of(context).brightness == Brightness.dark
@@ -64,9 +64,7 @@ class HomeScreen extends StatelessWidget {
                     },
                   ),
                   IconButton(
-                    icon: Icon(
-                      Icons.message_rounded
-                    ),
+                    icon: Icon(Icons.message_rounded),
                     onPressed: () {
                       Get.to(() => const ChatListScreen());
                     },

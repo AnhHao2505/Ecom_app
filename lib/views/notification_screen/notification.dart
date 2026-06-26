@@ -107,7 +107,9 @@ class NotificationPage extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: isSelected ? primaryColor : Colors.white,
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: isSelected ? primaryColor : lightGrey),
+                  border: Border.all(
+                    color: isSelected ? primaryColor : lightGrey,
+                  ),
                 ),
                 child: tabs[index].text
                     .color(isSelected ? whiteColor : darkFontGrey)
