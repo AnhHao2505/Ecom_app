@@ -41,16 +41,18 @@ class SellerService {
     final now = DateTime.now();
     final existing = await storeDocument(user.uid).get();
     final savedStore = store.copyWith(
-      id: user.uid,
-      ownerUserId: user.uid,
+      userId: user.uid,
       email: store.email.isEmpty ? user.email ?? '' : store.email,
       createdAt: existing.exists ? store.createdAt : now,
       updatedAt: now,
     );
 
-    await storeDocument(
-      user.uid,
-    ).set(savedStore.toMap(), SetOptions(merge: true));
+    final storeData = savedStore.toMap()
+      ..['id'] = FieldValue.delete()
+      ..['ownerId'] = FieldValue.delete()
+      ..['ownerUserId'] = FieldValue.delete();
+
+    await storeDocument(user.uid).set(storeData, SetOptions(merge: true));
     await firestore.collection(usersCollection).doc(user.uid).set({
       'role': 'Seller',
       'shopSetupComplete': true,

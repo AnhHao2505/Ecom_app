@@ -2,8 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:e_mart/consts/images.dart';
 
 class Store {
-  final String id;
-  final String? ownerUserId;
+  final String userId;
   final String name;
   final String description;
   final String ownerName;
@@ -22,8 +21,7 @@ class Store {
   final DateTime updatedAt;
 
   Store({
-    required this.id,
-    this.ownerUserId,
+    required this.userId,
     required this.name,
     required this.description,
     required this.ownerName,
@@ -48,9 +46,7 @@ class Store {
 
   Map<String, dynamic> toMap() {
     return {
-      'id': id,
-      if (ownerUserId != null && ownerUserId!.isNotEmpty)
-        'ownerUserId': ownerUserId,
+      'userId': userId,
       'name': name,
       'description': description,
       'ownerName': ownerName,
@@ -72,8 +68,7 @@ class Store {
 
   factory Store.fromMap(Map<String, dynamic> map, String docId) {
     return Store(
-      id: docId,
-      ownerUserId: _nullableString(map['ownerUserId']),
+      userId: _nonEmptyString(map['userId'], docId),
       name: map['name']?.toString() ?? '',
       description: map['description']?.toString() ?? '',
       ownerName: map['ownerName']?.toString() ?? '',
@@ -95,9 +90,7 @@ class Store {
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
-      if (ownerUserId != null && ownerUserId!.isNotEmpty)
-        'ownerUserId': ownerUserId,
+      'userId': userId,
       'name': name,
       'description': description,
       'ownerName': ownerName,
@@ -119,8 +112,7 @@ class Store {
 
   factory Store.fromJson(Map<String, dynamic> json) {
     return Store(
-      id: json['id'] ?? '',
-      ownerUserId: _nullableString(json['ownerUserId']),
+      userId: _nonEmptyString(json['userId'], ''),
       name: json['name']?.toString() ?? '',
       description: json['description']?.toString() ?? '',
       ownerName: json['ownerName']?.toString() ?? '',
@@ -145,8 +137,7 @@ class Store {
   }
 
   Store copyWith({
-    String? id,
-    String? ownerUserId,
+    String? userId,
     String? name,
     String? description,
     String? ownerName,
@@ -165,8 +156,7 @@ class Store {
     DateTime? updatedAt,
   }) {
     return Store(
-      id: id ?? this.id,
-      ownerUserId: ownerUserId ?? this.ownerUserId,
+      userId: userId ?? this.userId,
       name: name ?? this.name,
       description: description ?? this.description,
       ownerName: ownerName ?? this.ownerName,
@@ -188,7 +178,7 @@ class Store {
 
   @override
   String toString() {
-    return 'Store(id: $id, name: $name, rating: $rating)';
+    return 'Store(userId: $userId, name: $name, rating: $rating)';
   }
 
   static double _toDouble(dynamic value) {
@@ -204,10 +194,5 @@ class Store {
   static String _nonEmptyString(dynamic value, String fallback) {
     final text = value?.toString().trim();
     return text == null || text.isEmpty ? fallback : text;
-  }
-
-  static String? _nullableString(dynamic value) {
-    final text = value?.toString().trim();
-    return text == null || text.isEmpty ? null : text;
   }
 }

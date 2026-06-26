@@ -82,8 +82,7 @@ class _SellerShopSetupScreenState extends State<SellerShopSetupScreen> {
     try {
       final now = DateTime.now();
       final store = Store(
-        id: auth.currentUser!.uid,
-        ownerUserId: auth.currentUser!.uid,
+        userId: auth.currentUser!.uid,
         name: _nameController.text.trim(),
         description: _descriptionController.text.trim(),
         ownerName: _ownerNameController.text.trim(),

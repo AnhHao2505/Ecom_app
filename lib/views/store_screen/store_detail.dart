@@ -33,19 +33,19 @@ class StoreDetail extends StatelessWidget {
             )
           : _StoreDetailBody(
               store: store,
-              storeProducts: productsByStore(store.id),
+              storeProducts: productsByStore(store.userId),
             ),
     );
   }
 
   List<Product> _productsForStore() {
-    final fallbackProducts = productsByStore(store.id);
+    final fallbackProducts = productsByStore(store.userId);
     final liveProducts = Get.find<HomeController>().products.where((product) {
       final sellerUserId = product.userId;
       if (sellerUserId != null && sellerUserId.isNotEmpty) {
-        return sellerUserId == store.id;
+        return sellerUserId == store.userId;
       }
-      return product.storeId == store.id;
+      return product.storeId == store.userId;
     }).toList();
 
     return liveProducts.isEmpty ? fallbackProducts : liveProducts;

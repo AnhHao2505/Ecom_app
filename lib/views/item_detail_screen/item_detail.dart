@@ -47,7 +47,7 @@ class _ItemDetailState extends State<ItemDetail> {
   @override
   Widget build(BuildContext context) {
     final images = product.images.isEmpty ? [''] : product.images;
-    final fallbackStore = storeById(product.storeId);
+    final fallbackStore = storeByUserId(product.storeId);
     final homeController = Get.find<HomeController>();
     final relatedProducts = homeController.products
         .where(
@@ -611,7 +611,7 @@ class _ItemDetailState extends State<ItemDetail> {
 
     final receiverId = product.userId?.isNotEmpty == true
         ? product.userId!
-        : store.id;
+        : store.userId;
 
     try {
       final messageController = Get.isRegistered<MessageController>()
