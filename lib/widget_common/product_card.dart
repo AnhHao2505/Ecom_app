@@ -121,6 +121,7 @@ class _ProductCardState extends State<ProductCard> {
                           top: 10,
                           left: 10,
                           child: Column(
+                            mainAxisSize: MainAxisSize.min,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               if (widget.product.discountPercentage > 0)

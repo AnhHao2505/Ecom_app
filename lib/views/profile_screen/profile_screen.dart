@@ -1,6 +1,7 @@
 import 'package:e_mart/consts/consts.dart';
 import 'package:e_mart/controllers/auth_controller.dart';
 import 'package:e_mart/views/auth_screen/login_screen.dart';
+import 'package:e_mart/views/notification_screen/notification.dart';
 import 'package:e_mart/views/profile_screen/edit_profile_screen.dart';
 import 'package:e_mart/views/wishlist_screen/wishlist_screen.dart';
 import 'package:e_mart/controllers/wishlist_controller.dart';
@@ -18,7 +19,7 @@ class ProfileScreen extends StatelessWidget {
       {"icon": Icons.shopping_bag_outlined, "title": "My Orders", "onTap": () {}},
       {"icon": Icons.location_on_outlined, "title": "Addresses", "onTap": () {}},
       {"icon": Icons.favorite_border, "title": "Wishlist", "onTap": () => Get.to(() => const WishlistScreen())},
-      {"icon": Icons.notifications_none, "title": "Notifications", "onTap": () {}},
+      {"icon": Icons.notifications_none, "title": "Notifications", "onTap": () => Get.to(() => const NotificationPage())},
       {"icon": Icons.settings_outlined, "title": "Settings", "onTap": () {}},
       {"icon": Icons.help_outline, "title": "Help Center", "onTap": () {}},
     ];
