@@ -24,7 +24,6 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   final ScrollController _scrollController = ScrollController();
   late MessageController _msgController;
 
-  // ✅ Thêm FocusNode
   final FocusNode _focusNode = FocusNode();
 
   @override
@@ -38,7 +37,6 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     _msgController = Get.find<MessageController>();
     _msgController.listenToMessages(widget.conversationId);
 
-    // ✅ Request focus sau khi build
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _focusNode.requestFocus();
     });
@@ -48,7 +46,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   void dispose() {
     _controller.dispose();
     _scrollController.dispose();
-    _focusNode.dispose(); // ✅ Dispose FocusNode
+    _focusNode.dispose(); 
     super.dispose();
   }
 
@@ -161,7 +159,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
           Expanded(
             child: TextField(
               controller: _controller,
-              focusNode: _focusNode, // ✅ Gán FocusNode
+              focusNode: _focusNode, 
               decoration: InputDecoration(
                 hintText: 'Nhập tin nhắn...',
                 border: OutlineInputBorder(

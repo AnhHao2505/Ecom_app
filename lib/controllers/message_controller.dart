@@ -11,8 +11,8 @@ class MessageController extends GetxController {
   var isLoading = false.obs;
   var selectedConversationId = ''.obs;
 
-  late StreamSubscription<QuerySnapshot> _convSubscription;
-  late StreamSubscription<QuerySnapshot> _msgSubscription;
+  StreamSubscription<QuerySnapshot>? _convSubscription;
+  StreamSubscription<QuerySnapshot>? _msgSubscription;
 
   String get currentUserId => FirebaseAuth.instance.currentUser?.uid ?? '';
 
@@ -26,39 +26,66 @@ class MessageController extends GetxController {
 
   @override
   void onClose() {
-    _convSubscription.cancel();
-    _msgSubscription.cancel();
+    _disposeSubscriptions();
     super.onClose();
   }
 
+  void _disposeSubscriptions() {
+    _convSubscription?.cancel();
+    _convSubscription = null;
+    _msgSubscription?.cancel();
+    _msgSubscription = null;
+  }
+
   void listenToConversations() {
+    _convSubscription?.cancel();
+    
     _convSubscription = _firestore
         .collection('conversations')
         .where('participants', arrayContains: currentUserId)
         .orderBy('updatedAt', descending: true)
         .snapshots()
-        .listen((snapshot) {
-          conversations.value = snapshot.docs.map((doc) {
-            return {'id': doc.id, ...doc.data()};
-          }).toList();
-        });
+        .listen(
+          (snapshot) {
+            conversations.value = snapshot.docs.map((doc) {
+              return {'id': doc.id, ...doc.data()};
+            }).toList();
+          },
+          onError: (error) {
+            print('Lỗi lắng nghe conversations: $error');
+          },
+        );
   }
 
   void listenToMessages(String conversationId) {
+    if (selectedConversationId.value == conversationId && _msgSubscription != null) {
+      return;
+    }
+
     selectedConversationId.value = conversationId;
+
+    _msgSubscription?.cancel();
+    _msgSubscription = null;
+
+    messages.clear();
 
     _msgSubscription = _firestore
         .collection('messages')
         .where('conversationId', isEqualTo: conversationId)
         .orderBy('createdAt', descending: false)
         .snapshots()
-        .listen((snapshot) {
-          messages.value = snapshot.docs.map((doc) {
-            return {'id': doc.id, ...doc.data()};
-          }).toList();
+        .listen(
+          (snapshot) {
+            messages.value = snapshot.docs.map((doc) {
+              return {'id': doc.id, ...doc.data()};
+            }).toList();
 
-          _markAsRead(conversationId);
-        });
+            _markAsRead(conversationId);
+          },
+          onError: (error) {
+            print('Lỗi lắng nghe messages: $error');
+          },
+        );
   }
 
   Future<void> sendMessage({
@@ -112,31 +139,43 @@ class MessageController extends GetxController {
     }
   }
 
-  Future<String> createConversation(String shopId) async {
-    try {
-      final existing = await _firestore
-          .collection('conversations')
-          .where('participants', arrayContains: currentUserId)
-          .get();
+Future<String> createConversation(String shopId) async {
+  try {
+    final existing = await _firestore
+        .collection('conversations')
+        .where('participants', arrayContains: currentUserId)
+        .get();
 
-      for (var doc in existing.docs) {
-        final participants = List<String>.from(doc['participants'] ?? []);
-        if (participants.contains(shopId)) {
-          return doc.id;
-        }
+    for (var doc in existing.docs) {
+      final participants = List<String>.from(doc['participants'] ?? []);
+      if (participants.contains(shopId)) {
+        return doc.id;
       }
-
-      final docRef = await _firestore.collection('conversations').add({
-        'participants': [currentUserId, shopId],
-        'lastMessage': 'Bắt đầu trò chuyện',
-        'lastMessageTime': FieldValue.serverTimestamp(),
-        'createdAt': FieldValue.serverTimestamp(),
-        'updatedAt': FieldValue.serverTimestamp(),
-      });
-
-      return docRef.id;
-    } catch (e) {
-      return '';
     }
+
+    String shopName = 'Shop';
+    try {
+      final storeDoc = await _firestore.collection('stores').doc(shopId).get();
+      if (storeDoc.exists) {
+        shopName = storeDoc.data()?['name'] ?? 'Shop';
+      }
+    } catch (e) {
+      print('Lỗi lấy tên shop: $e');
+    }
+
+    final docRef = await _firestore.collection('conversations').add({
+      'participants': [currentUserId, shopId],
+      'lastMessage': 'Bắt đầu trò chuyện với $shopName',
+      'lastMessageTime': FieldValue.serverTimestamp(),
+      'createdAt': FieldValue.serverTimestamp(),
+      'updatedAt': FieldValue.serverTimestamp(),
+      'shopName': shopName, 
+    });
+
+    return docRef.id;
+  } catch (e) {
+    print('Lỗi tạo conversation: $e');
+    return '';
   }
+}
 }
