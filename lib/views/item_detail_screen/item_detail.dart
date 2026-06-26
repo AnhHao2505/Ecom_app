@@ -1,16 +1,20 @@
 import 'package:e_mart/consts/consts.dart';
 import 'package:e_mart/controllers/cart_controller.dart';
 import 'package:e_mart/controllers/home_controller.dart';
+import 'package:e_mart/controllers/message_controller.dart';
 import 'package:e_mart/controllers/wishlist_controller.dart';
 import 'package:e_mart/controllers/recent_view_controller.dart';
 import 'package:e_mart/models/product_model.dart';
+import 'package:e_mart/views/chat_screen/chat_detail_screen.dart';
 import 'package:e_mart/widget_common/our_button.dart';
 import 'package:e_mart/widget_common/product_card.dart';
 import 'package:e_mart/widget_common/product_image.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
 
 class ItemDetail extends StatefulWidget {
   final Product product;
+  
 
   const ItemDetail({super.key, required this.product});
 
@@ -23,6 +27,8 @@ class _ItemDetailState extends State<ItemDetail> {
   int quantity = 1;
   int selectedColorIndex = 0;
   int selectedSizeIndex = 0;
+  final String shopId = 'shop_demo_001';
+  final String shopName = 'E-Mart Store';
 
   Product get product => widget.product;
 
@@ -54,20 +60,31 @@ class _ItemDetailState extends State<ItemDetail> {
           product.name,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color, fontFamily: bold),
+          style: TextStyle(
+            color: Theme.of(context).textTheme.bodyLarge?.color,
+            fontFamily: bold,
+          ),
         ),
         actions: [
           IconButton(
             onPressed: () => _showMessage('Sharing will be available soon.'),
-            icon: Icon(Icons.share, color: Theme.of(context).textTheme.bodyMedium?.color),
+            icon: Icon(
+              Icons.share,
+              color: Theme.of(context).textTheme.bodyMedium?.color,
+            ),
           ),
           Obx(() {
-            final isWishlisted = Get.find<WishlistController>().isWishlisted(product.id);
+            final isWishlisted = Get.find<WishlistController>().isWishlisted(
+              product.id,
+            );
             return IconButton(
-              onPressed: () => Get.find<WishlistController>().toggle(product.id),
+              onPressed: () =>
+                  Get.find<WishlistController>().toggle(product.id),
               icon: Icon(
                 isWishlisted ? Icons.favorite : Icons.favorite_outline,
-                color: isWishlisted ? redColor : Theme.of(context).textTheme.bodyMedium?.color,
+                color: isWishlisted
+                    ? redColor
+                    : Theme.of(context).textTheme.bodyMedium?.color,
               ),
             );
           }),
@@ -122,7 +139,11 @@ class _ItemDetailState extends State<ItemDetail> {
                       8.widthBox,
                       Text(
                         '${product.rating} (${product.reviewCount} reviews)',
-                        style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7)),
+                        style: TextStyle(
+                          color: Theme.of(
+                            context,
+                          ).textTheme.bodyMedium?.color?.withOpacity(0.7),
+                        ),
                       ),
                     ],
                   ),
@@ -143,14 +164,19 @@ class _ItemDetailState extends State<ItemDetail> {
                         Text(
                           '\$${product.originalPrice.toStringAsFixed(2)}',
                           style: TextStyle(
-                            color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.5),
+                            color: Theme.of(
+                              context,
+                            ).textTheme.bodyMedium?.color?.withOpacity(0.5),
                             decoration: TextDecoration.lineThrough,
                             fontSize: 16,
                           ),
                         ),
                       if (product.discountPercentage > 0)
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
                             color: warningColor.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(8),
@@ -184,10 +210,7 @@ class _ItemDetailState extends State<ItemDetail> {
                       children: [
                         const CircleAvatar(
                           backgroundColor: primaryColor,
-                          child: Icon(
-                            Icons.store,
-                            color: whiteColor,
-                          ),
+                          child: Icon(Icons.store, color: whiteColor),
                         ),
                         16.widthBox,
                         Expanded(
@@ -197,19 +220,31 @@ class _ItemDetailState extends State<ItemDetail> {
                               Text(
                                 'E-Mart Store',
                                 style: TextStyle(
-                                  color: Theme.of(context).textTheme.bodyLarge?.color,
+                                  color: Theme.of(
+                                    context,
+                                  ).textTheme.bodyLarge?.color,
                                   fontFamily: semibold,
                                   fontSize: 16,
                                 ),
                               ),
                               4.heightBox,
-                              Text('Official Seller', style: TextStyle(color: successColor, fontSize: 12, fontFamily: semibold)),
+                              Text(
+                                'Official Seller',
+                                style: TextStyle(
+                                  color: successColor,
+                                  fontSize: 12,
+                                  fontFamily: semibold,
+                                ),
+                              ),
                             ],
                           ),
                         ),
                         IconButton(
-                          onPressed: () {},
-                          icon: const Icon(Icons.chat_bubble_outline, color: primaryColor),
+                          onPressed: () => _openChat(),
+                          icon: const Icon(
+                            Icons.chat_bubble_outline,
+                            color: primaryColor,
+                          ),
                         ),
                       ],
                     ),
@@ -256,7 +291,9 @@ class _ItemDetailState extends State<ItemDetail> {
                                         shape: BoxShape.circle,
                                         color: color,
                                         border: Border.all(
-                                          width: selectedColorIndex == index ? 3 : 1,
+                                          width: selectedColorIndex == index
+                                              ? 3
+                                              : 1,
                                           color: selectedColorIndex == index
                                               ? primaryColor
                                               : Theme.of(context).dividerColor,
@@ -293,11 +330,15 @@ class _ItemDetailState extends State<ItemDetail> {
                                   label: Text(product.sizes[index]),
                                   selected: isSelected,
                                   selectedColor: primaryColor,
-                                  backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+                                  backgroundColor: Theme.of(
+                                    context,
+                                  ).scaffoldBackgroundColor,
                                   labelStyle: TextStyle(
                                     color: isSelected
                                         ? whiteColor
-                                        : Theme.of(context).textTheme.bodyMedium?.color,
+                                        : Theme.of(
+                                            context,
+                                          ).textTheme.bodyMedium?.color,
                                     fontFamily: isSelected ? bold : regular,
                                   ),
                                   onSelected: (_) =>
@@ -314,7 +355,9 @@ class _ItemDetailState extends State<ItemDetail> {
                             children: [
                               Container(
                                 decoration: BoxDecoration(
-                                  border: Border.all(color: Theme.of(context).dividerColor),
+                                  border: Border.all(
+                                    color: Theme.of(context).dividerColor,
+                                  ),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Row(
@@ -325,12 +368,17 @@ class _ItemDetailState extends State<ItemDetail> {
                                           : null,
                                       icon: const Icon(Icons.remove, size: 16),
                                       padding: EdgeInsets.zero,
-                                      constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+                                      constraints: const BoxConstraints(
+                                        minWidth: 36,
+                                        minHeight: 36,
+                                      ),
                                     ),
                                     Text(
                                       '$quantity',
                                       style: TextStyle(
-                                        color: Theme.of(context).textTheme.bodyLarge?.color,
+                                        color: Theme.of(
+                                          context,
+                                        ).textTheme.bodyLarge?.color,
                                         fontFamily: bold,
                                         fontSize: 16,
                                       ),
@@ -341,7 +389,10 @@ class _ItemDetailState extends State<ItemDetail> {
                                           : null,
                                       icon: const Icon(Icons.add, size: 16),
                                       padding: EdgeInsets.zero,
-                                      constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+                                      constraints: const BoxConstraints(
+                                        minWidth: 36,
+                                        minHeight: 36,
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -350,7 +401,13 @@ class _ItemDetailState extends State<ItemDetail> {
                               Flexible(
                                 child: Text(
                                   '(${product.stock} available)',
-                                  style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.5)),
+                                  style: TextStyle(
+                                    color: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium
+                                        ?.color
+                                        ?.withOpacity(0.5),
+                                  ),
                                 ),
                               ),
                             ],
@@ -365,7 +422,9 @@ class _ItemDetailState extends State<ItemDetail> {
                             Text(
                               'Total Price:',
                               style: TextStyle(
-                                color: Theme.of(context).textTheme.bodyLarge?.color,
+                                color: Theme.of(
+                                  context,
+                                ).textTheme.bodyLarge?.color,
                                 fontFamily: semibold,
                                 fontSize: 16,
                               ),
@@ -395,7 +454,10 @@ class _ItemDetailState extends State<ItemDetail> {
                   12.heightBox,
                   Text(
                     product.description,
-                    style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color, height: 1.6),
+                    style: TextStyle(
+                      color: Theme.of(context).textTheme.bodyMedium?.color,
+                      height: 1.6,
+                    ),
                   ),
                   if (product.attributes.isNotEmpty) ...[
                     24.heightBox,
@@ -413,7 +475,11 @@ class _ItemDetailState extends State<ItemDetail> {
                       decoration: BoxDecoration(
                         color: Theme.of(context).cardColor,
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Theme.of(context).dividerColor.withOpacity(0.1)),
+                        border: Border.all(
+                          color: Theme.of(
+                            context,
+                          ).dividerColor.withOpacity(0.1),
+                        ),
                       ),
                       child: Column(
                         children: product.attributes.entries.map((entry) {
@@ -425,14 +491,25 @@ class _ItemDetailState extends State<ItemDetail> {
                                   flex: 2,
                                   child: Text(
                                     entry.key,
-                                    style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7)),
+                                    style: TextStyle(
+                                      color: Theme.of(context)
+                                          .textTheme
+                                          .bodyMedium
+                                          ?.color
+                                          ?.withOpacity(0.7),
+                                    ),
                                   ),
                                 ),
                                 Expanded(
                                   flex: 3,
                                   child: Text(
                                     entry.value.toString(),
-                                    style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color, fontFamily: semibold),
+                                    style: TextStyle(
+                                      color: Theme.of(
+                                        context,
+                                      ).textTheme.bodyLarge?.color,
+                                      fontFamily: semibold,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -497,7 +574,9 @@ class _ItemDetailState extends State<ItemDetail> {
                 width: double.infinity,
                 height: 54,
                 child: ourButton(
-                  color: product.isInStock ? primaryColor : Theme.of(context).disabledColor,
+                  color: product.isInStock
+                      ? primaryColor
+                      : Theme.of(context).disabledColor,
                   onPress: product.isInStock ? _addToCart : null,
                   title: product.isInStock ? 'Add To Cart' : 'Out of Stock',
                 ),
@@ -516,9 +595,11 @@ class _ItemDetailState extends State<ItemDetail> {
         SizedBox(
           width: 80,
           child: Text(
-            label, 
+            label,
             style: TextStyle(
-              color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
+              color: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.color?.withOpacity(0.7),
               fontFamily: semibold,
             ),
           ),
@@ -569,4 +650,31 @@ class _ItemDetailState extends State<ItemDetail> {
     };
     return colors[value.toLowerCase()] ?? darkFontGrey;
   }
+
+  void _openChat() async {
+  // Kiểm tra đã đăng nhập chưa
+  if (FirebaseAuth.instance.currentUser == null) {
+    _showMessage('Vui lòng đăng nhập để chat');
+    return;
+  }
+  
+  try {
+    final messageController = Get.put(MessageController());
+    
+    // Tạo conversation với shop
+    final conversationId = await messageController.createConversation(
+      shopId, // shopId của sản phẩm
+    );
+    
+    if (conversationId.isNotEmpty) {
+      Get.to(() => ChatDetailScreen(
+        conversationId: conversationId,
+        receiverId: shopId,
+        shopName: shopName,
+      ));
+    }
+  } catch (e) {
+    _showMessage('Không thể mở chat: $e');
+  }
+}
 }
