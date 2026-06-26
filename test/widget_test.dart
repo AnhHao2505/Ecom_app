@@ -1,5 +1,6 @@
 import 'package:e_mart/consts/lists.dart';
 import 'package:e_mart/controllers/cart_controller.dart';
+import 'package:e_mart/models/billing_order_model.dart';
 import 'package:e_mart/models/product_model.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -76,5 +77,40 @@ void main() {
     );
 
     expect(cart.cartItems, hasLength(2));
+  });
+
+  test('billing order parses saved purchase and delivery details', () {
+    final order = BillingOrder.fromMap({
+      'orderCode': 'EM-123',
+      'status': 'COD_PENDING',
+      'paymentMethod': 'Cash on delivery',
+      'subtotal': 100.0,
+      'tax': 10.0,
+      'shipping': 12.0,
+      'total': 122.0,
+      'buyerName': 'Test User',
+      'buyerPhone': '0900000000',
+      'buyerStreetAddress': '123 Test Street',
+      'buyerCity': 'Ho Chi Minh City',
+      'billingAddress': '123 Test Street, Ho Chi Minh City',
+      'delivery': {'type': 'Express delivery', 'price': 12.0},
+      'createdAt': '2026-06-15T10:30:00.000',
+      'items': [
+        {
+          'productId': 'product-1',
+          'name': 'Test phone',
+          'quantity': 2,
+          'price': 50.0,
+          'selectedColor': 'Black',
+          'selectedSize': 'M',
+        },
+      ],
+    }, 'EM-123');
+
+    expect(order.total, 122.0);
+    expect(order.statusLabel, 'Due on delivery');
+    expect(order.deliveryType, 'Express delivery');
+    expect(order.deliveryAddress, '123 Test Street, Ho Chi Minh City');
+    expect(order.items.single.optionLabel, 'Black | Size M');
   });
 }

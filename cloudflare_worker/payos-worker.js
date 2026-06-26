@@ -3,7 +3,7 @@ const PAYOS_API = 'https://api-merchant.payos.vn';
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization, next-action',
 };
 
 class HttpError extends Error {
@@ -79,6 +79,18 @@ async function createPayment(request, env) {
         price: toPositiveInteger(item.price || 0, 'item.price'),
       }))
     : [];
+  const purchasedItems = Array.isArray(body.purchasedItems)
+    ? body.purchasedItems.map((item) => ({
+        productId: String(item.productId || ''),
+        name: String(item.name || 'Product').slice(0, 120),
+        quantity: toPositiveInteger(item.quantity || 1, 'item.quantity'),
+        price: Number(item.price || 0),
+        image: String(item.image || ''),
+        category: String(item.category || ''),
+        selectedColor: item.selectedColor ? String(item.selectedColor) : '',
+        selectedSize: item.selectedSize ? String(item.selectedSize) : '',
+      }))
+    : [];
 
   const paymentData = {
     orderCode,
@@ -92,6 +104,10 @@ async function createPayment(request, env) {
     buyerPhone: String(body.buyerPhone || ''),
   };
   const orderDetails = {
+    subtotal: Number(body.subtotal || 0),
+    tax: Number(body.tax || 0),
+    shipping: Number(body.shipping || body.deliveryPrice || 0),
+    total: Number(body.total || amount),
     buyerStreetAddress: String(body.buyerStreetAddress || ''),
     buyerCity: String(body.buyerCity || ''),
     billingAddress: String(body.billingAddress || ''),
@@ -111,8 +127,15 @@ async function createPayment(request, env) {
     userId: firebaseUser.localId,
     orderCode,
     amount,
+    subtotal: orderDetails.subtotal,
+    tax: orderDetails.tax,
+    shipping: orderDetails.shipping,
+    total: orderDetails.total,
     status: 'PENDING',
-    items,
+    paymentMethod: 'PayOS',
+    isPaid: false,
+    items: purchasedItems.length ? purchasedItems : items,
+    payosItems: items,
     buyerName: paymentData.buyerName,
     buyerEmail: paymentData.buyerEmail,
     buyerPhone: paymentData.buyerPhone,
@@ -126,7 +149,14 @@ async function createPayment(request, env) {
     userId: firebaseUser.localId,
     orderCode,
     amount,
-    items,
+    subtotal: orderDetails.subtotal,
+    tax: orderDetails.tax,
+    shipping: orderDetails.shipping,
+    total: orderDetails.total,
+    paymentMethod: 'PayOS',
+    isPaid: false,
+    items: purchasedItems.length ? purchasedItems : items,
+    payosItems: items,
     buyerName: paymentData.buyerName,
     buyerEmail: paymentData.buyerEmail,
     buyerPhone: paymentData.buyerPhone,
@@ -210,6 +240,7 @@ async function cancelPayment(request, env) {
 
   const update = {
     status: 'CANCELLED',
+    isPaid: false,
     payosStatus: 'User cancelled PayOS checkout',
     cancelledAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -218,6 +249,7 @@ async function cancelPayment(request, env) {
   await patchFirestoreDocument(env, `users/${firebaseUser.localId}/orders/${orderCode}`, update);
   await patchFirestoreDocument(env, `payosOrders/${orderCode}`, {
     status: 'CANCELLED',
+    isPaid: false,
     updatedAt: update.updatedAt,
   });
 
@@ -244,6 +276,7 @@ async function handlePayosWebhook(request, env) {
   if (orderOwner) {
     await patchFirestoreDocument(env, `users/${orderOwner}/orders/${orderCode}`, {
       status: webhook.success && webhook.data.code === '00' ? 'PAID' : 'FAILED',
+      isPaid: webhook.success && webhook.data.code === '00',
       payosStatus: webhook.data.desc || webhook.desc || '',
       paymentLinkId: webhook.data.paymentLinkId || '',
       transactionReference: webhook.data.reference || '',
@@ -254,6 +287,7 @@ async function handlePayosWebhook(request, env) {
 
     await patchFirestoreDocument(env, `payosOrders/${orderCode}`, {
       status: webhook.success && webhook.data.code === '00' ? 'PAID' : 'FAILED',
+      isPaid: webhook.success && webhook.data.code === '00',
       updatedAt: new Date().toISOString(),
     });
 

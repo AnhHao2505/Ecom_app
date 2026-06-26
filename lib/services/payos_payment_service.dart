@@ -35,12 +35,30 @@ class PayosPaymentRequest {
   });
 
   Map<String, dynamic> toJson() {
+    final subtotal = items.fold<double>(
+      0,
+      (total, item) => total + item.lineTotal,
+    );
     final paymentItems = items
         .map(
           (item) => {
             'name': item.name,
             'quantity': item.quantity,
             'price': item.price.round(),
+          },
+        )
+        .toList();
+    final purchasedItems = items
+        .map(
+          (item) => {
+            'productId': item.product.id,
+            'name': item.name,
+            'quantity': item.quantity,
+            'price': item.price,
+            'image': item.image,
+            'category': item.category,
+            'selectedColor': item.selectedColor,
+            'selectedSize': item.selectedSize,
           },
         )
         .toList();
@@ -59,6 +77,10 @@ class PayosPaymentRequest {
 
     return {
       'amount': amount,
+      'subtotal': subtotal,
+      'tax': tax,
+      'shipping': shipping,
+      'total': amount,
       'buyerName': buyerName,
       'buyerEmail': buyerEmail,
       'buyerPhone': buyerPhone,
@@ -67,6 +89,7 @@ class PayosPaymentRequest {
       'billingAddress': billingAddress,
       'deliveryType': deliveryType,
       'deliveryPrice': deliveryPrice.round(),
+      'purchasedItems': purchasedItems,
       'items': paymentItems,
     };
   }

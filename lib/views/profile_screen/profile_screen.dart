@@ -2,7 +2,10 @@ import 'package:e_mart/consts/consts.dart';
 import 'package:e_mart/controllers/auth_controller.dart';
 import 'package:e_mart/controllers/cart_controller.dart';
 import 'package:e_mart/controllers/wishlist_controller.dart';
+import 'package:e_mart/models/billing_order_model.dart';
+import 'package:e_mart/services/order_billing_service.dart';
 import 'package:e_mart/views/auth_screen/login_screen.dart';
+import 'package:e_mart/views/order_screen/order_history_screen.dart';
 import 'package:e_mart/views/profile_screen/edit_profile_screen.dart';
 import 'package:e_mart/views/wishlist_screen/wishlist_screen.dart';
 import 'package:get/get.dart';
@@ -13,12 +16,13 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final orderBillingService = OrderBillingService();
 
     final List<Map<String, dynamic>> menuItems = [
       {
         "icon": Icons.shopping_bag_outlined,
         "title": "My Orders",
-        "onTap": () {},
+        "onTap": () => Get.to(() => const OrderHistoryScreen()),
       },
       {
         "icon": Icons.location_on_outlined,
@@ -39,52 +43,54 @@ class ProfileScreen extends StatelessWidget {
       {"icon": Icons.help_outline, "title": "Help Center", "onTap": () {}},
     ];
 
-    Widget buildStatCard(String count, String title) {
-      return Expanded(
-        child: Container(
-          margin: const EdgeInsets.symmetric(horizontal: 4),
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          decoration: BoxDecoration(
-            color: Theme.of(context).cardColor,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: isDark ? darkDivider : lightDivider.withOpacity(0.5),
+    Widget buildStatContent(String count, String title) {
+      return Container(
+        margin: const EdgeInsets.symmetric(horizontal: 4),
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        decoration: BoxDecoration(
+          color: Theme.of(context).cardColor,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isDark ? darkDivider : lightDivider.withOpacity(0.5),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: isDark
+                  ? Colors.transparent
+                  : Colors.black.withOpacity(0.04),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
             ),
-            boxShadow: [
-              BoxShadow(
-                color: isDark
-                    ? Colors.transparent
-                    : Colors.black.withOpacity(0.04),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
+          ],
+        ),
+        child: Column(
+          children: [
+            Text(
+              count,
+              style: const TextStyle(
+                fontFamily: bold,
+                fontSize: 20,
+                color: primaryColor,
               ),
-            ],
-          ),
-          child: Column(
-            children: [
-              Text(
-                count,
-                style: const TextStyle(
-                  fontFamily: bold,
-                  fontSize: 20,
-                  color: primaryColor,
-                ),
+            ),
+            4.heightBox,
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 12,
+                color: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.color?.withOpacity(0.8),
               ),
-              4.heightBox,
-              Text(
-                title,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Theme.of(
-                    context,
-                  ).textTheme.bodyMedium?.color?.withOpacity(0.8),
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       );
+    }
+
+    Widget buildStatCard(String count, String title) {
+      return Expanded(child: buildStatContent(count, title));
     }
 
     return Scaffold(
@@ -191,7 +197,18 @@ class ProfileScreen extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        buildStatCard("675", "Orders"),
+                        Expanded(
+                          child: StreamBuilder<List<BillingOrder>>(
+                            stream: orderBillingService
+                                .watchCurrentUserOrders(),
+                            builder: (context, snapshot) {
+                              return buildStatContent(
+                                '${snapshot.data?.length ?? 0}',
+                                "Orders",
+                              );
+                            },
+                          ),
+                        ),
                         Obx(
                           () => buildStatCard(
                             "${Get.find<WishlistController>().count}",
