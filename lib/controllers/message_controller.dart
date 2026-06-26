@@ -31,9 +31,7 @@ class MessageController extends GetxController {
     super.onClose();
   }
 
-  // Lắng nghe danh sách cuộc trò chuyện
   void listenToConversations() {
-    print('💬 Lắng nghe conversations...');
 
     _convSubscription = _firestore
         .collection('conversations')
@@ -45,11 +43,9 @@ class MessageController extends GetxController {
             return {'id': doc.id, ...doc.data() as Map<String, dynamic>};
           }).toList();
 
-          print('📦 Conversations: ${conversations.length}');
         });
   }
 
-  // Lắng nghe tin nhắn trong conversation
   void listenToMessages(String conversationId) {
     selectedConversationId.value = conversationId;
 
@@ -63,14 +59,10 @@ class MessageController extends GetxController {
             return {'id': doc.id, ...doc.data() as Map<String, dynamic>};
           }).toList();
 
-          print('💬 Messages: ${messages.length}');
-
-          // Đánh dấu đã đọc
           _markAsRead(conversationId);
         });
   }
 
-  // Gửi tin nhắn
   Future<void> sendMessage({
     required String conversationId,
     required String receiverId,
@@ -81,7 +73,6 @@ class MessageController extends GetxController {
     try {
       isLoading.value = true;
 
-      // 1. Thêm tin nhắn
       await _firestore.collection('messages').add({
         'conversationId': conversationId,
         'senderId': currentUserId,
@@ -92,22 +83,18 @@ class MessageController extends GetxController {
         'createdAt': FieldValue.serverTimestamp(),
       });
 
-      // 2. Cập nhật conversation
       await _firestore.collection('conversations').doc(conversationId).update({
         'lastMessage': content.trim(),
         'lastMessageTime': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
       });
 
-      print('✅ Đã gửi tin nhắn');
       isLoading.value = false;
     } catch (e) {
-      print('❌ Lỗi gửi tin nhắn: $e');
       isLoading.value = false;
     }
   }
 
-  // Đánh dấu đã đọc
   Future<void> _markAsRead(String conversationId) async {
     try {
       final unread = await _firestore
@@ -122,31 +109,26 @@ class MessageController extends GetxController {
       }
 
       if (unread.docs.isNotEmpty) {
-        print('✅ Đã đánh dấu đọc ${unread.docs.length} tin nhắn');
       }
     } catch (e) {
-      print('❌ Lỗi đánh dấu đọc: $e');
+      print(' Lỗi đánh dấu đọc: $e');
     }
   }
 
-  // Tạo conversation mới
   Future<String> createConversation(String shopId) async {
     try {
-      // Kiểm tra đã có conversation chưa
       final existing = await _firestore
           .collection('conversations')
           .where('participants', arrayContains: currentUserId)
           .get();
 
-      // Tìm conversation với shop này
       for (var doc in existing.docs) {
         final participants = List<String>.from(doc['participants'] ?? []);
         if (participants.contains(shopId)) {
-          return doc.id; // Đã có, trả về id
+          return doc.id; 
         }
       }
 
-      // Chưa có, tạo mới
       final docRef = await _firestore.collection('conversations').add({
         'participants': [currentUserId, shopId],
         'lastMessage': 'Bắt đầu trò chuyện',
@@ -155,10 +137,8 @@ class MessageController extends GetxController {
         'updatedAt': FieldValue.serverTimestamp(),
       });
 
-      print('✅ Tạo conversation mới: ${docRef.id}');
       return docRef.id;
     } catch (e) {
-      print('❌ Lỗi tạo conversation: $e');
       return '';
     }
   }

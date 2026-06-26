@@ -1,6 +1,5 @@
 import 'package:e_mart/consts/consts.dart';
 import 'package:e_mart/controllers/notification_controller.dart';
-import 'package:e_mart/models/notification_model.dart';
 import 'package:e_mart/views/notification_screen/widgets/notification_item.dart';
 import 'package:get/get.dart';
 
