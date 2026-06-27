@@ -11,12 +11,13 @@ class NotificationPage extends StatelessWidget {
     final controller = Get.put(NotificationController());
 
     return Scaffold(
-      backgroundColor: lightGrey,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: primaryColor,
         elevation: 0,
         title: 'Thông báo'.text.fontFamily(bold).white.size(20).make(),
         centerTitle: true,
+        iconTheme: const IconThemeData(color: whiteColor),
         actions: [
           Obx(
             () => controller.unreadCount.value > 0
@@ -44,9 +45,12 @@ class NotificationPage extends StatelessWidget {
       ),
       body: Column(
         children: [
-          _buildFilterTabs(controller),
+          _buildFilterTabs(context, controller),
           Expanded(
-            child: Obx(() {
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 1280),
+                child: Obx(() {
               if (controller.isLoading.value) {
                 return const Center(child: CircularProgressIndicator());
               }
@@ -76,13 +80,15 @@ class NotificationPage extends StatelessWidget {
                 },
               );
             }),
+              ),
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildFilterTabs(NotificationController controller) {
+  Widget _buildFilterTabs(BuildContext context, NotificationController controller) {
     final tabs = ['Tất cả', 'Khuyến mãi', 'Đơn hàng', 'Hệ thống'];
     final types = ['all', 'promotion', 'order', 'system'];
 
@@ -112,7 +118,7 @@ class NotificationPage extends StatelessWidget {
                   ),
                 ),
                 child: tabs[index].text
-                    .color(isSelected ? whiteColor : darkFontGrey)
+                    .color(isSelected ? whiteColor : Theme.of(context).textTheme.bodyMedium?.color ?? darkFontGrey)
                     .fontFamily(semibold)
                     .size(14)
                     .make(),

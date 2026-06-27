@@ -9,7 +9,8 @@ class EditProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.find<ProfileController>();
+    final controller = Get.put(ProfileController());
+
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
@@ -33,7 +34,9 @@ class EditProfileScreen extends StatelessWidget {
             ),
             boxShadow: [
               BoxShadow(
-                color: isDark ? Colors.transparent : Colors.black.withOpacity(0.03),
+                color: isDark
+                    ? Colors.transparent
+                    : Colors.black.withOpacity(0.03),
                 blurRadius: 4,
                 offset: const Offset(0, 2),
               ),
@@ -66,11 +69,7 @@ class EditProfileScreen extends StatelessWidget {
               ),
               const Divider().paddingSymmetric(vertical: 20),
               customTextField(title: name, hint: nameHint),
-              customTextField(
-                title: password,
-                hint: password,
-                isPass: true,
-              ),
+              customTextField(title: password, hint: password, isPass: true),
               30.heightBox,
               SizedBox(
                 width: double.infinity,

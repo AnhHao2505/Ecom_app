@@ -22,7 +22,7 @@ class NotificationItem extends StatelessWidget {
         margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
           color: redColor,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
         ),
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 20),
@@ -36,19 +36,18 @@ class NotificationItem extends StatelessWidget {
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
             color: notification.isRead
-                ? Colors.white
-                : redColor.withOpacity(0.05),
-            borderRadius: BorderRadius.circular(12),
+                ? Theme.of(context).cardColor
+                : Theme.of(context).colorScheme.primary.withOpacity(0.05),
+            borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: notification.isRead
-                  ? Colors.transparent
-                  : redColor.withOpacity(0.3),
+                  ? (Theme.of(context).brightness == Brightness.dark ? darkDivider : lightDivider)
+                  : Theme.of(context).colorScheme.primary.withOpacity(0.3),
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.grey.withOpacity(0.1),
-                spreadRadius: 1,
-                blurRadius: 4,
+                color: Theme.of(context).brightness == Brightness.dark ? Colors.transparent : Colors.black.withOpacity(0.03),
+                blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
             ],
@@ -56,7 +55,7 @@ class NotificationItem extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildIcon(),
+              _buildIcon(context),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -74,8 +73,8 @@ class NotificationItem extends StatelessWidget {
                           Container(
                             width: 8,
                             height: 8,
-                            decoration: const BoxDecoration(
-                              color: redColor,
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).colorScheme.primary,
                               shape: BoxShape.circle,
                             ),
                           ),
@@ -105,15 +104,15 @@ class NotificationItem extends StatelessWidget {
     );
   }
 
-  Widget _buildIcon() {
+  Widget _buildIcon(BuildContext context) {
     return Container(
-      width: 50,
-      height: 50,
+      width: 52,
+      height: 52,
       decoration: BoxDecoration(
-        color: _getIconColor().withOpacity(0.1),
-        borderRadius: BorderRadius.circular(8),
+        color: _getIconColor(context).withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
       ),
-      child: Icon(_getIcon(), color: _getIconColor(), size: 28),
+      child: Icon(_getIcon(), color: _getIconColor(context), size: 28),
     );
   }
 
@@ -126,12 +125,12 @@ class NotificationItem extends StatelessWidget {
     }
   }
 
-  Color _getIconColor() {
+  Color _getIconColor(BuildContext context) {
     switch (notification.type) {
       case 'order': return Colors.blue;
       case 'promotion': return Colors.orange;
       case 'payment': return Colors.green;
-      default: return redColor;
+      default: return Theme.of(context).colorScheme.primary;
     }
   }
 

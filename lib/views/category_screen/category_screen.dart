@@ -37,14 +37,19 @@ class CategoryScreen extends StatelessWidget {
             end: Alignment.bottomCenter,
           ),
         ),
-        child: ListView.separated(
-          physics: const BouncingScrollPhysics(),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-          itemCount: categoriesData.length,
-          separatorBuilder: (context, index) => 12.heightBox,
-          itemBuilder: (context, index) {
-            return _buildCategoryItem(context, index);
-          },
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 1280),
+            child: ListView.separated(
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              itemCount: categoriesData.length,
+              separatorBuilder: (context, index) => 12.heightBox,
+              itemBuilder: (context, index) {
+                return _buildCategoryItem(context, index);
+              },
+            ),
+          ),
         ),
       ),
     );
@@ -70,7 +75,7 @@ class CategoryScreen extends StatelessWidget {
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: Theme.of(context).cardColor,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isDark ? darkDivider : lightDivider.withOpacity(0.5),
           ),
@@ -97,6 +102,11 @@ class CategoryScreen extends StatelessWidget {
                 child: Image.asset(
                   category.image,
                   fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => Icon(
+                    Icons.category_outlined,
+                    size: 28,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
                 ),
               ),
             ),
