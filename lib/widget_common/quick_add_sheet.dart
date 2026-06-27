@@ -20,18 +20,20 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
   @override
   void initState() {
     super.initState();
-    if (widget.product.colors.isNotEmpty) selectedColor = widget.product.colors.first;
-    if (widget.product.sizes.isNotEmpty) selectedSize = widget.product.sizes.first;
+    if (widget.product.colors.isNotEmpty)
+      selectedColor = widget.product.colors.first;
+    if (widget.product.sizes.isNotEmpty)
+      selectedSize = widget.product.sizes.first;
   }
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     return Container(
-      padding: const EdgeInsets.all(16).copyWith(
-        bottom: MediaQuery.of(context).viewInsets.bottom + 16,
-      ),
+      padding: const EdgeInsets.all(
+        16,
+      ).copyWith(bottom: MediaQuery.of(context).viewInsets.bottom + 16),
       decoration: BoxDecoration(
         color: Theme.of(context).scaffoldBackgroundColor,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
@@ -60,7 +62,9 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
                 ClipRRect(
                   borderRadius: BorderRadius.circular(8),
                   child: ProductImage(
-                    source: widget.product.images.isNotEmpty ? widget.product.images.first : '',
+                    source: widget.product.images.isNotEmpty
+                        ? widget.product.images.first
+                        : '',
                     width: 60,
                     height: 60,
                   ),
@@ -94,12 +98,15 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
                 ),
                 IconButton(
                   onPressed: () => Get.back(),
-                  icon: Icon(Icons.close, color: Theme.of(context).textTheme.bodyMedium?.color),
+                  icon: Icon(
+                    Icons.close,
+                    color: Theme.of(context).textTheme.bodyMedium?.color,
+                  ),
                 ),
               ],
             ),
             const Divider().paddingSymmetric(vertical: 16),
-            
+
             if (widget.product.colors.isNotEmpty) ...[
               Text(
                 chooseColor,
@@ -123,13 +130,17 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
                     selectedColor: primaryColor,
                     backgroundColor: Theme.of(context).cardColor,
                     labelStyle: TextStyle(
-                      color: isSelected ? whiteColor : Theme.of(context).textTheme.bodyMedium?.color,
+                      color: isSelected
+                          ? whiteColor
+                          : Theme.of(context).textTheme.bodyMedium?.color,
                       fontFamily: isSelected ? bold : semibold,
                     ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20),
                       side: BorderSide(
-                        color: isSelected ? Colors.transparent : (isDark ? darkDivider : lightDivider),
+                        color: isSelected
+                            ? Colors.transparent
+                            : (isDark ? darkDivider : lightDivider),
                       ),
                     ),
                     showCheckmark: false,
@@ -162,13 +173,17 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
                     selectedColor: primaryColor,
                     backgroundColor: Theme.of(context).cardColor,
                     labelStyle: TextStyle(
-                      color: isSelected ? whiteColor : Theme.of(context).textTheme.bodyMedium?.color,
+                      color: isSelected
+                          ? whiteColor
+                          : Theme.of(context).textTheme.bodyMedium?.color,
                       fontFamily: isSelected ? bold : semibold,
                     ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20),
                       side: BorderSide(
-                        color: isSelected ? Colors.transparent : (isDark ? darkDivider : lightDivider),
+                        color: isSelected
+                            ? Colors.transparent
+                            : (isDark ? darkDivider : lightDivider),
                       ),
                     ),
                     showCheckmark: false,
@@ -185,7 +200,9 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: primaryColor,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   elevation: 0,
                 ),
                 onPressed: () {
@@ -196,31 +213,47 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
                     selectedSize: selectedSize,
                   );
                   Get.back();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Row(
+                  Get.closeCurrentSnackbar();
+                  Get.showSnackbar(
+                    GetSnackBar(
+                      messageText: Row(
                         children: [
                           const Icon(Icons.check_circle, color: whiteColor),
                           8.widthBox,
-                          const Text(addedToCart, style: TextStyle(fontFamily: semibold)),
+                          const Text(
+                            addedToCart,
+                            style: TextStyle(
+                              fontFamily: semibold,
+                              color: whiteColor,
+                            ),
+                          ),
                         ],
                       ),
-                      action: SnackBarAction(
-                        label: viewCart,
-                        textColor: whiteColor,
-                        onPressed: () => Get.find<HomeController>().currentNavIndex.value = 2,
+                      mainButton: TextButton(
+                        onPressed: () =>
+                            Get.find<HomeController>().currentNavIndex.value =
+                                2,
+                        child: Text(
+                          viewCart,
+                          style: const TextStyle(color: whiteColor),
+                        ),
                       ),
                       backgroundColor: successColor,
                       duration: const Duration(seconds: 2),
-                      behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      snackPosition: SnackPosition.BOTTOM,
+                      borderRadius: 10,
+                      margin: const EdgeInsets.all(12),
                     ),
                   );
                 },
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.shopping_cart, color: whiteColor, size: 20),
+                    const Icon(
+                      Icons.shopping_cart,
+                      color: whiteColor,
+                      size: 20,
+                    ),
                     8.widthBox,
                     const Text(
                       'Add to Cart',

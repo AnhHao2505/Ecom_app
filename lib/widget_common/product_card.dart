@@ -289,6 +289,7 @@ class _ProductCardState extends State<ProductCard> {
                                 ),
                               ),
                               SizedBox(height: isCompact ? 2 : 3),
+                              // stars & qty
                               Row(
                                 children: [
                                   Icon(
@@ -322,6 +323,7 @@ class _ProductCardState extends State<ProductCard> {
                                 ],
                               ),
                               SizedBox(height: isCompact ? 1 : 3),
+                              // prices
                               if (hasOriginalPrice)
                                 Text(
                                   '\$${widget.product.originalPrice.toStringAsFixed(2)}',
@@ -337,6 +339,7 @@ class _ProductCardState extends State<ProductCard> {
                                     decoration: TextDecoration.lineThrough,
                                   ),
                                 ),
+                                
                               Row(
                                 crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
@@ -431,11 +434,10 @@ class _ProductCardState extends State<ProductCard> {
                                                             .first
                                                       : null,
                                                 );
-                                            ScaffoldMessenger.of(
-                                              context,
-                                            ).showSnackBar(
-                                              SnackBar(
-                                                content: Row(
+                                            Get.closeCurrentSnackbar();
+                                            Get.showSnackbar(
+                                              GetSnackBar(
+                                                messageText: Row(
                                                   children: [
                                                     const Icon(
                                                       Icons.check_circle,
@@ -446,28 +448,33 @@ class _ProductCardState extends State<ProductCard> {
                                                       addedToCart,
                                                       style: TextStyle(
                                                         fontFamily: semibold,
+                                                        color: whiteColor,
                                                       ),
                                                     ),
                                                   ],
                                                 ),
-                                                action: SnackBarAction(
-                                                  label: viewCart,
-                                                  textColor: whiteColor,
+                                                mainButton: TextButton(
                                                   onPressed: () =>
                                                       Get.find<HomeController>()
                                                               .currentNavIndex
                                                               .value =
                                                           2,
+                                                  child: Text(
+                                                    viewCart,
+                                                    style: const TextStyle(
+                                                      color: whiteColor,
+                                                    ),
+                                                  ),
                                                 ),
                                                 backgroundColor: successColor,
                                                 duration: const Duration(
                                                   seconds: 2,
                                                 ),
-                                                behavior:
-                                                    SnackBarBehavior.floating,
-                                                shape: RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(10),
+                                                snackPosition:
+                                                    SnackPosition.BOTTOM,
+                                                borderRadius: 10,
+                                                margin: const EdgeInsets.all(
+                                                  12,
                                                 ),
                                               ),
                                             );
