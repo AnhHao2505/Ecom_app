@@ -253,13 +253,12 @@ class _ProductCardState extends State<ProductCard> {
                     ),
 
                     // Content
-                    Flexible(
-                      fit: FlexFit.loose,
+                    Expanded(
                       child: Padding(
                         padding: const EdgeInsets.all(12),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
+                          mainAxisSize: MainAxisSize.max,
                           children: [
                             Text(
                               widget.product.name,
@@ -274,7 +273,7 @@ class _ProductCardState extends State<ProductCard> {
                                 height: 1.3,
                               ),
                             ),
-                            3.heightBox,
+                            const Spacer(),
                             Row(
                               children: [
                                 const Icon(

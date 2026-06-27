@@ -118,11 +118,14 @@ class HomeScreen extends StatelessWidget {
                   );
                 }
 
-                return SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
+                return Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 1280),
+                    child: SingleChildScrollView(
+                      physics: const BouncingScrollPhysics(),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
                       VxSwiper.builder(
                         aspectRatio: 16 / 9,
                         autoPlay: true,
@@ -213,17 +216,25 @@ class HomeScreen extends StatelessWidget {
 
                       // Category Icons
                       SizedBox(
-                        height: 100,
-                        child: ListView.builder(
+                        height: 110,
+                        child: SingleChildScrollView(
                           scrollDirection: Axis.horizontal,
-                          itemCount: categoriesData.length,
-                          itemBuilder: (context, index) {
-                            return _buildCategoryIcon(
-                              context,
-                              categoriesData[index].name,
-                              categoriesData[index].image,
-                            );
-                          },
+                          physics: const BouncingScrollPhysics(),
+                          child: Container(
+                            constraints: BoxConstraints(
+                              minWidth: context.screenWidth > 1280 ? 1280 : context.screenWidth,
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: List.generate(categoriesData.length, (index) {
+                                return _buildCategoryIcon(
+                                  context,
+                                  categoriesData[index].name,
+                                  categoriesData[index].image,
+                                );
+                              }),
+                            ),
+                          ),
                         ),
                       ),
                       16.heightBox,
@@ -286,14 +297,14 @@ class HomeScreen extends StatelessWidget {
                         return GridView.builder(
                           physics: const NeverScrollableScrollPhysics(),
                           shrinkWrap: true,
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
                           itemCount: products.length,
-                          gridDelegate:
-                              const SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 2,
-                                mainAxisSpacing: 8,
-                                crossAxisSpacing: 8,
-                                mainAxisExtent: 270,
-                              ),
+                          gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                            maxCrossAxisExtent: 220,
+                            mainAxisSpacing: 16,
+                            crossAxisSpacing: 16,
+                            mainAxisExtent: 320,
+                          ),
                           itemBuilder: (context, index) {
                             return ProductCard(product: products[index]);
                           },
@@ -301,8 +312,10 @@ class HomeScreen extends StatelessWidget {
                       }),
                     ],
                   ),
-                );
-              }),
+                ),
+              ),
+            );
+          }),
             ),
           ],
         ),
@@ -316,14 +329,15 @@ class HomeScreen extends StatelessWidget {
     String imagePath,
   ) {
     return Container(
-      width: 70,
-      margin: const EdgeInsets.only(right: 12),
+      width: 88,
+      margin: const EdgeInsets.symmetric(horizontal: 4),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Container(
-            width: 56,
-            height: 56,
+            width: 64,
+            height: 64,
             decoration: BoxDecoration(
               color: Theme.of(context).cardColor,
               shape: BoxShape.circle,
@@ -337,12 +351,21 @@ class HomeScreen extends StatelessWidget {
                 ),
               ],
             ),
-            child: Center(
-              child: Image.asset(
-                imagePath,
-                width: 32,
-                height: 32,
-                fit: BoxFit.contain,
+            alignment: Alignment.center,
+            child: ClipOval(
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Image.asset(
+                  imagePath,
+                  width: double.infinity,
+                  height: double.infinity,
+                  fit: BoxFit.contain,
+                  errorBuilder: (_, __, ___) => Icon(
+                    Icons.category_outlined,
+                    size: 28,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
               ),
             ),
           ),
