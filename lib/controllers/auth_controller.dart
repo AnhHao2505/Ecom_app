@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:e_mart/consts/consts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 import '../models/product.dart';
 
@@ -27,6 +28,49 @@ class AuthController extends GetxController {
     return userCredential;
   }
 
+  // Oauth login method
+  Future<UserCredential?> loginWithGoogle() async {
+    // 1. Ensure initialization
+    final googleSignIn = GoogleSignIn.instance;
+
+    // 2. Authentication (Identity)
+    // Triggers the account picker / Credential Manager sheet
+    final GoogleSignInAccount googleUser = await googleSignIn.authenticate();
+
+    // 3. Authorization (Permissions)
+    // Request scopes to retrieve the Access Token
+    final List<String> scopes = ['email', 'profile'];
+    final clientAuth = await googleUser.authorizationClient.authorizeScopes(
+      scopes,
+    );
+
+    // 4. Create Firebase Credential
+    final credential = GoogleAuthProvider.credential(
+      idToken: googleUser.authentication.idToken,
+      accessToken: clientAuth.accessToken,
+    );
+
+    // 5. Sign in to Firebase
+    final userCredential = await auth.signInWithCredential(credential);
+
+    // Check if user exists in Firestore
+    final userDoc = await firestore
+        .collection(usersCollection)
+        .doc(userCredential.user!.uid)
+        .get();
+
+    // If user doesn't exist, create them
+    if (!userDoc.exists) {
+      await storeUserData(
+        name: googleUser.displayName,
+        email: googleUser.email,
+        password: '',
+        imageUrl: googleUser.photoUrl,
+      );
+    }
+    return userCredential;
+  }
+
   // signup method
   Future<UserCredential?> signupMethod({email, password, context}) async {
     UserCredential? userCredential;
@@ -45,6 +89,7 @@ class AuthController extends GetxController {
   // signout method
   Future<void> signoutMethod(context) async {
     try {
+      await GoogleSignIn.instance.signOut();
       await auth.signOut();
     } catch (e) {
       VxToast.show(context, msg: e.toString());
@@ -56,6 +101,7 @@ class AuthController extends GetxController {
     name,
     password,
     email,
+    imageUrl = '', 
     String role = 'Customer',
   }) async {
     final user = auth.currentUser;
@@ -68,7 +114,7 @@ class AuthController extends GetxController {
       'name': name,
       'email': email,
       'password': password,
-      'imageUrl': '',
+      'imageUrl': imageUrl,
       'id': user.uid,
       'role': role,
       'shopSetupComplete': false,

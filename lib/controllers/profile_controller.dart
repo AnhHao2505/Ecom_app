@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:e_mart/consts/consts.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -17,5 +18,18 @@ class ProfileController extends GetxController {
     } on PlatformException catch (e) {
       VxToast.show(context, msg: e.toString());
     }
+  }
+
+  Future<Map<String, String>> getProfileDataForCurrentUser() async {
+    final snapshot = await firestore
+        .collection(usersCollection)
+        .doc(currentUser!.uid)
+        .get();
+    final dataMap = snapshot.data();
+    return {
+      'image': dataMap?['imageUrl']?.toString() ?? '',
+      'name': dataMap?['name']?.toString() ?? 'Customer',
+      'email': dataMap?['email']?.toString() ?? 'customer@example.com',
+    };
   }
 }

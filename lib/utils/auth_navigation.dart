@@ -1,6 +1,6 @@
 import 'package:e_mart/consts/consts.dart';
 import 'package:e_mart/views/auth_screen/login_screen.dart';
-import 'package:e_mart/views/home_screen/home.dart';
+import 'package:e_mart/views/home_screen/base_home.dart';
 import 'package:e_mart/views/seller_screen/seller_dashboard_screen.dart';
 import 'package:e_mart/views/seller_screen/seller_shop_setup_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';

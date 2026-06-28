@@ -1,6 +1,6 @@
 import 'package:e_mart/consts/consts.dart';
 import 'package:e_mart/models/order_receipt_model.dart';
-import 'package:e_mart/views/home_screen/home.dart';
+import 'package:e_mart/views/home_screen/base_home.dart';
 import 'package:e_mart/widget_common/our_button.dart';
 import 'package:get/get.dart';
 

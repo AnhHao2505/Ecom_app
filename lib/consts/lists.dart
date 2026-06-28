@@ -3,11 +3,9 @@ import 'package:e_mart/models/category_model.dart';
 import 'package:e_mart/models/product_model.dart';
 import 'package:e_mart/models/store_model.dart';
 
-const socialIconList = [icFacebookLogo, icGoogleLogo, icTwitterLogo];
+const googleAuthIcon = icGoogleLogo;
 
 const sliderLists = [imgSlider1, imgSlider2, imgSlider3, imgSlider4];
-
-const secondSliderList = [imgSs1, imgSs2, imgSs3, imgSs4];
 
 // Categories with images combined
 const categoriesData = [

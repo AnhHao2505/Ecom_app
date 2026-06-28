@@ -2,6 +2,7 @@ import 'package:e_mart/consts/consts.dart';
 import 'package:e_mart/controllers/auth_controller.dart';
 import 'package:e_mart/controllers/cart_controller.dart';
 import 'package:e_mart/controllers/home_controller.dart';
+import 'package:e_mart/controllers/profile_controller.dart';
 import 'package:e_mart/controllers/wishlist_controller.dart';
 import 'package:e_mart/models/billing_order_model.dart';
 import 'package:e_mart/services/order_billing_service.dart';
@@ -19,6 +20,7 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final orderBillingService = OrderBillingService();
+    final profileController = Get.put(ProfileController());
 
     final List<Map<String, dynamic>> menuItems = [
       {
@@ -131,60 +133,97 @@ class ProfileScreen extends StatelessWidget {
                         horizontal: 20,
                         vertical: 10,
                       ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Row(
+                      child: FutureBuilder<Map<String, String>>(
+                        future: profileController
+                            .getProfileDataForCurrentUser(),
+                        builder: (context, snapshot) {
+                          if (!snapshot.hasData) {
+                            return const SizedBox.shrink();
+                          }
+
+                          final userData = snapshot.data!;
+                          final imageUrl = userData['image'] ?? '';
+
+                          return Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Container(
-                                width: 64,
-                                height: 64,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                    color: whiteColor.withOpacity(0.5),
-                                    width: 2,
+                              Row(
+                                children: [
+                                  Container(
+                                    width: 64,
+                                    height: 64,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: whiteColor.withOpacity(0.5),
+                                        width: 2,
+                                      ),
+                                    ),
+                                    child: imageUrl.isNotEmpty
+                                        ? ClipOval(
+                                            child: Image.network(
+                                              imageUrl,
+                                              fit: BoxFit.cover,
+                                              errorBuilder:
+                                                  (context, error, stackTrace) {
+                                                    return const CircleAvatar(
+                                                      backgroundImage:
+                                                          AssetImage(
+                                                            imgProfile2,
+                                                          ),
+                                                    );
+                                                  },
+                                            ),
+                                          )
+                                        : const CircleAvatar(
+                                            backgroundImage: AssetImage(
+                                              imgProfile2,
+                                            ),
+                                          ),
                                   ),
-                                  image: const DecorationImage(
-                                    image: AssetImage(imgProfile2),
-                                    fit: BoxFit.cover,
+                                  16.widthBox,
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        (userData['name'] ?? 'Customer').text
+                                            .fontFamily(bold)
+                                            .size(18)
+                                            .white
+                                            .make(),
+                                        4.heightBox,
+                                        (userData['email'] ??
+                                                'customer@example.com')
+                                            .text
+                                            .white
+                                            .size(13)
+                                            .make(),
+                                      ],
+                                    ),
                                   ),
-                                ),
-                              ),
-                              16.widthBox,
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    "Dummy User".text
-                                        .fontFamily(bold)
-                                        .size(18)
-                                        .white
-                                        .make(),
-                                    4.heightBox,
-                                    "customer@example.com".text.white
-                                        .size(13)
-                                        .make(),
-                                  ],
-                                ),
-                              ),
-                              IconButton(
-                                onPressed: () {
-                                  Get.to(() => const EditProfileScreen());
-                                },
-                                style: IconButton.styleFrom(
-                                  backgroundColor: whiteColor.withOpacity(0.2),
-                                ),
-                                icon: const Icon(
-                                  Icons.edit_outlined,
-                                  color: whiteColor,
-                                  size: 20,
-                                ),
+                                  IconButton(
+                                    onPressed: () {
+                                      Get.to(() => const EditProfileScreen());
+                                    },
+                                    style: IconButton.styleFrom(
+                                      backgroundColor: whiteColor.withOpacity(
+                                        0.2,
+                                      ),
+                                    ),
+                                    icon: const Icon(
+                                      Icons.edit_outlined,
+                                      color: whiteColor,
+                                      size: 20,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ],
-                          ),
-                        ],
+                          );
+                        },
                       ),
                     ),
                   ),

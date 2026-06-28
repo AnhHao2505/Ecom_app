@@ -1,29 +1,47 @@
 {
-  "project_info": {
-    "project_number": "979649997499",
-    "project_id": "emart-1dafe",
-    "storage_bucket": "emart-1dafe.firebasestorage.app"
-  },
-  "client": [
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:979649997499:android:6d2d202be4db6d2859579e",
-        "android_client_info": {
-          "package_name": "com.example.e_mart"
-        }
-      },
-      "oauth_client": [],
-      "api_key": [
-        {
-          "current_key": "AIzaSyCQFqEl2rT_td86Pxz9RiNNUr5uQ7Jlicc"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": []
-        }
-      }
-    }
-  ],
-  "configuration_version": "1"
+	"project_info": {
+		"project_number": "979649997499",
+		"project_id": "emart-1dafe",
+		"storage_bucket": "emart-1dafe.firebasestorage.app"
+	},
+	"client": [
+		{
+			"client_info": {
+				"mobilesdk_app_id": "1:979649997499:android:6d2d202be4db6d2859579e",
+				"android_client_info": {
+					"package_name": "com.example.e_mart"
+				}
+			},
+			"oauth_client": [
+				{
+					"client_id": "979649997499-tepvecv60ne58tgrht0jscu8ls8ri3l9.apps.googleusercontent.com",
+					"client_type": 1,
+					"android_info": {
+						"package_name": "com.example.e_mart",
+						"certificate_hash": "ae2c68a670ed9ff355ed60f302cec15830604bfb"
+					}
+				},
+				{
+					"client_id": "979649997499-mcehqktqjijj0ibvepb9gjvf8q65urus.apps.googleusercontent.com",
+					"client_type": 3
+				}
+			],
+			"api_key": [
+				{
+					"current_key": "AIzaSyCQFqEl2rT_td86Pxz9RiNNUr5uQ7Jlicc"
+				}
+			],
+			"services": {
+				"appinvite_service": {
+					"other_platform_oauth_client": [
+						{
+							"client_id": "979649997499-mcehqktqjijj0ibvepb9gjvf8q65urus.apps.googleusercontent.com",
+							"client_type": 3
+						}
+					]
+				}
+			}
+		}
+	],
+	"configuration_version": "1"
 }

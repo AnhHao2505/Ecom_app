@@ -17,6 +17,7 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+
   @override
   Widget build(BuildContext context) {
     final controller = Get.put(AuthController());
@@ -115,23 +116,17 @@ class _LoginScreenState extends State<LoginScreen> {
                                 // alternative login options
                                 loginWith.text.color(fontGrey).make(),
                                 5.heightBox,
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: List.generate(
-                                    3,
-                                    (index) => Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: CircleAvatar(
-                                        backgroundColor: lightGrey,
-                                        radius: 25,
-                                        child: Image.asset(
-                                          socialIconList[index],
-                                          width: 30,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
+                                CircleAvatar(
+                                  backgroundColor: lightGrey,
+                                  radius: 25,
+                                  child: Image.asset(googleAuthIcon, width: 30),
+                                ).onTap(() async {
+                                  final credential = await controller
+                                      .loginWithGoogle();
+                                  if (credential?.user != null && mounted) {
+                                    await openLandingForUser(credential!.user!);
+                                  }
+                                }),
                               ],
                             ).box.white.rounded
                             .padding(const EdgeInsets.all(16))
@@ -156,7 +151,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         backgroundColor: whiteColor.withOpacity(0.18),
                         foregroundColor: whiteColor,
                       ),
-                      icon: const Icon(Icons.storefront_outlined, color: Colors.black,),
+                      icon: const Icon(
+                        Icons.storefront_outlined,
+                        color: Colors.black,
+                      ),
                     ),
                   ),
                 ),
