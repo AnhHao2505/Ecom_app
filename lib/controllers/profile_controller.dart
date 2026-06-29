@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 
 class ProfileController extends GetxController {
   var profileImgPath = ''.obs;
+  final isLoading = false.obs;
 
   Future<void> changeImage(context) async {
     try {
@@ -31,5 +32,21 @@ class ProfileController extends GetxController {
       'name': dataMap?['name']?.toString() ?? 'Customer',
       'email': dataMap?['email']?.toString() ?? 'customer@example.com',
     };
+  }
+
+  Future<void> updateProfile(
+    String name,
+    String password,
+    String imageUrl,
+  ) async {
+    try {
+      await firestore.collection(usersCollection).doc(currentUser?.uid).update({
+        'name': name,
+        'password': password,
+        'imageUrl': imageUrl,
+      });
+    } on FirebaseException catch (e) {
+      print(e.message);
+    }
   }
 }
