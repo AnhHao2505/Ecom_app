@@ -6,7 +6,7 @@ import 'package:e_mart/consts/payment_consts.dart';
 import 'package:e_mart/models/cart_item_model.dart';
 
 class PayosPaymentRequest {
-  final int amount;
+  final double amount;
   final String buyerName;
   final String buyerEmail;
   final String buyerPhone;
@@ -44,7 +44,7 @@ class PayosPaymentRequest {
           (item) => {
             'name': item.name,
             'quantity': item.quantity,
-            'price': item.price.round(),
+            'price': usdToVnd(item.price),
           },
         )
         .toList();
@@ -54,7 +54,7 @@ class PayosPaymentRequest {
             'productId': item.product.id,
             'name': item.name,
             'quantity': item.quantity,
-            'price': item.price,
+            'price': usdToVnd(item.price),
             'image': item.image,
             'category': item.category,
             'selectedColor': item.selectedColor,
@@ -64,23 +64,23 @@ class PayosPaymentRequest {
         .toList();
 
     if (tax > 0) {
-      paymentItems.add({'name': 'Tax', 'quantity': 1, 'price': tax.round()});
+      paymentItems.add({'name': 'Tax', 'quantity': 1, 'price': usdToVnd(tax)});
     }
 
     if (shipping > 0) {
       paymentItems.add({
         'name': 'Shipping',
         'quantity': 1,
-        'price': shipping.round(),
+        'price': usdToVnd(shipping),
       });
     }
 
     return {
-      'amount': amount,
-      'subtotal': subtotal,
-      'tax': tax,
-      'shipping': shipping,
-      'total': amount,
+      'amount': usdToVnd(amount),
+      'subtotal': usdToVnd(subtotal),
+      'tax': usdToVnd(tax),
+      'shipping': usdToVnd(shipping),
+      'total': usdToVnd(amount),
       'buyerName': buyerName,
       'buyerEmail': buyerEmail,
       'buyerPhone': buyerPhone,
@@ -88,7 +88,7 @@ class PayosPaymentRequest {
       'buyerCity': buyerCity,
       'billingAddress': billingAddress,
       'deliveryType': deliveryType,
-      'deliveryPrice': deliveryPrice.round(),
+      'deliveryPrice': usdToVnd(deliveryPrice),
       'purchasedItems': purchasedItems,
       'items': paymentItems,
     };

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:e_mart/consts/consts.dart';
 import 'package:e_mart/controllers/cart_controller.dart';
 import 'package:e_mart/models/order_receipt_model.dart';
+import 'package:e_mart/services/order_billing_service.dart';
 import 'package:e_mart/services/payos_payment_service.dart';
 import 'package:e_mart/views/checkout_screen/order_confirmation_screen.dart';
 import 'package:get/get.dart';
@@ -27,6 +28,7 @@ class PayosCheckoutScreen extends StatefulWidget {
 class _PayosCheckoutScreenState extends State<PayosCheckoutScreen> {
   final WebViewController _controller = WebViewController();
   final PayosPaymentService _payosPaymentService = PayosPaymentService();
+  final OrderBillingService _orderBillingService = OrderBillingService();
   var _progress = 0;
   var _isFinishing = false;
 
@@ -112,11 +114,33 @@ class _PayosCheckoutScreenState extends State<PayosCheckoutScreen> {
       return;
     }
 
-    Get.find<CartController>().clear();
-    Get.off(
-      () => OrderConfirmationScreen(
-        receipt: widget.receipt.copyWith(isPaid: true, paymentMethod: 'PayOS'),
-      ),
-    );
+    try {
+      await _orderBillingService.savePaidPayosOrder(
+        receipt: widget.receipt,
+        orderCode: widget.orderCode,
+      );
+      Get.find<CartController>().clear();
+      if (!mounted) return;
+      Get.off(
+        () => OrderConfirmationScreen(
+          receipt:
+              widget.receipt.copyWith(isPaid: true, paymentMethod: 'PayOS'),
+        ),
+      );
+    } on OrderBillingException catch (error) {
+      if (!mounted) return;
+      Get.snackbar(
+        'Payment saved with a warning',
+        error.message,
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      Get.find<CartController>().clear();
+      Get.off(
+        () => OrderConfirmationScreen(
+          receipt:
+              widget.receipt.copyWith(isPaid: true, paymentMethod: 'PayOS'),
+        ),
+      );
+    }
   }
 }

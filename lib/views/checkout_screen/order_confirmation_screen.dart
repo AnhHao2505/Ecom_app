@@ -112,7 +112,7 @@ class OrderConfirmationScreen extends StatelessWidget {
                         .overflow(TextOverflow.ellipsis)
                         .make(),
                   ),
-                  '\$${item.lineTotal.toStringAsFixed(2)}'.text
+                  _formatUsd(_displayAmount(item.lineTotal)).text
                       .color(darkFontGrey)
                       .fontFamily(semibold)
                       .make(),
@@ -121,13 +121,13 @@ class OrderConfirmationScreen extends StatelessWidget {
             ),
           ),
           const Divider(height: 20),
-          _priceRow('Subtotal', receipt.subtotal),
+          _priceRow('Subtotal', _displayAmount(receipt.subtotal)),
           8.heightBox,
-          _priceRow('Tax', receipt.tax),
+          _priceRow('Tax', _displayAmount(receipt.tax)),
           8.heightBox,
-          _priceRow('Shipping', receipt.shipping),
+          _priceRow('Shipping', _displayAmount(receipt.shipping)),
           12.heightBox,
-          _priceRow('Total', receipt.total, emphasis: true),
+          _priceRow('Total', _displayAmount(receipt.total), emphasis: true),
           16.heightBox,
           const Divider(height: 1),
           14.heightBox,
@@ -180,7 +180,7 @@ class OrderConfirmationScreen extends StatelessWidget {
             .fontFamily(emphasis ? bold : semibold)
             .size(emphasis ? 16 : 14)
             .make(),
-        '\$${amount.toStringAsFixed(2)}'.text
+        _formatUsd(amount).text
             .color(emphasis ? redColor : darkFontGrey)
             .fontFamily(emphasis ? bold : semibold)
             .size(emphasis ? 18 : 14)
@@ -204,5 +204,14 @@ class OrderConfirmationScreen extends StatelessWidget {
         Expanded(child: value.text.color(darkFontGrey).size(13).make()),
       ],
     );
+  }
+
+  String _formatUsd(double amount) => '\$${amount.toStringAsFixed(2)}';
+
+  double _displayAmount(double amount) {
+    if (receipt.paymentMethod.toUpperCase() == 'PAYOS' && amount >= 1000) {
+      return amount / 26000;
+    }
+    return amount;
   }
 }
