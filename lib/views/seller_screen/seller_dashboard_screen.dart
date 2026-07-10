@@ -1,20 +1,31 @@
 import 'package:e_mart/consts/consts.dart';
 import 'package:e_mart/controllers/auth_controller.dart';
+import 'package:e_mart/models/billing_order_model.dart';
 import 'package:e_mart/models/product_model.dart';
 import 'package:e_mart/models/store_model.dart';
+import 'package:e_mart/services/order_billing_service.dart';
 import 'package:e_mart/services/seller_service.dart';
 import 'package:e_mart/views/auth_screen/login_screen.dart';
+import 'package:e_mart/views/order_screen/order_history_screen.dart';
 import 'package:e_mart/views/seller_screen/seller_product_form_screen.dart';
 import 'package:e_mart/views/seller_screen/seller_shop_setup_screen.dart';
 import 'package:e_mart/widget_common/product_image.dart';
 import 'package:get/get.dart';
 
-class SellerDashboardScreen extends StatelessWidget {
+class SellerDashboardScreen extends StatefulWidget {
   const SellerDashboardScreen({super.key});
+
+  @override
+  State<SellerDashboardScreen> createState() => _SellerDashboardScreenState();
+}
+
+class _SellerDashboardScreenState extends State<SellerDashboardScreen> {
+  int _selectedTab = 0;
 
   @override
   Widget build(BuildContext context) {
     final sellerService = SellerService();
+    final orderBillingService = OrderBillingService();
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
@@ -47,7 +58,9 @@ class SellerDashboardScreen extends StatelessWidget {
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => Get.to(() => const SellerProductFormScreen()),
+        onPressed: _selectedTab == 0
+            ? () => Get.to(() => const SellerProductFormScreen())
+            : null,
         backgroundColor: primaryColor,
         foregroundColor: whiteColor,
         icon: const Icon(Icons.add),
@@ -63,106 +76,139 @@ class SellerDashboardScreen extends StatelessWidget {
             end: Alignment.bottomCenter,
           ),
         ),
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          physics: const BouncingScrollPhysics(),
+        child: Column(
           children: [
-            StreamBuilder<Store?>(
-              stream: sellerService.watchCurrentSellerStore(),
-              builder: (context, snapshot) {
-                final store = snapshot.data;
-                if (store == null) {
-                  return _SetupNotice(
-                    onTap: () =>
-                        Get.offAll(() => const SellerShopSetupScreen()),
-                  );
-                }
-                return _StoreSummary(store: store);
-              },
+            Expanded(
+              child: _selectedTab == 0
+                  ? _ProductsTab(
+                      sellerService: sellerService,
+                      onAdd: () =>
+                          Get.to(() => const SellerProductFormScreen()),
+                    )
+                  : _PaidOrdersSection(service: orderBillingService),
             ),
-            20.heightBox,
-            Row(
-              children: [
-                Text(
-                  'Your Products',
-                  style: TextStyle(
-                    color: Theme.of(context).textTheme.bodyLarge?.color,
-                    fontFamily: bold,
-                    fontSize: 18,
-                  ),
-                ),
-                const Spacer(),
-                TextButton.icon(
-                  onPressed: () =>
-                      Get.to(() => const SellerProductFormScreen()),
-                  icon: const Icon(Icons.add, size: 18),
-                  label: const Text('Add'),
-                ),
-              ],
-            ),
-            8.heightBox,
-            StreamBuilder<List<Product>>(
-              stream: sellerService.watchCurrentSellerProducts(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(24),
-                      child: CircularProgressIndicator(),
-                    ),
-                  );
-                }
-
-                final products = snapshot.data ?? const <Product>[];
-                if (products.isEmpty) {
-                  return _EmptyProducts(
-                    onTap: () => Get.to(() => const SellerProductFormScreen()),
-                  );
-                }
-
-                return Column(
-                  children: products
-                      .map(
-                        (product) => _SellerProductTile(
-                          product: product,
-                          onEdit: () => Get.to(
-                            () => SellerProductFormScreen(product: product),
-                          ),
-                          onDelete: () async {
-                            final shouldDelete = await showDialog<bool>(
-                              context: context,
-                              builder: (context) => AlertDialog(
-                                title: const Text('Delete product?'),
-                                content: Text(
-                                  'Remove ${product.name} from your shop.',
-                                ),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () =>
-                                        Navigator.pop(context, false),
-                                    child: const Text('Cancel'),
-                                  ),
-                                  TextButton(
-                                    onPressed: () =>
-                                        Navigator.pop(context, true),
-                                    child: const Text('Delete'),
-                                  ),
-                                ],
-                              ),
-                            );
-                            if (shouldDelete != true) return;
-                            await sellerService.deleteProduct(product);
-                          },
-                        ),
-                      )
-                      .toList(),
-                );
-              },
-            ),
-            88.heightBox,
           ],
         ),
       ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _selectedTab,
+        type: BottomNavigationBarType.fixed,
+        onTap: (index) => setState(() => _selectedTab = index),
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.inventory_2_outlined),
+            label: 'Products',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.local_shipping_outlined),
+            label: 'Order delivery',
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProductsTab extends StatelessWidget {
+  final SellerService sellerService;
+  final VoidCallback onAdd;
+
+  const _ProductsTab({required this.sellerService, required this.onAdd});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      physics: const BouncingScrollPhysics(),
+      children: [
+        StreamBuilder<Store?>(
+          stream: sellerService.watchCurrentSellerStore(),
+          builder: (context, snapshot) {
+            final store = snapshot.data;
+            if (store == null) {
+              return _SetupNotice(
+                onTap: () => Get.offAll(() => const SellerShopSetupScreen()),
+              );
+            }
+            return _StoreSummary(store: store);
+          },
+        ),
+        20.heightBox,
+        Row(
+          children: [
+            Text(
+              'Your Products',
+              style: TextStyle(
+                color: Theme.of(context).textTheme.bodyLarge?.color,
+                fontFamily: bold,
+                fontSize: 18,
+              ),
+            ),
+            const Spacer(),
+            TextButton.icon(
+              onPressed: onAdd,
+              icon: const Icon(Icons.add, size: 18),
+              label: const Text('Add'),
+            ),
+          ],
+        ),
+        8.heightBox,
+        StreamBuilder<List<Product>>(
+          stream: sellerService.watchCurrentSellerProducts(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(24),
+                  child: CircularProgressIndicator(),
+                ),
+              );
+            }
+
+            final products = snapshot.data ?? const <Product>[];
+            if (products.isEmpty) {
+              return _EmptyProducts(onTap: onAdd);
+            }
+
+            return Column(
+              children: products
+                  .map(
+                    (product) => _SellerProductTile(
+                      product: product,
+                      onEdit: () => Get.to(
+                        () => SellerProductFormScreen(product: product),
+                      ),
+                      onDelete: () async {
+                        final shouldDelete = await showDialog<bool>(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: const Text('Delete product?'),
+                            content: Text(
+                              'Remove ${product.name} from your shop.',
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context, false),
+                                child: const Text('Cancel'),
+                              ),
+                              TextButton(
+                                onPressed: () => Navigator.pop(context, true),
+                                child: const Text('Delete'),
+                              ),
+                            ],
+                          ),
+                        );
+                        if (shouldDelete != true) return;
+                        await sellerService.deleteProduct(product);
+                      },
+                    ),
+                  )
+                  .toList(),
+            );
+          },
+        ),
+        88.heightBox,
+      ],
     );
   }
 }
@@ -411,6 +457,248 @@ class _SellerProductTile extends StatelessWidget {
             icon: const Icon(Icons.delete_outline, color: redColor),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _PaidOrdersSection extends StatefulWidget {
+  final OrderBillingService service;
+
+  const _PaidOrdersSection({required this.service});
+
+  @override
+  State<_PaidOrdersSection> createState() => _PaidOrdersSectionState();
+}
+
+class _PaidOrdersSectionState extends State<_PaidOrdersSection> {
+  static const int _pageSize = 10;
+  int _page = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    final sellerId = auth.currentUser?.uid;
+    if (sellerId == null || sellerId.isEmpty) return const SizedBox.shrink();
+
+    return StreamBuilder<List<BillingOrder>>(
+      stream: widget.service.watchSellerOrders(sellerId),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const SizedBox(
+            height: 120,
+            child: Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        if (snapshot.hasError) {
+          return ListView(
+            padding: const EdgeInsets.all(16),
+            physics: const BouncingScrollPhysics(),
+            children: [
+              Text(
+                'Order delivery',
+                style: TextStyle(
+                  color: Theme.of(context).textTheme.bodyLarge?.color,
+                  fontFamily: bold,
+                  fontSize: 18,
+                ),
+              ),
+              12.heightBox,
+              Text(
+                'Could not load seller orders. Please deploy the latest Firestore rules and try again.',
+                style: TextStyle(
+                  color: Theme.of(context).textTheme.bodyMedium?.color,
+                ),
+              ),
+            ],
+          );
+        }
+
+        final orders = snapshot.data ?? const <BillingOrder>[];
+        final totalPages = orders.isEmpty
+            ? 1
+            : ((orders.length - 1) ~/ _pageSize) + 1;
+        final page = _page >= totalPages ? totalPages - 1 : _page;
+        final pageOrders = orders
+            .skip(page * _pageSize)
+            .take(_pageSize)
+            .toList();
+
+        return ListView(
+          padding: const EdgeInsets.all(16),
+          physics: const BouncingScrollPhysics(),
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    'Order delivery',
+                    style: TextStyle(
+                      color: Theme.of(context).textTheme.bodyLarge?.color,
+                      fontFamily: bold,
+                      fontSize: 18,
+                    ),
+                  ),
+                ),
+                Text(
+                  '${orders.length} orders',
+                  style: TextStyle(
+                    color: Theme.of(context).textTheme.bodyMedium?.color,
+                    fontFamily: semibold,
+                  ),
+                ),
+              ],
+            ),
+            12.heightBox,
+            if (orders.isEmpty)
+              Text(
+                'No customer orders yet.',
+                style: TextStyle(
+                  color: Theme.of(context).textTheme.bodyMedium?.color,
+                ),
+              )
+            else
+              ...pageOrders.map((order) => _PaidOrderTile(order: order)),
+            if (orders.isNotEmpty) ...[
+              12.heightBox,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  IconButton(
+                    onPressed: page == 0
+                        ? null
+                        : () => setState(() => _page = page - 1),
+                    icon: const Icon(Icons.chevron_left),
+                  ),
+                  Text(
+                    '${page + 1}/$totalPages',
+                    style: TextStyle(
+                      color: Theme.of(context).textTheme.bodyLarge?.color,
+                      fontFamily: bold,
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: page >= totalPages - 1
+                        ? null
+                        : () => setState(() => _page = page + 1),
+                    icon: const Icon(Icons.chevron_right),
+                  ),
+                ],
+              ),
+              88.heightBox,
+            ],
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _PaidOrderTile extends StatelessWidget {
+  final BillingOrder order;
+
+  const _PaidOrderTile({required this.order});
+
+  @override
+  Widget build(BuildContext context) {
+    final productNames = order.items
+        .map((item) => item.name)
+        .take(3)
+        .join(', ');
+
+    return Material(
+      color: Theme.of(context).scaffoldBackgroundColor,
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: () => Get.to(() => OrderBillingDetailScreen(order: order)),
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 10),
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: Theme.of(context).dividerColor.withValues(alpha: 0.12),
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      order.orderCode,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: Theme.of(context).textTheme.bodyLarge?.color,
+                        fontFamily: bold,
+                      ),
+                    ),
+                  ),
+                  Text(
+                    order.statusLabel,
+                    style: const TextStyle(
+                      color: primaryColor,
+                      fontFamily: semibold,
+                    ),
+                  ),
+                ],
+              ),
+              6.heightBox,
+              Text(
+                productNames.isEmpty ? 'No product names saved' : productNames,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: Theme.of(context).textTheme.bodyMedium?.color,
+                  fontSize: 12,
+                ),
+              ),
+              4.heightBox,
+              Text(
+                '${order.buyerName} · ${order.buyerPhone}',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: Theme.of(context).textTheme.bodyMedium?.color,
+                  fontSize: 12,
+                ),
+              ),
+              4.heightBox,
+              Text(
+                order.deliveryAddress,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: Theme.of(context).textTheme.bodyMedium?.color,
+                  fontSize: 12,
+                ),
+              ),
+              6.heightBox,
+              Row(
+                children: [
+                  Text(
+                    '${order.items.length} items',
+                    style: TextStyle(
+                      color: Theme.of(context).textTheme.bodyMedium?.color,
+                      fontSize: 12,
+                    ),
+                  ),
+                  const Spacer(),
+                  Text(
+                    '\$${order.total.toStringAsFixed(2)}',
+                    style: const TextStyle(
+                      color: primaryColor,
+                      fontFamily: bold,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

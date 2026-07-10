@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:e_mart/consts/payment_consts.dart';
 
 class BillingOrder {
   final String id;
@@ -100,6 +101,13 @@ class BillingOrder {
     return parts.isEmpty ? 'Not provided' : parts.join(', ');
   }
 
+  bool get _looksLikeVndAmount => paymentMethod.toUpperCase() == 'PAYOS' && total >= 1000;
+
+  double get displaySubtotal => _displayAmount(subtotal);
+  double get displayTax => _displayAmount(tax);
+  double get displayShipping => _displayAmount(shipping);
+  double get displayTotal => _displayAmount(total);
+
   String get statusLabel {
     switch (status.toUpperCase()) {
       case 'PAID':
@@ -148,6 +156,13 @@ class BillingOrder {
     return int.tryParse(value?.toString() ?? '') ?? 0;
   }
 
+  double _displayAmount(double amount) {
+    if (_looksLikeVndAmount) {
+      return amount / payosUsdToVndRate;
+    }
+    return amount;
+  }
+
   static DateTime? _toDateTime(dynamic value) {
     if (value is Timestamp) return value.toDate();
     if (value is DateTime) return value;
@@ -192,6 +207,8 @@ class BillingOrderItem {
 
   double get lineTotal => price * quantity;
 
+  double get displayLineTotal => _displayAmount(lineTotal);
+
   bool get isFee {
     final normalized = name.toLowerCase();
     return normalized == 'tax' || normalized == 'shipping';
@@ -204,5 +221,12 @@ class BillingOrderItem {
         'Size $selectedSize',
     ];
     return options.join(' | ');
+  }
+
+  double _displayAmount(double amount) {
+    if (amount >= 1000) {
+      return amount / payosUsdToVndRate;
+    }
+    return amount;
   }
 }

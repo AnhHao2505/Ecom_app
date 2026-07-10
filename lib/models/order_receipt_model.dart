@@ -4,6 +4,10 @@ class OrderReceipt {
   final String orderNumber;
   final List<CartItem> items;
   final String recipientName;
+  final String buyerEmail;
+  final String buyerPhone;
+  final String buyerStreetAddress;
+  final String buyerCity;
   final String deliveryAddress;
   final String billingAddress;
   final String paymentMethod;
@@ -17,6 +21,10 @@ class OrderReceipt {
     required this.orderNumber,
     required this.items,
     required this.recipientName,
+    this.buyerEmail = '',
+    this.buyerPhone = '',
+    this.buyerStreetAddress = '',
+    this.buyerCity = '',
     required this.deliveryAddress,
     required this.billingAddress,
     required this.paymentMethod,
@@ -33,6 +41,10 @@ class OrderReceipt {
     String? orderNumber,
     List<CartItem>? items,
     String? recipientName,
+    String? buyerEmail,
+    String? buyerPhone,
+    String? buyerStreetAddress,
+    String? buyerCity,
     String? deliveryAddress,
     String? billingAddress,
     String? paymentMethod,
@@ -46,6 +58,10 @@ class OrderReceipt {
       orderNumber: orderNumber ?? this.orderNumber,
       items: items ?? this.items,
       recipientName: recipientName ?? this.recipientName,
+      buyerEmail: buyerEmail ?? this.buyerEmail,
+      buyerPhone: buyerPhone ?? this.buyerPhone,
+      buyerStreetAddress: buyerStreetAddress ?? this.buyerStreetAddress,
+      buyerCity: buyerCity ?? this.buyerCity,
       deliveryAddress: deliveryAddress ?? this.deliveryAddress,
       billingAddress: billingAddress ?? this.billingAddress,
       paymentMethod: paymentMethod ?? this.paymentMethod,

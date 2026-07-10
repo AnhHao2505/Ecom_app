@@ -1,4 +1,5 @@
 import 'package:e_mart/consts/consts.dart';
+import 'package:e_mart/consts/payment_consts.dart';
 import 'package:e_mart/controllers/cart_controller.dart';
 import 'package:e_mart/models/order_receipt_model.dart';
 import 'package:e_mart/services/order_billing_service.dart';
@@ -446,6 +447,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   Widget _buildOrderBar(BuildContext context) {
     final total =
         _cartController.subtotal + _cartController.tax + _shippingCost;
+    final totalVnd = usdToVnd(total);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 18),
@@ -484,6 +486,15 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     .make(),
               ],
             ),
+            4.heightBox,
+            Align(
+              alignment: Alignment.centerRight,
+              child: formatVnd(totalVnd).text
+                  .color(Theme.of(context).textTheme.bodyMedium?.color)
+                  .fontFamily(semibold)
+                  .size(13)
+                  .make(),
+            ),
             12.heightBox,
             SizedBox(
               width: double.infinity,
@@ -493,7 +504,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     ? 'Place order'
                     : _isSubmitting
                     ? 'Creating PayOS link...'
-                    : 'Pay \$${total.toStringAsFixed(2)}',
+                    : 'Pay ${formatVnd(totalVnd)}',
                 onPress: _isSubmitting ? () {} : _placeOrder,
               ),
             ),
@@ -518,6 +529,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           'EM-${DateTime.now().millisecondsSinceEpoch.toString().substring(5)}',
       items: List.unmodifiable(_cartController.items),
       recipientName: _nameController.text.trim(),
+      buyerEmail: auth.currentUser?.email ?? '',
+      buyerPhone: _phoneController.text.trim(),
+      buyerStreetAddress: _addressController.text.trim(),
+      buyerCity: _cityController.text.trim(),
       deliveryAddress: deliveryAddress,
       billingAddress: _billingMatchesDelivery
           ? deliveryAddress
@@ -542,6 +557,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     setState(() => _isSubmitting = true);
 
     try {
+      await _orderBillingService.ensureItemsInStock(receipt.items);
       await _orderBillingService.saveCashOnDeliveryOrder(
         receipt: receipt,
         buyerPhone: _phoneController.text.trim(),
@@ -576,14 +592,15 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     setState(() => _isSubmitting = true);
 
     try {
+      await _orderBillingService.ensureItemsInStock(receipt.items);
       final payment = await _payosPaymentService.createPayment(
         PayosPaymentRequest(
-          amount: receipt.total.round(),
+          amount: receipt.total,
           buyerName: receipt.recipientName,
-          buyerEmail: auth.currentUser?.email ?? '',
-          buyerPhone: _phoneController.text.trim(),
-          buyerStreetAddress: _addressController.text.trim(),
-          buyerCity: _cityController.text.trim(),
+          buyerEmail: receipt.buyerEmail,
+          buyerPhone: receipt.buyerPhone,
+          buyerStreetAddress: receipt.buyerStreetAddress,
+          buyerCity: receipt.buyerCity,
           billingAddress: receipt.billingAddress,
           deliveryType: _deliveryOptionLabel,
           deliveryPrice: receipt.shipping,

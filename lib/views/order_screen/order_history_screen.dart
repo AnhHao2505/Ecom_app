@@ -1,4 +1,5 @@
 import 'package:e_mart/consts/consts.dart';
+import 'package:e_mart/consts/payment_consts.dart';
 import 'package:e_mart/models/billing_order_model.dart';
 import 'package:e_mart/services/order_billing_service.dart';
 import 'package:e_mart/widget_common/product_image.dart';
@@ -398,7 +399,12 @@ class OrderBillingDetailScreen extends StatelessWidget {
                         .color(fontGrey)
                         .make()
                   else
-                    ...order.items.map((item) => _PurchasedItem(item: item)),
+                    ...order.items.map(
+                      (item) => _PurchasedItem(
+                        item: item,
+                        isPayos: order.paymentMethod.toUpperCase() == 'PAYOS',
+                      ),
+                    ),
                 ],
               ),
             ),
@@ -449,17 +455,17 @@ class OrderBillingDetailScreen extends StatelessWidget {
             _SectionCard(
               child: Column(
                 children: [
-                  _PriceRow(label: 'Subtotal', amount: order.subtotal),
+                  _PriceRow(label: 'Subtotal', amount: order.displaySubtotal),
                   8.heightBox,
-                  _PriceRow(label: 'Tax', amount: order.tax),
+                  _PriceRow(label: 'Tax', amount: order.displayTax),
                   8.heightBox,
-                  _PriceRow(label: 'Delivery', amount: order.shipping),
+                  _PriceRow(label: 'Delivery', amount: order.displayShipping),
                   12.heightBox,
                   const Divider(height: 1),
                   12.heightBox,
                   _PriceRow(
                     label: 'Total',
-                    amount: order.total,
+                    amount: order.displayTotal,
                     emphasis: true,
                   ),
                 ],
@@ -528,7 +534,7 @@ class _OrderCard extends StatelessWidget {
                             .fontFamily(semibold)
                             .make(),
                   ),
-                  '\$${order.total.toStringAsFixed(2)}'.text
+                  _formatUsd(order.displayTotal).text
                       .color(primaryColor)
                       .fontFamily(bold)
                       .size(18)
@@ -545,8 +551,9 @@ class _OrderCard extends StatelessWidget {
 
 class _PurchasedItem extends StatelessWidget {
   final BillingOrderItem item;
+  final bool isPayos;
 
-  const _PurchasedItem({required this.item});
+  const _PurchasedItem({required this.item, required this.isPayos});
 
   @override
   Widget build(BuildContext context) {
@@ -585,7 +592,7 @@ class _PurchasedItem extends StatelessWidget {
             ),
           ),
           8.widthBox,
-          '\$${item.lineTotal.toStringAsFixed(2)}'.text
+          _formatUsd(_displayAmount(isPayos, item.lineTotal)).text
               .color(Theme.of(context).textTheme.bodyLarge?.color)
               .fontFamily(bold)
               .make(),
@@ -692,7 +699,7 @@ class _PriceRow extends StatelessWidget {
             .fontFamily(emphasis ? bold : semibold)
             .size(emphasis ? 16 : 14)
             .make(),
-        '\$${amount.toStringAsFixed(2)}'.text
+        _formatUsd(amount).text
             .color(
               emphasis
                   ? primaryColor
@@ -766,4 +773,13 @@ String _formatDate(DateTime date) {
   String twoDigits(int value) => value.toString().padLeft(2, '0');
   return '${date.year}-${twoDigits(date.month)}-${twoDigits(date.day)} '
       '${twoDigits(date.hour)}:${twoDigits(date.minute)}';
+}
+
+String _formatUsd(double amount) => '\$${amount.toStringAsFixed(2)}';
+
+double _displayAmount(bool isPayos, double amount) {
+  if (isPayos && amount >= 1000) {
+    return amount / payosUsdToVndRate;
+  }
+  return amount;
 }

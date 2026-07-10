@@ -100,8 +100,8 @@ class Product {
       sizes: _toStringList(map['sizes']),
       colors: _toStringList(map['colors']),
       attributes: Map<String, dynamic>.from(map['attributes'] ?? {}),
-      createdAt: (map['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
-      updatedAt: (map['updatedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      createdAt: _toDateTime(map['createdAt']) ?? DateTime.now(),
+      updatedAt: _toDateTime(map['updatedAt']) ?? DateTime.now(),
     );
   }
 
@@ -220,6 +220,13 @@ class Product {
   static int _toInt(dynamic value) {
     if (value is num) return value.toInt();
     return int.tryParse(value?.toString() ?? '') ?? 0;
+  }
+
+  static DateTime? _toDateTime(dynamic value) {
+    if (value is Timestamp) return value.toDate();
+    if (value is DateTime) return value;
+    if (value is String && value.isNotEmpty) return DateTime.tryParse(value);
+    return null;
   }
 
   static List<String> _toStringList(dynamic value) {
