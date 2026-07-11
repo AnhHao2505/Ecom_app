@@ -6,6 +6,7 @@ import 'package:e_mart/models/store_model.dart';
 import 'package:e_mart/services/order_billing_service.dart';
 import 'package:e_mart/services/seller_service.dart';
 import 'package:e_mart/views/auth_screen/login_screen.dart';
+import 'package:e_mart/views/chat_screen/chat_list_screen.dart';
 import 'package:e_mart/views/order_screen/order_history_screen.dart';
 import 'package:e_mart/views/seller_screen/seller_product_form_screen.dart';
 import 'package:e_mart/views/seller_screen/seller_shop_setup_screen.dart';
@@ -43,6 +44,11 @@ class _SellerDashboardScreenState extends State<SellerDashboardScreen> {
             onPressed: () =>
                 Get.to(() => const SellerShopSetupScreen(allowBack: true)),
             icon: const Icon(Icons.storefront_outlined),
+          ),
+          IconButton(
+            tooltip: 'Customer messages',
+            onPressed: () => Get.to(() => const ChatListScreen(isSeller: true)),
+            icon: const Icon(Icons.message_outlined),
           ),
           IconButton(
             tooltip: logout,

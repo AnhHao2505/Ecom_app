@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:e_mart/consts/consts.dart';
 import 'package:e_mart/consts/lists.dart';
 import 'package:e_mart/controllers/cart_controller.dart';
@@ -608,18 +609,18 @@ class _ItemDetailState extends State<ItemDetail> {
     return;
   }
 
-  // ✅ Ưu tiên dùng userId từ product, nếu không có thì dùng store.userId
+  // Ưu tiên dùng userId từ product, nếu không có thì dùng store.userId
   final receiverId = product.userId?.isNotEmpty == true
       ? product.userId!
       : store.userId;
 
-  // ✅ Kiểm tra receiverId có hợp lệ không
+  // Kiểm tra receiverId có hợp lệ không
   if (receiverId.isEmpty) {
     _showMessage('Không tìm thấy thông tin shop');
     return;
   }
 
-  // ✅ Không cho chat với chính mình
+  // Không cho chat với chính mình
   if (receiverId == FirebaseAuth.instance.currentUser?.uid) {
     _showMessage('Bạn không thể chat với chính mình');
     return;
@@ -630,16 +631,33 @@ class _ItemDetailState extends State<ItemDetail> {
         ? Get.find<MessageController>()
         : Get.put(MessageController());
 
+    // ✅ Gọi createConversation với isSeller = false (Customer chat với Seller)
     final conversationId = await messageController.createConversation(
       receiverId,
+      isSeller: false, // Customer đang chat với Seller
     );
 
     if (conversationId.isNotEmpty) {
+      // Lấy thông tin shop để hiển thị
+      String shopName = store.name;
+      try {
+        final storeDoc = await FirebaseFirestore.instance
+            .collection('stores')
+            .doc(receiverId)
+            .get();
+        if (storeDoc.exists) {
+          shopName = storeDoc.data()?['name'] ?? store.name;
+        }
+      } catch (e) {
+        print('Lỗi lấy tên shop: $e');
+      }
+
       Get.to(
         () => ChatDetailScreen(
           conversationId: conversationId,
           receiverId: receiverId,
-          shopName: store.name,
+          displayName: shopName,
+          isSeller: false, // Customer đang chat
         ),
       );
     } else {
