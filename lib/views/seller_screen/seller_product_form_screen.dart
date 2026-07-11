@@ -281,8 +281,14 @@ class _SellerProductFormScreenState extends State<SellerProductFormScreen> {
           if (integer && int.tryParse(text) == null) {
             return '$label must be a whole number';
           }
+          if (integer && int.parse(text) < 0) {
+            return '$label cannot be below 0';
+          }
           if (numeric && double.tryParse(text) == null) {
             return '$label must be a number';
+          }
+          if (numeric && double.parse(text) < 0) {
+            return '$label cannot be below 0';
           }
           return null;
         },

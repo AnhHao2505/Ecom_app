@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:e_mart/consts/firebase_consts.dart';
 import 'package:e_mart/models/billing_order_model.dart';
 import 'package:e_mart/models/product_model.dart';
@@ -127,10 +128,11 @@ class OrderBillingService {
         .collection(paidOrdersCollection)
         .doc('COD-${receipt.orderNumber}');
 
-    final batch = firestore.batch();
-    batch.set(userOrderRef, orderData);
-    batch.set(sellerOrderRef, orderData);
-    await batch.commit();
+    await firestore.runTransaction((transaction) async {
+      await _updatePurchasedProducts(transaction, receipt.items);
+      transaction.set(userOrderRef, orderData);
+      transaction.set(sellerOrderRef, orderData);
+    });
   }
 
   Future<void> savePaidPayosOrder({
@@ -152,38 +154,8 @@ class OrderBillingService {
         .collection(paidOrdersCollection)
         .doc('PO-$orderCode');
 
-    final requiredQuantities = <String, int>{};
-    for (final item in receipt.items) {
-      requiredQuantities[item.product.id] =
-          (requiredQuantities[item.product.id] ?? 0) + item.quantity;
-    }
-
     await firestore.runTransaction((transaction) async {
-      for (final entry in requiredQuantities.entries) {
-        final productRef = firestore
-            .collection(productCollection)
-            .doc(entry.key);
-        final snapshot = await transaction.get(productRef);
-        final data = snapshot.data();
-        if (!snapshot.exists || data == null) {
-          throw OrderBillingException(
-            'One of your items is no longer available.',
-          );
-        }
-
-        final product = Product.fromMap(data, snapshot.id);
-        if (product.stock < entry.value) {
-          throw OrderBillingException(
-            '${product.name} only has ${product.stock} left in stock.',
-          );
-        }
-
-        transaction.update(productRef, {
-          'stock': product.stock - entry.value,
-          'updatedAt': DateTime.now(),
-        });
-      }
-
+      await _updatePurchasedProducts(transaction, receipt.items);
       transaction.set(orderRef, {
         'userId': user.uid,
         'sellerUserIds': sellerUserIds,
@@ -209,6 +181,41 @@ class OrderBillingService {
         'updatedAt': paidAt,
       });
     });
+  }
+
+  Future<void> _updatePurchasedProducts(
+    Transaction transaction,
+    List<CartItem> items,
+  ) async {
+    final requiredQuantities = <String, int>{};
+    for (final item in items) {
+      requiredQuantities[item.product.id] =
+          (requiredQuantities[item.product.id] ?? 0) + item.quantity;
+    }
+
+    for (final entry in requiredQuantities.entries) {
+      final productRef = firestore.collection(productCollection).doc(entry.key);
+      final snapshot = await transaction.get(productRef);
+      final data = snapshot.data();
+      if (!snapshot.exists || data == null) {
+        throw OrderBillingException(
+          'One of your items is no longer available.',
+        );
+      }
+
+      final product = Product.fromMap(data, snapshot.id);
+      if (product.stock < entry.value) {
+        throw OrderBillingException(
+          '${product.name} only has ${product.stock} left in stock.',
+        );
+      }
+
+      transaction.update(productRef, {
+        'stock': product.stock - entry.value,
+        'soldCount': product.soldCount + entry.value,
+        'updatedAt': DateTime.now(),
+      });
+    }
   }
 
   Map<String, dynamic> _cartItemToOrderItem(CartItem item) {

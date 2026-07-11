@@ -21,6 +21,13 @@ service cloud.firestore {
           && data.userId.size() > 0;
     }
 
+    function hasValidProductNumbers(data) {
+      return (data.price is int || data.price is float)
+          && data.price >= 0
+          && data.stock is int
+          && data.stock >= 0;
+    }
+
     match /users/{userId} {
       allow read, create, update, delete: if isSelf(userId);
 
@@ -76,6 +83,7 @@ service cloud.firestore {
             || (
               isSeller()
               && request.resource.data.userId == request.auth.uid
+              && hasValidProductNumbers(request.resource.data)
             )
           );
       allow update: if signedIn()
@@ -85,6 +93,7 @@ service cloud.firestore {
               isSeller()
               && resource.data.userId == request.auth.uid
               && request.resource.data.userId == request.auth.uid
+              && hasValidProductNumbers(request.resource.data)
             )
             || (
               request.resource.data.userId == resource.data.userId
@@ -92,8 +101,20 @@ service cloud.firestore {
               && resource.data.stock is int
               && request.resource.data.stock >= 0
               && request.resource.data.stock < resource.data.stock
+              && request.resource.data.soldCount is int
+              && (
+                (
+                  resource.data.soldCount is int
+                  && request.resource.data.soldCount == resource.data.soldCount + (resource.data.stock - request.resource.data.stock)
+                )
+                || (
+                  !resource.data.keys().hasAny(["soldCount"])
+                  && request.resource.data.soldCount >= resource.data.stock - request.resource.data.stock
+                )
+              )
               && request.resource.data.diff(resource.data).changedKeys().hasOnly([
                 "stock",
+                "soldCount",
                 "updatedAt",
               ])
             )
