@@ -84,7 +84,7 @@ class OrderConfirmationScreen extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Icon(Icons.receipt_long_outlined, color: redColor),
+              const Icon(Icons.receipt_long_outlined, color: primaryColor),
               8.widthBox,
               'Billing receipt'.text
                   .color(darkFontGrey)
@@ -93,7 +93,7 @@ class OrderConfirmationScreen extends StatelessWidget {
                   .make(),
               const Spacer(),
               (receipt.isPaid ? 'Paid' : 'Due on delivery').text
-                  .color(receipt.isPaid ? Colors.green : Colors.orange)
+                  .color(receipt.isPaid ? Colors.green : Colors.blue)
                   .fontFamily(bold)
                   .size(12)
                   .make(),
@@ -149,7 +149,7 @@ class OrderConfirmationScreen extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.local_shipping_outlined, color: redColor),
+          const Icon(Icons.local_shipping_outlined, color: primaryColor),
           12.widthBox,
           Expanded(
             child: Column(
@@ -181,7 +181,7 @@ class OrderConfirmationScreen extends StatelessWidget {
             .size(emphasis ? 16 : 14)
             .make(),
         _formatUsd(amount).text
-            .color(emphasis ? redColor : darkFontGrey)
+            .color(emphasis ? primaryColor : darkFontGrey)
             .fontFamily(emphasis ? bold : semibold)
             .size(emphasis ? 18 : 14)
             .make(),

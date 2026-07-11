@@ -30,7 +30,7 @@ class _ProductCardState extends State<ProductCard> {
 
     final bool isNew =
         DateTime.now().difference(widget.product.createdAt).inDays < 14;
-    final bool isBestSeller = widget.product.reviewCount >= 300;
+    final bool isBestSeller = widget.product.soldCount >= 300;
     final bool isOutOfStock = !widget.product.isInStock;
     final bool hasOriginalPrice =
         widget.product.originalPrice > widget.product.price;
@@ -339,7 +339,7 @@ class _ProductCardState extends State<ProductCard> {
                                     decoration: TextDecoration.lineThrough,
                                   ),
                                 ),
-                                
+
                               Row(
                                 crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
@@ -368,7 +368,7 @@ class _ProductCardState extends State<ProductCard> {
                                   ),
                                   const Spacer(),
                                   Text(
-                                    '${widget.product.reviewCount} sold', // Proxying reviewCount to sold temporarily
+                                    '${widget.product.soldCount} sold',
                                     style: TextStyle(
                                       color: Theme.of(context)
                                           .textTheme

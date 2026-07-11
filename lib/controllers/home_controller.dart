@@ -9,7 +9,8 @@ class HomeController extends GetxController {
   final isLoading = true.obs;
 
   // Sort & Filter states
-  final sortOption = 'popular'.obs; // popular, newest, price_asc, price_desc, rating
+  final sortOption =
+      'popular'.obs; // popular, newest, price_asc, price_desc, rating
   final filterMinPrice = 0.0.obs;
   final filterMaxPrice = 2000.0.obs; // set high default
   final filterMinRating = 0.0.obs;
@@ -71,29 +72,30 @@ class HomeController extends GetxController {
 
   List<Product> get filteredProducts {
     final query = searchQuery.value.trim().toLowerCase();
-    
+
     // 1. Search & Filter
     var result = products.where((product) {
       // Search
       if (query.isNotEmpty && !product.name.toLowerCase().contains(query)) {
         return false;
       }
-      
+
       // Price
-      if (product.price < filterMinPrice.value || product.price > filterMaxPrice.value) {
+      if (product.price < filterMinPrice.value ||
+          product.price > filterMaxPrice.value) {
         return false;
       }
-      
+
       // Rating
       if (product.rating < filterMinRating.value) {
         return false;
       }
-      
+
       // In Stock
       if (filterInStockOnly.value && !product.isInStock) {
         return false;
       }
-      
+
       // Brand
       if (filterBrands.isNotEmpty) {
         final brand = product.attributes['brand']?.toString() ?? '';
@@ -101,10 +103,10 @@ class HomeController extends GetxController {
           return false;
         }
       }
-      
+
       return true;
     }).toList();
-    
+
     // 2. Sort
     result.sort((a, b) {
       switch (sortOption.value) {
@@ -118,7 +120,7 @@ class HomeController extends GetxController {
           return b.rating.compareTo(a.rating);
         case 'popular':
         default:
-          return b.reviewCount.compareTo(a.reviewCount);
+          return b.soldCount.compareTo(a.soldCount);
       }
     });
 
@@ -130,16 +132,18 @@ class HomeController extends GetxController {
 
   List<Product> get trendingProducts {
     var list = products.toList();
-    list.sort((a, b) => b.reviewCount.compareTo(a.reviewCount));
+    list.sort((a, b) => b.soldCount.compareTo(a.soldCount));
     return list.take(8).toList();
   }
 
   List<Product> get newArrivals {
-    var list = products.where((p) => DateTime.now().difference(p.createdAt).inDays <= 14).toList();
+    var list = products
+        .where((p) => DateTime.now().difference(p.createdAt).inDays <= 14)
+        .toList();
     list.sort((a, b) => b.createdAt.compareTo(a.createdAt));
     return list;
   }
-  
+
   List<Product> get flashSaleProducts {
     return products.where((p) => p.discountPercentage >= 30).toList();
   }

@@ -2,7 +2,7 @@ import 'package:e_mart/consts/consts.dart';
 
 Widget ourButton({
   required VoidCallback? onPress,
-  Color? color = redColor,
+  Color? color = primaryColor,
   Color? textColor = whiteColor,
   required String title,
 }) {

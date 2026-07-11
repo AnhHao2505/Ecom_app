@@ -12,6 +12,7 @@ class Product {
   final String? userId;
   final double rating;
   final int reviewCount;
+  final int soldCount;
   final int stock;
   final bool isFeatured;
   final bool isNew;
@@ -33,6 +34,7 @@ class Product {
     this.userId,
     this.rating = 0.0,
     this.reviewCount = 0,
+    this.soldCount = 0,
     required this.stock,
     this.isFeatured = false,
     this.isNew = false,
@@ -65,6 +67,7 @@ class Product {
       'storeId': storeId,
       'rating': rating,
       'reviewCount': reviewCount,
+      'soldCount': soldCount,
       'stock': stock,
       'isFeatured': isFeatured,
       'isNew': isNew,
@@ -94,6 +97,7 @@ class Product {
       userId: _nullableString(map['userId']),
       rating: _toDouble(map['rating']),
       reviewCount: _toInt(map['reviewCount']),
+      soldCount: _toInt(map['soldCount'] ?? map['reviewCount']),
       stock: _toInt(map['stock']),
       isFeatured: map['isFeatured'] ?? false,
       isNew: map['isNew'] ?? false,
@@ -118,6 +122,7 @@ class Product {
       'storeId': storeId,
       'rating': rating,
       'reviewCount': reviewCount,
+      'soldCount': soldCount,
       'stock': stock,
       'isFeatured': isFeatured,
       'isNew': isNew,
@@ -147,6 +152,7 @@ class Product {
       userId: _nullableString(json['userId']),
       rating: _toDouble(json['rating']),
       reviewCount: _toInt(json['reviewCount']),
+      soldCount: _toInt(json['soldCount'] ?? json['reviewCount']),
       stock: _toInt(json['stock']),
       isFeatured: json['isFeatured'] ?? false,
       isNew: json['isNew'] ?? false,
@@ -175,6 +181,7 @@ class Product {
     String? userId,
     double? rating,
     int? reviewCount,
+    int? soldCount,
     int? stock,
     bool? isFeatured,
     bool? isNew,
@@ -196,6 +203,7 @@ class Product {
       userId: userId ?? this.userId,
       rating: rating ?? this.rating,
       reviewCount: reviewCount ?? this.reviewCount,
+      soldCount: soldCount ?? this.soldCount,
       stock: stock ?? this.stock,
       isFeatured: isFeatured ?? this.isFeatured,
       isNew: isNew ?? this.isNew,
