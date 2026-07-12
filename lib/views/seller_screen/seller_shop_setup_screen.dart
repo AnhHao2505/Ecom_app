@@ -145,11 +145,11 @@ class _SellerShopSetupScreenState extends State<SellerShopSetupScreen> {
         child: _isLoading
             ? const Center(child: CircularProgressIndicator())
             : Form(
-                key: _formKey,
-                child: ListView(
-                  physics: const BouncingScrollPhysics(),
-                  padding: const EdgeInsets.all(16),
-                  children: [
+                  key: _formKey,
+                  child: ListView(
+                    physics: const BouncingScrollPhysics(),
+                    padding: const EdgeInsets.all(16),
+                    children: [
                     _section(
                       context,
                       title: 'Storefront',
@@ -185,14 +185,25 @@ class _SellerShopSetupScreenState extends State<SellerShopSetupScreen> {
                           ],
                         ),
                         14.heightBox,
-                        _field(_nameController, 'Shop name', isRequired: true),
+                        _field(
+                          _nameController,
+                          'Shop name',
+                          isRequired: true,
+                          textInputAction: TextInputAction.next,
+                        ),
                         _field(
                           _descriptionController,
                           'Description',
                           isRequired: true,
                           maxLines: 3,
+                          keyboardType: TextInputType.multiline,
+                          textInputAction: TextInputAction.newline,
                         ),
-                        _field(_ownerNameController, 'Owner name'),
+                        _field(
+                          _ownerNameController,
+                          'Owner name',
+                          textInputAction: TextInputAction.next,
+                        ),
                       ],
                     ),
                     16.heightBox,
@@ -200,14 +211,30 @@ class _SellerShopSetupScreenState extends State<SellerShopSetupScreen> {
                       context,
                       title: 'Contact',
                       children: [
-                        _field(_phoneController, 'Phone'),
+                        _field(
+                          _phoneController,
+                          'Phone',
+                          keyboardType: TextInputType.phone,
+                          textInputAction: TextInputAction.next,
+                        ),
                         _field(
                           _emailController,
                           'Email',
                           keyboardType: TextInputType.emailAddress,
+                          textInputAction: TextInputAction.next,
                         ),
-                        _field(_addressController, 'Address', isRequired: true),
-                        _field(_openingHoursController, 'Opening hours'),
+                        _field(
+                          _addressController,
+                          'Address',
+                          isRequired: true,
+                          textInputAction: TextInputAction.next,
+                        ),
+                        _field(
+                          _openingHoursController,
+                          'Opening hours',
+                          textInputAction: TextInputAction.done,
+                          onFieldSubmitted: (_) => _isSaving ? null : _saveShop(),
+                        ),
                       ],
                     ),
                     24.heightBox,
@@ -283,6 +310,8 @@ class _SellerShopSetupScreenState extends State<SellerShopSetupScreen> {
     bool isRequired = false,
     int maxLines = 1,
     TextInputType? keyboardType,
+    TextInputAction? textInputAction,
+    ValueChanged<String>? onFieldSubmitted,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -290,6 +319,8 @@ class _SellerShopSetupScreenState extends State<SellerShopSetupScreen> {
         controller: controller,
         maxLines: maxLines,
         keyboardType: keyboardType,
+        textInputAction: textInputAction,
+        onFieldSubmitted: onFieldSubmitted,
         validator: isRequired
             ? (value) {
                 if (value == null || value.trim().isEmpty) {

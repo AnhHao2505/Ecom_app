@@ -17,6 +17,36 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  final _emailFocus = FocusNode();
+  final _passwordFocus = FocusNode();
+
+  @override
+  void dispose() {
+    _emailFocus.dispose();
+    _passwordFocus.dispose();
+    super.dispose();
+  }
+
+  Future<void> _handleLogin(AuthController controller) async {
+    if (controller.isLoading.value) return;
+
+    if (controller.emailController.text.isEmpty ||
+        controller.passwordController.text.isEmpty) {
+      VxToast.show(context, msg: "Please enter email and password");
+      return;
+    }
+
+    FocusScope.of(context).unfocus();
+    controller.isLoading(true);
+
+    final credential = await controller.loginMethod(context);
+    if (credential?.user != null && mounted) {
+      VxToast.show(context, msg: loggedIn);
+      await openLandingForUser(credential!.user!);
+    } else {
+      controller.isLoading(false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,20 +71,25 @@ class _LoginScreenState extends State<LoginScreen> {
                   15.heightBox,
 
                   Obx(
-                    () =>
-                        Column(
-                              children: [
-                                customTextField(
-                                  title: email,
-                                  hint: emailHint,
-                                  controller: controller.emailController,
-                                ),
-                                customTextField(
-                                  title: password,
-                                  hint: passwordHint,
-                                  isPass: true,
-                                  controller: controller.passwordController,
-                                ),
+                    () => Column(
+                            children: [
+                                  customTextField(
+                                    title: email,
+                                    hint: emailHint,
+                                    controller: controller.emailController,
+                                    focusNode: _emailFocus,
+                                    keyboardType: TextInputType.emailAddress,
+                                    textInputAction: TextInputAction.next,
+                                  ),
+                                  customTextField(
+                                    title: password,
+                                    hint: passwordHint,
+                                    isPass: true,
+                                    controller: controller.passwordController,
+                                    focusNode: _passwordFocus,
+                                    textInputAction: TextInputAction.done,
+                                    onFieldSubmitted: (_) => _handleLogin(controller),
+                                  ),
                                 // forgot password
                                 Align(
                                   alignment: Alignment.centerRight,
@@ -77,26 +112,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                             color: redColor,
                                             title: login,
                                             textColor: whiteColor,
-                                            onPress: () async {
-                                              controller.isLoading(true);
-
-                                              final credential =
-                                                  await controller.loginMethod(
-                                                    context,
-                                                  );
-                                              if (credential?.user != null &&
-                                                  mounted) {
-                                                VxToast.show(
-                                                  context,
-                                                  msg: loggedIn,
-                                                );
-                                                await openLandingForUser(
-                                                  credential!.user!,
-                                                );
-                                              } else {
-                                                controller.isLoading(false);
-                                              }
-                                            },
+                                            onPress: () => _handleLogin(controller),
                                           ).box
                                           .width(context.screenWidth - 50)
                                           .make(),
@@ -127,8 +143,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                     await openLandingForUser(credential!.user!);
                                   }
                                 }),
-                              ],
-                            ).box.white.rounded
+                                ],
+                              ).box.white.rounded
                             .padding(const EdgeInsets.all(16))
                             .width(context.screenWidth - 70)
                             .shadowSm

@@ -25,6 +25,11 @@ class _SignupScreenState extends State<SignupScreen> {
   final passwordController = TextEditingController();
   final retypePasswordController = TextEditingController();
 
+  final _nameFocus = FocusNode();
+  final _emailFocus = FocusNode();
+  final _passwordFocus = FocusNode();
+  final _retypePasswordFocus = FocusNode();
+
   @override
   void initState() {
     super.initState();
@@ -37,7 +42,56 @@ class _SignupScreenState extends State<SignupScreen> {
     nameController.dispose();
     passwordController.dispose();
     retypePasswordController.dispose();
+    _nameFocus.dispose();
+    _emailFocus.dispose();
+    _passwordFocus.dispose();
+    _retypePasswordFocus.dispose();
     super.dispose();
+  }
+
+  Future<void> _handleSignup() async {
+    if (controller.isLoading.value) return;
+
+    if (nameController.text.isEmpty ||
+        emailController.text.isEmpty ||
+        passwordController.text.isEmpty ||
+        retypePasswordController.text.isEmpty) {
+      VxToast.show(context, msg: "Please fill all fields");
+      return;
+    }
+
+    if (isCheck == false) {
+      VxToast.show(context, msg: "Please agree to the terms and conditions");
+      return;
+    }
+
+    FocusScope.of(context).unfocus();
+    controller.isLoading(true);
+
+    try {
+      final credential = await controller.signupMethod(
+        context: context,
+        email: emailController.text.trim(),
+        password: passwordController.text.trim(),
+      );
+      if (credential?.user == null) {
+        controller.isLoading(false);
+        return;
+      }
+      await controller.storeUserData(
+        email: emailController.text.trim(),
+        password: passwordController.text.trim(),
+        name: nameController.text.trim(),
+        role: isSellerMode ? 'Seller' : 'Customer',
+      );
+      if (!mounted) return;
+      VxToast.show(context, msg: loggedIn);
+      await openLandingForUser(credential!.user!);
+    } catch (e) {
+      auth.signOut();
+      VxToast.show(context, msg: e.toString());
+      controller.isLoading(false);
+    }
   }
 
   @override
@@ -65,7 +119,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   15.heightBox,
                   Obx(
                     () => Column(
-                      children: [
+                        children: [
                         if (isSellerMode) ...[
                           Container(
                             width: double.infinity,
@@ -104,12 +158,17 @@ class _SignupScreenState extends State<SignupScreen> {
                           title: name,
                           hint: nameHint,
                           controller: nameController,
+                          focusNode: _nameFocus,
+                          textInputAction: TextInputAction.next,
                         ),
                         // email
                         customTextField(
                           title: email,
                           hint: emailHint,
                           controller: emailController,
+                          focusNode: _emailFocus,
+                          keyboardType: TextInputType.emailAddress,
+                          textInputAction: TextInputAction.next,
                         ),
                         // password
                         customTextField(
@@ -117,6 +176,8 @@ class _SignupScreenState extends State<SignupScreen> {
                           hint: passwordHint,
                           controller: passwordController,
                           isPass: true,
+                          focusNode: _passwordFocus,
+                          textInputAction: TextInputAction.next,
                         ),
                         // retype password
                         customTextField(
@@ -124,6 +185,9 @@ class _SignupScreenState extends State<SignupScreen> {
                           hint: passwordHint,
                           controller: retypePasswordController,
                           isPass: true,
+                          focusNode: _retypePasswordFocus,
+                          textInputAction: TextInputAction.done,
+                          onFieldSubmitted: (_) => _handleSignup(),
                         ),
                         // forget pass
                         Align(
@@ -201,43 +265,7 @@ class _SignupScreenState extends State<SignupScreen> {
                                     : lightGrey,
                                 title: isSellerMode ? 'Create Seller Account' : signup,
                                 textColor: whiteColor,
-                                onPress: () async {
-                                  if (isCheck != false) {
-                                    controller.isLoading(true);
-                                    try {
-                                      final credential = await controller.signupMethod(
-                                        context: context,
-                                        email: emailController.text.trim(),
-                                        password: passwordController.text.trim(),
-                                      );
-                                      if (credential?.user == null) {
-                                        controller.isLoading(false);
-                                        return;
-                                      }
-                                      await controller.storeUserData(
-                                        email: emailController.text.trim(),
-                                        password: passwordController.text.trim(),
-                                        name: nameController.text.trim(),
-                                        role: isSellerMode ? 'Seller' : 'Customer',
-                                      );
-                                      if (!mounted) return;
-                                      VxToast.show(
-                                        context,
-                                        msg: loggedIn,
-                                      );
-                                      await openLandingForUser(
-                                        credential!.user!,
-                                      );
-                                    } catch (e) {
-                                      auth.signOut();
-                                      VxToast.show(
-                                        context,
-                                        msg: e.toString(),
-                                      );
-                                      controller.isLoading(false);
-                                    }
-                                  }
-                                },
+                                onPress: _handleSignup,
                               ).box
                               .width(context.screenWidth - 50)
                               .make(),

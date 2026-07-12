@@ -4,13 +4,39 @@ import 'package:e_mart/widget_common/custom_textfield.dart';
 import 'package:e_mart/widget_common/our_button.dart';
 import 'package:get/get.dart';
 
-class EditProfileScreen extends StatelessWidget {
+class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final controller = Get.put(ProfileController());
+  State<EditProfileScreen> createState() => _EditProfileScreenState();
+}
 
+class _EditProfileScreenState extends State<EditProfileScreen> {
+  final _nameFocus = FocusNode();
+  final _passwordFocus = FocusNode();
+  late ProfileController controller;
+
+  @override
+  void initState() {
+    super.initState();
+    controller = Get.put(ProfileController());
+  }
+
+  @override
+  void dispose() {
+    _nameFocus.dispose();
+    _passwordFocus.dispose();
+    super.dispose();
+  }
+
+  void _handleSaveProfile() {
+    FocusScope.of(context).unfocus();
+    // Implementation for save profile goes here
+    VxToast.show(context, msg: "Profile saved");
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
@@ -45,45 +71,57 @@ class EditProfileScreen extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
           child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 100,
-                height: 100,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: primaryColor, width: 2),
-                  image: const DecorationImage(
-                    image: AssetImage(imgProfile2),
-                    fit: BoxFit.cover,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 100,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(color: primaryColor, width: 2),
+                    image: const DecorationImage(
+                      image: AssetImage(imgProfile2),
+                      fit: BoxFit.cover,
+                    ),
                   ),
                 ),
-              ),
-              10.heightBox,
-              ourButton(
-                color: primaryColor,
-                onPress: () {
-                  controller.changeImage(context);
-                },
-                title: "Change Picture",
-              ),
-              const Divider().paddingSymmetric(vertical: 20),
-              customTextField(title: name, hint: nameHint),
-              customTextField(title: password, hint: password, isPass: true),
-              30.heightBox,
-              SizedBox(
-                width: double.infinity,
-                height: 44,
-                child: ourButton(
+                10.heightBox,
+                ourButton(
                   color: primaryColor,
-                  onPress: () {},
-                  title: "Save",
+                  onPress: () {
+                    controller.changeImage(context);
+                  },
+                  title: "Change Picture",
                 ),
-              ),
-            ],
+                const Divider().paddingSymmetric(vertical: 20),
+                customTextField(
+                  title: name,
+                  hint: nameHint,
+                  focusNode: _nameFocus,
+                  textInputAction: TextInputAction.next,
+                ),
+                customTextField(
+                  title: password,
+                  hint: password,
+                  isPass: true,
+                  focusNode: _passwordFocus,
+                  textInputAction: TextInputAction.done,
+                  onFieldSubmitted: (_) => _handleSaveProfile(),
+                ),
+                30.heightBox,
+                SizedBox(
+                  width: double.infinity,
+                  height: 44,
+                  child: ourButton(
+                    color: primaryColor,
+                    onPress: _handleSaveProfile,
+                    title: "Save",
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
-      ),
     );
   }
 }

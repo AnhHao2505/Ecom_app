@@ -27,6 +27,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   final _cityController = TextEditingController();
   final _billingAddressController = TextEditingController();
 
+  final _nameFocus = FocusNode();
+  final _phoneFocus = FocusNode();
+  final _addressFocus = FocusNode();
+  final _cityFocus = FocusNode();
+  final _billingFocus = FocusNode();
+
   DeliveryOption _deliveryOption = DeliveryOption.standard;
   PaymentMethod _paymentMethod = PaymentMethod.payos;
   bool _billingMatchesDelivery = true;
@@ -47,6 +53,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     _addressController.dispose();
     _cityController.dispose();
     _billingAddressController.dispose();
+    _nameFocus.dispose();
+    _phoneFocus.dispose();
+    _addressFocus.dispose();
+    _cityFocus.dispose();
+    _billingFocus.dispose();
     super.dispose();
   }
 
@@ -103,6 +114,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                             label: 'Full name',
                             hint: 'Enter recipient name',
                             textCapitalization: TextCapitalization.words,
+                            focusNode: _nameFocus,
+                            textInputAction: TextInputAction.next,
                           ),
                           12.heightBox,
                           _inputField(
@@ -111,6 +124,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                             label: 'Phone number',
                             hint: 'Enter phone number',
                             keyboardType: TextInputType.phone,
+                            focusNode: _phoneFocus,
+                            textInputAction: TextInputAction.next,
                           ),
                           12.heightBox,
                           _inputField(
@@ -119,6 +134,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                             label: 'Street address',
                             hint: 'House number, street, ward',
                             textCapitalization: TextCapitalization.words,
+                            focusNode: _addressFocus,
+                            textInputAction: TextInputAction.next,
                           ),
                           12.heightBox,
                           _inputField(
@@ -127,6 +144,13 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                             label: 'City',
                             hint: 'City or province',
                             textCapitalization: TextCapitalization.words,
+                            focusNode: _cityFocus,
+                            textInputAction: _billingMatchesDelivery
+                                ? TextInputAction.done
+                                : TextInputAction.next,
+                            onFieldSubmitted: _billingMatchesDelivery
+                                ? (_) => _isSubmitting ? null : _placeOrder()
+                                : null,
                           ),
                         ],
                       ),
@@ -232,6 +256,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                               label: 'Billing address',
                               hint: 'Street, city, and postal code',
                               textCapitalization: TextCapitalization.words,
+                              focusNode: _billingFocus,
+                              textInputAction: TextInputAction.done,
+                              onFieldSubmitted: (_) => _isSubmitting ? null : _placeOrder(),
                             ),
                           ],
                         ],
@@ -309,6 +336,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     TextCapitalization textCapitalization = TextCapitalization.none,
     bool obscureText = false,
     String? Function(String?)? validator,
+    FocusNode? focusNode,
+    TextInputAction? textInputAction,
+    ValueChanged<String>? onFieldSubmitted,
   }) {
     return TextFormField(
       controller: controller,
@@ -316,6 +346,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       textCapitalization: textCapitalization,
       obscureText: obscureText,
       validator: validator ?? _validateRequired,
+      focusNode: focusNode,
+      textInputAction: textInputAction,
+      onFieldSubmitted: onFieldSubmitted,
       style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
       decoration: InputDecoration(
         labelText: label,

@@ -139,20 +139,27 @@ class _SellerProductFormScreenState extends State<SellerProductFormScreen> {
           ),
         ),
         child: Form(
-          key: _formKey,
-          child: ListView(
-            padding: const EdgeInsets.all(16),
-            physics: const BouncingScrollPhysics(),
-            children: [
+            key: _formKey,
+            child: ListView(
+              padding: const EdgeInsets.all(16),
+              physics: const BouncingScrollPhysics(),
+              children: [
               _card(
                 context,
                 children: [
-                  _field(_nameController, 'Product name', isRequired: true),
+                  _field(
+                    _nameController,
+                    'Product name',
+                    isRequired: true,
+                    textInputAction: TextInputAction.next,
+                  ),
                   _field(
                     _descriptionController,
                     'Description',
                     isRequired: true,
                     maxLines: 4,
+                    keyboardType: TextInputType.multiline,
+                    textInputAction: TextInputAction.newline,
                   ),
                   DropdownButtonFormField<String>(
                     value: _category,
@@ -179,8 +186,9 @@ class _SellerProductFormScreenState extends State<SellerProductFormScreen> {
                     _priceController,
                     'Price',
                     isRequired: true,
-                    keyboardType: TextInputType.number,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
                     numeric: true,
+                    textInputAction: TextInputAction.next,
                   ),
                   _field(
                     _stockController,
@@ -188,6 +196,7 @@ class _SellerProductFormScreenState extends State<SellerProductFormScreen> {
                     isRequired: true,
                     keyboardType: TextInputType.number,
                     integer: true,
+                    textInputAction: TextInputAction.next,
                   ),
                 ],
               ),
@@ -199,13 +208,25 @@ class _SellerProductFormScreenState extends State<SellerProductFormScreen> {
                     _imageController,
                     'Image URL or asset path',
                     helper: 'Separate multiple images with commas.',
+                    textInputAction: TextInputAction.next,
                   ),
-                  _field(_brandController, 'Brand'),
-                  _field(_sizesController, 'Sizes', helper: 'Example: S, M, L'),
+                  _field(
+                    _brandController,
+                    'Brand',
+                    textInputAction: TextInputAction.next,
+                  ),
+                  _field(
+                    _sizesController,
+                    'Sizes',
+                    helper: 'Example: S, M, L',
+                    textInputAction: TextInputAction.next,
+                  ),
                   _field(
                     _colorsController,
                     'Colors',
                     helper: 'Example: Black, White, Blue',
+                    textInputAction: TextInputAction.done,
+                    onFieldSubmitted: (_) => _isSaving ? null : _saveProduct(),
                   ),
                 ],
               ),
@@ -267,6 +288,8 @@ class _SellerProductFormScreenState extends State<SellerProductFormScreen> {
     int maxLines = 1,
     String? helper,
     TextInputType? keyboardType,
+    TextInputAction? textInputAction,
+    ValueChanged<String>? onFieldSubmitted,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -274,6 +297,8 @@ class _SellerProductFormScreenState extends State<SellerProductFormScreen> {
         controller: controller,
         maxLines: maxLines,
         keyboardType: keyboardType,
+        textInputAction: textInputAction,
+        onFieldSubmitted: onFieldSubmitted,
         validator: (value) {
           final text = value?.trim() ?? '';
           if (isRequired && text.isEmpty) return '$label is required';
