@@ -243,7 +243,8 @@ class _StoreMap extends StatefulWidget {
 }
 
 class _StoreMapState extends State<_StoreMap> {
-  static const String _googleMapsEmbedApiKey = '';
+  static const String _googleMapsEmbedApiKey =
+      'AIzaSyAPLdlKoYEoVZBE8eFQQJSkv_d5OZjfAiI';
 
   WebViewController? _webViewController;
 
