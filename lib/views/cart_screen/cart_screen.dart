@@ -344,6 +344,7 @@ class CartScreen extends StatelessWidget {
             context,
           ),
           12.heightBox,
+          // Shipping Type
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -362,6 +363,7 @@ class CartScreen extends StatelessWidget {
           20.heightBox,
           Divider(color: isDark ? darkDivider : lightDivider, height: 1),
           20.heightBox,
+          // Total
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [

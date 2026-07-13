@@ -107,6 +107,7 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
             ),
             const Divider().paddingSymmetric(vertical: 16),
 
+            //colors
             if (widget.product.colors.isNotEmpty) ...[
               Text(
                 chooseColor,
@@ -150,6 +151,7 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
               16.heightBox,
             ],
 
+            //sizes
             if (widget.product.sizes.isNotEmpty) ...[
               Text(
                 chooseSize,
@@ -193,6 +195,7 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
               16.heightBox,
             ],
 
+            // add to cart
             24.heightBox,
             SizedBox(
               width: double.infinity,

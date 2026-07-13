@@ -272,6 +272,7 @@ class _ProductCardState extends State<ProductCard> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
+                              // title
                               SizedBox(
                                 height: titleHeight,
                                 child: Text(
@@ -323,7 +324,7 @@ class _ProductCardState extends State<ProductCard> {
                                 ],
                               ),
                               SizedBox(height: isCompact ? 1 : 3),
-                              // prices
+                              // original prices
                               if (hasOriginalPrice)
                                 Text(
                                   '\$${widget.product.originalPrice.toStringAsFixed(2)}',
@@ -340,6 +341,7 @@ class _ProductCardState extends State<ProductCard> {
                                   ),
                                 ),
 
+                              // current price
                               Row(
                                 crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
@@ -367,6 +369,7 @@ class _ProductCardState extends State<ProductCard> {
                                     ],
                                   ),
                                   const Spacer(),
+                                  // amounts sold
                                   Text(
                                     '${widget.product.soldCount} sold',
                                     style: TextStyle(
@@ -435,6 +438,7 @@ class _ProductCardState extends State<ProductCard> {
                                                       : null,
                                                 );
                                             Get.closeCurrentSnackbar();
+                                            // successfully added to cart popup
                                             Get.showSnackbar(
                                               GetSnackBar(
                                                 messageText: Row(
