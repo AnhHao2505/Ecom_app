@@ -7,8 +7,7 @@ import 'package:get/get_state_manager/src/simple/get_controllers.dart';
 
 class NotificationController extends GetxController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  static const String _primaryCol = 'notifications ';
-  static const String _fallbackCol = 'notifications';
+  static const String _primaryCol = 'notifications';
 
   String _activeCol = _primaryCol;
   var notifications = <NotificationModel>[].obs;
@@ -53,7 +52,6 @@ class NotificationController extends GetxController {
                   list.isEmpty &&
                   collectionName == _primaryCol) {
                 _checkedFallback = true;
-                _activeCol = _fallbackCol;
                 _subscribeToCollection(_activeCol);
                 return;
               }
@@ -70,7 +68,6 @@ class NotificationController extends GetxController {
             print('❌ Stream error: $error');
             if (!_checkedFallback && collectionName == _primaryCol) {
               _checkedFallback = true;
-              _activeCol = _fallbackCol;
               _subscribeToCollection(_activeCol);
               return;
             }
