@@ -6,13 +6,15 @@ import 'package:get/get.dart';
 class ChatDetailScreen extends StatefulWidget {
   final String conversationId;
   final String receiverId;
-  final String shopName;
+  final String displayName;
+  final bool isSeller; 
 
   const ChatDetailScreen({
     super.key,
     required this.conversationId,
     required this.receiverId,
-    this.shopName = 'Shop',
+    this.displayName = 'Shop',
+    this.isSeller = false,
   });
 
   @override
@@ -57,7 +59,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       appBar: AppBar(
         backgroundColor: primaryColor,
         elevation: 0,
-        title: widget.shopName.text.fontFamily(bold).white.size(18).make(),
+        title: widget.displayName.text.fontFamily(bold).white.size(18).make(),
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),

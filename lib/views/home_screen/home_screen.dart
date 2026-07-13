@@ -64,10 +64,10 @@ class HomeScreen extends StatelessWidget {
                     },
                   ),
                   IconButton(
-                    icon: Icon(Icons.message_rounded),
-                    onPressed: () {
-                      Get.to(() => const ChatListScreen());
-                    },
+                    tooltip: 'Chat with shop',
+                    onPressed: () =>
+                        Get.to(() => const ChatListScreen(isSeller: false)),
+                    icon: const Icon(Icons.message_outlined),
                   ),
                 ],
               ),
