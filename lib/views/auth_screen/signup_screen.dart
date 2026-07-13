@@ -1,5 +1,6 @@
 import 'package:e_mart/consts/consts.dart';
 import 'package:e_mart/controllers/auth_controller.dart';
+import 'package:e_mart/views/auth_screen/forget_pass_screen.dart';
 import 'package:e_mart/utils/auth_navigation.dart';
 import 'package:e_mart/widget_common/applogo_widget.dart';
 import 'package:e_mart/widget_common/bg_widget.dart';
@@ -129,7 +130,9 @@ class _SignupScreenState extends State<SignupScreen> {
                         Align(
                           alignment: Alignment.centerRight,
                           child: TextButton(
-                            onPressed: () {},
+                            onPressed: () {
+                              Get.to(() => const ForgotPassScreen());
+                            },
                             child: forgetPass.text
                                 .color(Vx.blue500)
                                 .make(),

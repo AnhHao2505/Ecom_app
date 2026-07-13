@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:e_mart/consts/consts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
@@ -96,12 +97,38 @@ class AuthController extends GetxController {
     }
   }
 
+  // reset password (forgot password) - send unauthenticated reset email link
+  Future<bool> resetPassword({
+    required String email,
+    required BuildContext context,
+  }) async {
+    try {
+      await auth.sendPasswordResetEmail(email: email);
+      VxToast.show(
+        context,
+        msg: 'Reset link sent to $email. Check your inbox.',
+        position: VxToastPosition.top,
+      );
+      return true;
+    } on FirebaseAuthException catch (e) {
+      VxToast.show(
+        context,
+        msg: e.message ?? e.toString(),
+        position: VxToastPosition.top,
+      );
+      return false;
+    } catch (e) {
+      VxToast.show(context, msg: e.toString(), position: VxToastPosition.top);
+      return false;
+    }
+  }
+
   // storing data method
   Future<void> storeUserData({
     name,
     password,
     email,
-    imageUrl = '', 
+    imageUrl = '',
     String role = 'Customer',
   }) async {
     final user = auth.currentUser;
