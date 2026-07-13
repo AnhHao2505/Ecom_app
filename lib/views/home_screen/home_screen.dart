@@ -126,6 +126,7 @@ class HomeScreen extends StatelessWidget {
                   );
                 }
 
+                // swipe slider
                 return SingleChildScrollView(
                   physics: const BouncingScrollPhysics(),
                   child: Column(
@@ -235,6 +236,7 @@ class HomeScreen extends StatelessWidget {
                         ),
                       ),
                       16.heightBox,
+                      // Flash Sales
                       Obx(() {
                         final flashSale = controller.flashSaleProducts;
                         if (controller.searchQuery.isNotEmpty &&
@@ -244,6 +246,7 @@ class HomeScreen extends StatelessWidget {
                         return FlashSaleSection(products: flashSale);
                       }),
                       20.heightBox,
+                      // All Products Section
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -273,6 +276,7 @@ class HomeScreen extends StatelessWidget {
                       12.heightBox,
                       const SortChips(),
                       12.heightBox,
+                      // Partial Product Section
                       Obx(() {
                         final products = controller.filteredProducts;
                         if (products.isEmpty) {

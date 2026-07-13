@@ -28,11 +28,11 @@ class ProfileScreen extends StatelessWidget {
         "title": "My Orders",
         "onTap": () => Get.to(() => const OrderHistoryScreen()),
       },
-      {
-        "icon": Icons.location_on_outlined,
-        "title": "Addresses",
-        "onTap": () {},
-      },
+      // {
+      //   "icon": Icons.location_on_outlined,
+      //   "title": "Addresses",
+      //   "onTap": () {},
+      // },
       {
         "icon": Icons.favorite_border,
         "title": "Wishlist",
@@ -43,8 +43,8 @@ class ProfileScreen extends StatelessWidget {
         "title": "Notifications",
         "onTap": () => Get.to(() => const NotificationPage()),
       },
-      {"icon": Icons.settings_outlined, "title": "Settings", "onTap": () {}},
-      {"icon": Icons.help_outline, "title": "Help Center", "onTap": () {}},
+      // {"icon": Icons.settings_outlined, "title": "Settings", "onTap": () {}},
+      // {"icon": Icons.help_outline, "title": "Help Center", "onTap": () {}},
     ];
 
     Widget buildStatContent(String count, String title) {
